@@ -6,7 +6,8 @@ A python wrapper for processing of sequencing data generated using CutnRun or Cu
 ## Installation
 
 ```bash
-pip install git+https://github.com/scfurl/henipipe --user
+pip install --user pipx
+pipx install henipipe
 
 ```
 
