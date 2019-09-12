@@ -90,17 +90,23 @@ optional arguments:
 
 The runsheet is the brains of henipipe.  You can make it using the MAKERUNSHEET command and it will find fastq mates for you.  You should take a look at the runsheet in Excel or Numbers to make sure things look okay...  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
 
--- 'sample' name of the sample REQUIRED
--- 'fasta' location of the Bowtie2 indexed fasta file REQUIRED
--- 'spikein_fasta' location of the Bowtie2 indexed fasta file for spike_in normalization OPTIONAL
--- 'fastq1' a tab seperated string of filenames denoting location of all R1 files for a sample REQUIRED
--- 'fastq2' a tab seperated string of filenames denoting location of all R2 files for a sample REQUIRED
--- 'bed_out' name of the location for the aligned and sorted bam file REQUIRED
--- 'spikein_bed_out' name of the location for the aligned and sorted bam file OPTIONAL
--- 'genome_sizes' REQUIRED
--- 'bedgraph' file name of normalized bedgraph REQUIRED
--- 'SEACR_key' sample key corresponding to sample groups to be run against an IgG (or other) contol.  all samples to be run against a control are given the same name and the control is labeleled with the an additional flag '_CONTROL' (i.e. 4JS_CONTROL) OPTIONAL
--- 'SEACR_out' file name of SEACR output OPTIONAL
+### Example Runsheet 
+| sample | fasta | spikein_fasta | fastq1 | fastq2 | bed_out | spikein_bed_out | genome_sizes | bedgraph |  SEACR_key  | SEACR_out |
+|--mys1--|--path-|------path-----|--path--|--path--|---path--|-------path------|-----path-----|---path---|-----4JS-----|---path----|
+|--mys2--|--path-|------path-----|--path--|--path--|---path--|-------path------|-----path-----|---path---|-4JS_CONTROL-|---path----|
+
+-- 'sample' name of the sample REQUIRED.  
+-- 'fasta' location of the Bowtie2 indexed fasta file REQUIRED.  
+-- 'spikein_fasta' location of the Bowtie2 indexed fasta file for spike_in normalization OPTIONAL.  
+-- 'fastq1' a tab seperated string of filenames denoting location of all R1 files for a sample REQUIRED.  
+-- 'fastq2' a tab seperated string of filenames denoting location of all R2 files for a sample REQUIRED.  
+-- 'bed_out' name of the location for the aligned and sorted bam file REQUIRED.  
+-- 'spikein_bed_out' name of the location for the aligned and sorted bam file OPTIONAL.  
+-- 'genome_sizes' REQUIRED.  
+-- 'bedgraph' file name of normalized bedgraph REQUIRED.  
+-- 'SEACR_key' sample key corresponding to sample groups to be run against an IgG (or other) contol.  all samples to be run against a control are given the same name and the control is labeleled with the an additional flag '_CONTROL' (i.e. 4JS_CONTROL) OPTIONAL.  
+-- 'SEACR_out' file name of SEACR output OPTIONAL.  
+
 
 
 ## Examples
