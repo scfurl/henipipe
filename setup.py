@@ -19,11 +19,20 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=2.5',
+    entry_points={
+        'console_scripts': [
+            'henipipe = henipipe.henipipe:main',
+        ],
+        'gui_scripts': [
+            'baz = my_package_gui:start_func',
+        ]
+    },
 )
 
 #TEST
 ## run this to make package: python3 setup.py sdist bdist_wheel
 ## run this to upload to pypi: twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
 
 #TEST INSTALL
 # pip install --index-url https://test.pypi.org/henipipe/ henipipe
@@ -31,3 +40,8 @@ setuptools.setup(
 
 ## run this to make package: python3 setup.py sdist bdist_wheel
 ## run this to upload to pypi: python3 -m twine upload dist/*
+
+
+##PIPX
+
+## pipx install --spec git+https://github.com/scfurl/henipipe henipipe
