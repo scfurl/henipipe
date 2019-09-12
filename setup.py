@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.1",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
-    description="A python wrapper for processing of sequencing data using CutnRun or CutnTag",
+    description="A python wrapper for fast processing of sequencing data using CutnRun or CutnTag",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/scfurl/henipipe.git",

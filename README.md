@@ -1,8 +1,18 @@
-#Installation
 
+#henipipe
+
+A python wrapper for processing of sequencing data using CutnRun or CutnTag
+
+##Installation
+
+```bash
 pip install
-#Usage
 
+```
+
+##Usage
+
+```bash
 henipipe [-h] [--sample_flag SAMPLE_FLAG]
                                       [--fastq_folder FASTQ_FOLDER]
                                       [--filter_high FILTER_HIGH]
@@ -74,3 +84,22 @@ optional arguments:
                         option is "relaxed". OPTIONAL
   --verbose, -v         Run with some additional ouput - not much though...
                         OPTIONAL
+```
+
+##Examples
+
+Say your fastqs live here
+```bash
+cd /data/fastq
+```
+
+Then
+```bash
+cd ..
+mkdir henipipe
+cd henipipe
+henipipe MAKERUNSHEET -fq ../fastq -sf MySamplesStartWithThisString -o henipipe
+henipipe ALIGN -r runsheet.csv
+henipipe NORM -r runsheet.csv
+henipipe SEACR -r runsheet.csv
+```
