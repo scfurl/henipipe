@@ -18,5 +18,9 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=2.6',
+    python_requires='>=3.6',
 )
+
+## run this to make package: python3 setup.py sdist bdist_wheel
+
+## run this to upload to pypi: python3 -m twine upload dist/*

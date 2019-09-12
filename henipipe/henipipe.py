@@ -504,7 +504,7 @@ def parse_range_list(rl):
 
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser('A wrapper for running HeniPipe')
+	parser = argparse.ArgumentParser('A wrapper for running henipipe')
 	parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'SEACR'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "SEACR" - to perform SEACR.')
 	parser.add_argument('--sample_flag', '-sf', type=str, help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
 	parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
