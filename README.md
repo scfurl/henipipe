@@ -116,14 +116,15 @@ The runsheet is the brains of henipipe.  You can make it using the MAKERUNSHEET 
 
 ## Examples
 
-Say your fastqs live here
+Say your fastqs live in a subfolder 'fastq' in the folder 'data'.  So if you were to...
 ```bash
 cd /data/fastq
 ls
 ```
-... bunch of fastqs
+... you'd get a bunch of fastqs
 
-Then do this.
+
+Then do this to run henipipe.  make a new output directory 'henipipe'.  go into that directory and make a runsheet pointing to the fastq folder.  Optionally you can only select directories of fastq files that contain the string denoted using the -sf flag.  After inspecting and completing the runsheet, run ALIGN, NORM, and SEACR.  Sit back have a cocktail.
 ```bash
 cd ..
 mkdir henipipe
