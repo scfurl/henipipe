@@ -19,14 +19,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=2.5',
-    entry_points={
-        'console_scripts': [
-            'henipipe = henipipe.henipipe:main',
-        ],
-        'gui_scripts': [
-            'baz = my_package_gui:start_func',
-        ]
-    },
+    entry_points={'console_scripts': ['henipipe = henipipe.henipipe']},
 )
 
 #TEST
@@ -45,3 +38,4 @@ setuptools.setup(
 ##PIPX
 
 ## pipx install --spec git+https://github.com/scfurl/henipipe henipipe
+## pip install git+https://github.com/scfurl/henipipe --user
