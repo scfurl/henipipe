@@ -1,16 +1,15 @@
-
-#henipipe
+# henipipe
 
 A python wrapper for processing of sequencing data using CutnRun or CutnTag
 
-##Installation
+## Installation
 
 ```bash
 pip install
 
 ```
 
-##Usage
+## Usage
 
 ```bash
 henipipe [-h] [--sample_flag SAMPLE_FLAG]
@@ -86,7 +85,7 @@ optional arguments:
                         OPTIONAL
 ```
 
-##Examples
+## Examples
 
 Say your fastqs live here
 ```bash
