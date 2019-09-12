@@ -93,12 +93,12 @@ The runsheet is the brains of henipipe.  You can make it using the MAKERUNSHEET 
 
 ### Example Runsheet 
 
-```
+
 | sample | fasta | spikein_fasta | fastq1 | fastq2 | bed_out | spikein_bed_out | genome_sizes | bedgraph |  SEACR_key  | SEACR_out |
 |--------|-------|---------------|--------|--------|---------|-----------------|--------------|----------|-------------|-----------|
 |--mys1--|--path-|------path-----|--path--|--path--|---path--|-------path------|-----path-----|---path---|-----4JS-----|---path----|
 |--mys2--|--path-|------path-----|--path--|--path--|---path--|-------path------|-----path-----|---path---|-4JS_CONTROL-|---path----|
-```
+
 
 * 'sample' name of the sample REQUIRED.  
 * 'fasta' location of the Bowtie2 indexed fasta file REQUIRED.  
