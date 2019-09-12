@@ -89,15 +89,15 @@ optional arguments:
 
 ## Runsheet
 
-The runsheet is the brains of henipipe.  You can make it using the MAKERUNSHEET command and it will find fastq mates for you.  You should take a look at the runsheet in Excel or Numbers to make sure things look okay...  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
+The runsheet is the brains of the henipipe workflow.  You can make it using the MAKERUNSHEET command and it will find fastq mates for you.  *You should take a look at the runsheet in Excel or Numbers to make sure things look okay...*  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
 
 ### Example Runsheet 
 
 
 | sample | fasta | spikein_fasta | fastq1 | fastq2 | bed_out | spikein_bed_out | genome_sizes | bedgraph |  SEACR_key  | SEACR_out |
 |--------|-------|---------------|--------|--------|---------|-----------------|--------------|----------|-------------|-----------|
-|--mys1--|--path-|------path-----|--path--|--path--|---path--|-------path------|-----path-----|---path---|-----4JS-----|---path----|
-|--mys2--|--path-|------path-----|--path--|--path--|---path--|-------path------|-----path-----|---path---|-4JS_CONTROL-|---path----|
+|  mys1  |  path |      path     |  path  |  path  |   path  |       path      |     path     |   path   |     4JS     |   path    |
+|  mys2  |  path |      path     |  path  |  path  |   path  |       path      |     path     |   path   | 4JS_CONTROL |   path    |
 
 
 * 'sample' name of the sample REQUIRED.  
