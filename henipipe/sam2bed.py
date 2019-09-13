@@ -201,7 +201,7 @@ class Reader(object):
             seqlength = v[0].split(':')[1]
             for region in tile_region(rname, 1, int(seqlength), width):
                 yield region
-                
+
     def close(self):
         self.__exit__()
 
@@ -248,7 +248,7 @@ class Writer(object):
     def write(self, sam):
         """ Write the string representation of the ``sam`` :class:`.Sam` object. """
         self.file.write(str(sam))
-        
+
     def close(self):
         self.__exit__()
 
@@ -316,7 +316,7 @@ class Sam(GenomicOrder):
     def __len__(self):
         """ Returns the length of the portion of ``self.seq`` aligned to the reference. Unaligned reads will
         have len() == 0. Insertions (I) and soft-clipped portions (S) will not contribute to the aligned length. 
-        
+
         >>> x = Sam(cigar='8M2I4M1D3M4S')
         >>> len(x)
         16
@@ -372,7 +372,7 @@ class Sam(GenomicOrder):
                 yield op
             else:
                 raise ValueError("CIGAR operation %s in record %s is invalid." % (op[1], self.qname))
-                
+
     def gapped(self, attr, gap_char='-'):
         """ Return a :class:`.Sam` sequence attribute or tag with all
         deletions in the reference sequence represented as 'gap_char' and all
@@ -406,7 +406,7 @@ class Sam(GenomicOrder):
                 i += n
             elif t in self._cigar_no_align:
                 pass
-        return ''.join(gapped)  
+        return ''.join(gapped)
 
     def parse_md(self):
         """ Return the ungapped reference sequence from the MD tag, if present.
@@ -446,11 +446,11 @@ class Sam(GenomicOrder):
         except KeyError:
             self._cache['cigars'] = tuple(self.cigar_split())
             return self._cache['cigars']
-        
+
     @property
     def tags(self):
         """ Parses the tags string to a dictionary if necessary.
-        
+
         >>> x = Sam(tags=['XU:Z:cgttttaa', 'XB:Z:cttacgttaagagttaac', 'MD:Z:75', 'NM:i:0', 'NH:i:1', 'RG:Z:1'])
         >>> sorted(x.tags.items(), key=lambda x: x[0])
         [('MD', '75'), ('NH', 1), ('NM', 0), ('RG', '1'), ('XB', 'cttacgttaagagttaac'), ('XU', 'cgttttaa')]
@@ -592,158 +592,162 @@ def bam_read_count(bamfile, samtools_path="samtools"):
 
 
 class fragment(object):
-	def __init__(self, loc, bed_start, end, fraglen, R1_mapq, R2_mapq, R1_flag, R2_flag, direction):
-		self.loc = loc
-		self.bed_start = bed_start
-		self.end = end
-		self.fraglen = fraglen
-		self.R1_mapq = R1_mapq
-		self.R2_mapq = R2_mapq
-		self.R1_flag = R1_flag
-		self.R2_flag = R2_flag
-		self.direction = direction
-	def __repr__(self):
-		return "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (self.loc,self.bed_start,self.end,self.fraglen,self.R1_mapq,self.R2_mapq,self.R1_flag, self.R2_flag, self.direction)
-	def __str__(self):
-		return "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (self.loc,self.bed_start,self.end,self.fraglen,self.R1_mapq,self.R2_mapq,self.R1_flag, self.R2_flag, self.direction)
+    def __init__(self, loc, bed_start, end, fraglen, R1_mapq, R2_mapq, R1_flag, R2_flag, direction):
+        self.loc = loc
+        self.bed_start = bed_start
+        self.end = end
+        self.fraglen = fraglen
+        self.R1_mapq = R1_mapq
+        self.R2_mapq = R2_mapq
+        self.R1_flag = R1_flag
+        self.R2_flag = R2_flag
+        self.direction = direction
+    def __repr__(self):
+        return "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (self.loc,self.bed_start,self.end,self.fraglen,self.R1_mapq,self.R2_mapq,self.R1_flag, self.R2_flag, self.direction)
+    def __str__(self):
+        return "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (self.loc,self.bed_start,self.end,self.fraglen,self.R1_mapq,self.R2_mapq,self.R1_flag, self.R2_flag, self.direction)
 
 class fragments(object):
-	def __init__(self, in_file, out_file=None, skip_dups = False, filter_threshes = None):
-		#self.in_file = in_file
-		self.read_count=0
-		self.fragment_count = 0
-		if filter_threshes is None:
-			self.filter_threshes = [float("-inf"),float("inf")]
-		else:
-			self.filter_threshes = filter_threshes
-		self.passed_filter = 0
-		if skip_dups:
-			self.forward_list = [99, 163, 355, 419]
-		else:
-			self.forward_list = [99, 163, 355, 419, 1123, 1187]
-		if out_file is None:
-			self.return_fragments(in_file)
-		else:
-			self.write_fragments(in_file, out_file)
-		# self.generator = self.parse_sam_file(self.in_sam)
+    def __init__(self, in_file, out_file=None, skip_dups = False, filter_threshes = None):
+        #self.in_file = in_file
+        self.read_count=0
+        self.fragment_count = 0
+        if filter_threshes is None:
+            self.filter_threshes = [float("-inf"),float("inf")]
+        else:
+            self.filter_threshes = filter_threshes
+        self.passed_filter = 0
+        if skip_dups:
+            self.forward_list = [99, 163, 355, 419]
+        else:
+            self.forward_list = [99, 163, 355, 419, 1123, 1187]
+        if out_file is None:
+            self.return_fragments(in_file)
+        else:
+            self.write_fragments(in_file, out_file)
+        # self.generator = self.parse_sam_file(self.in_sam)
 
-	def load_fragments(self, in_file):
+    def load_fragments(self, in_file):
 
-		in_sam = Reader(in_file)
-		iterator = iter(in_sam)
-		done_looping = False
-		fragments = []
-		while not done_looping:
-			try:
-				read1 = next(iterator)
-				self.read_count += 1
-				read2 = next(iterator)
-				self.read_count += 1
-			except StopIteration:
-				done_looping = True
-				#print("Processed %s reads.  Found %s usable fragments" % (self.read_count, self.fragment_count))
-			else:
-				return_val = self.qualify_reads(read1, read2)
-				if return_val is not None:
-					fragments.append(return_val)
-				#print(str(self.qualify_reads(read1, read2)))
-		return fragments
+        in_sam = Reader(in_file)
+        iterator = iter(in_sam)
+        done_looping = False
+        fragments = []
+        while not done_looping:
+            try:
+                read1 = next(iterator)
+                self.read_count += 1
+                read2 = next(iterator)
+                self.read_count += 1
+            except StopIteration:
+                done_looping = True
+                #print("Processed %s reads.  Found %s usable fragments" % (self.read_count, self.fragment_count))
+            else:
+                return_val = self.qualify_reads(read1, read2)
+                if return_val is not None:
+                    fragments.append(return_val)
+                #print(str(self.qualify_reads(read1, read2)))
+        return fragments
 
-	def return_fragments(self, in_file):
-		in_sam = Reader(in_file)
-		iterator = iter(in_sam)
-		done_looping = False
-		while not done_looping:
-			try:
-				read1 = next(iterator)
-				self.read_count += 1
-				read2 = next(iterator)
-				self.read_count += 1
-			except StopIteration:
-				done_looping = True
-			except IOError:
-				done_looping = True
-				#print("Processed %s reads.  Found %s usable fragments" % (self.read_count, self.fragment_count))
-			else:
-				return_val = self.qualify_reads(read1, read2)
-				if return_val is not None:
-					sys.stdout.write(str(return_val))
-				#print(str(self.qualify_reads(read1, read2)))
+    def return_fragments(self, in_file):
+        in_sam = Reader(in_file)
+        iterator = iter(in_sam)
+        done_looping = False
+        while not done_looping:
+            try:
+                read1 = next(iterator)
+                self.read_count += 1
+                read2 = next(iterator)
+                self.read_count += 1
+            except StopIteration:
+                done_looping = True
+            except IOError:
+                done_looping = True
+                #print("Processed %s reads.  Found %s usable fragments" % (self.read_count, self.fragment_count))
+            else:
+                return_val = self.qualify_reads(read1, read2)
+                if return_val is not None:
+                    sys.stdout.write(str(return_val))
+                #print(str(self.qualify_reads(read1, read2)))
 
-	def write_fragments(self, in_file, out_file):
+    def write_fragments(self, in_file, out_file):
 
-		in_sam = Reader(in_file)
-		iterator = iter(in_sam)
-		done_looping = False
-		fragments = []
-		while not done_looping:
-			try:
-				read1 = next(iterator)
-				self.read_count += 1
-				read2 = next(iterator)
-				self.read_count += 1
-			except StopIteration:
-				done_looping = True
-				print("\n[SAM2BED] Output: \n Processed %s reads.  Found %s usable fragments.\nOf these, %s passed_filter.\n" % (self.read_count, self.fragment_count, self.passed_filter))
-			else:
-				return_val = self.qualify_reads(read1, read2, filter = self.filter_threshes)
-				if return_val is not None:
-					out_file.writelines(str(line) for line in [return_val])
+        in_sam = Reader(in_file)
+        iterator = iter(in_sam)
+        done_looping = False
+        fragments = []
+        while not done_looping:
+            try:
+                read1 = next(iterator)
+                self.read_count += 1
+                read2 = next(iterator)
+                self.read_count += 1
+            except StopIteration:
+                done_looping = True
+                print("\n[SAM2BED] Output: \n Processed %s reads.  Found %s usable fragments.\nOf these, %s passed_filter.\n" % (self.read_count, self.fragment_count, self.passed_filter))
+            else:
+                return_val = self.qualify_reads(read1, read2, filter = self.filter_threshes)
+                if return_val is not None:
+                    out_file.writelines(str(line) for line in [return_val])
 
-	def qualify_reads(self, read1, read2, filter = [float("-inf"),float("inf")]):
-		direction = "Unk"
-		r1_unique = r2_unique = False
-		if read1.flag in self.forward_list:
-			if "XS" not in read1.tags:
-				r1_unique=True
-				if "XS" not in read2.tags:
-					r2_unique=True
-					begin = read1.pos
-					end = (read2.pos + len(read2.seq))
-					direction = "+"
-		if read2.flag in self.forward_list:
-			if "XS" not in read2.tags:
-				r2_unique=True
-				if "XS" not in read1.tags:
-					r1_unique=True
-					begin = read2.pos
-					end = read1.pos - len(read1.seq)
-					direction = "-"
-		if r1_unique and r2_unique and direction is not "Unk" and (end - begin) >0 :
-			self.fragment_count+=1
-			if (end - begin) > filter[0] and (end - begin) < filter[1]:
-				self.passed_filter+=1
-				return fragment(read1.rname, begin, end, end - begin, read1.mapq, read2.mapq, read1.flag, read2.flag, direction)
+    def qualify_reads(self, read1, read2, filter = [float("-inf"),float("inf")]):
+        direction = "Unk"
+        r1_unique = r2_unique = False
+        if read1.flag in self.forward_list:
+            if "XS" not in read1.tags:
+                r1_unique=True
+                if "XS" not in read2.tags:
+                    r2_unique=True
+                    begin = read1.pos
+                    end = (read2.pos + len(read2.seq))
+                    direction = "+"
+        if read2.flag in self.forward_list:
+            if "XS" not in read2.tags:
+                r2_unique=True
+                if "XS" not in read1.tags:
+                    r1_unique=True
+                    begin = read2.pos
+                    end = read1.pos - len(read1.seq)
+                    direction = "-"
+        if r1_unique and r2_unique and direction is not "Unk" and (end - begin) >0 :
+            self.fragment_count+=1
+            if (end - begin) > filter[0] and (end - begin) < filter[1]:
+                self.passed_filter+=1
+                return fragment(read1.rname, begin, end, end - begin, read1.mapq, read2.mapq, read1.flag, read2.flag, direction)
+
+def run_sam2bed():
+    parser = argparse.ArgumentParser('A script for converting sam file to bed for eventual bedgraph conversion')
+    parser.add_argument('sam_bam', type=str, default = sys.stdin, help='sam or bam fil or stdin')
+    parser.add_argument('--out_bed', '-o', default = None, help='bed output', required=False)
+    parser.add_argument('--filter_high', '-fh', type = int, default = None, help='filter_high', required=False)
+    parser.add_argument('--filter_low', '-fl', default = None, type = int,  help='filter_high', required=False)
+    args = parser.parse_args()
+    if args.sam_bam=="-":
+        args.sam_bam = sys.stdin
+    else:
+        args.sam_bam = open(args.sam_bam, 'r')
+
+    filter_threshes = []
+    if args.filter_low is not None:
+        filter_threshes.append(args.filter_low)
+    else:
+        filter_threshes.append(float("-inf"))
+    if args.filter_high is not None:
+        filter_threshes.append(args.filter_high)
+    else:
+        filter_threshes.append(float("inf"))
+
+
+    if args.out_bed is not None:
+        of = open(args.out_bed, "w")
+        fragments(args.sam_bam, out_file=of, filter_threshes = filter_threshes)
+        of.close()
+    else:
+        fragments(args.sam_bam, filter_threshes = filter_threshes)
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser('A script for converting sam file to bed for eventual bedgraph conversion')
-	parser.add_argument('sam_bam', type=str, default = sys.stdin, help='sam or bam fil or stdin')
-	parser.add_argument('--out_bed', '-o', default = None, help='bed output', required=False)
-	parser.add_argument('--filter_high', '-fh', type = int, default = None, help='filter_high', required=False)
-	parser.add_argument('--filter_low', '-fl', default = None, type = int,  help='filter_high', required=False)
-	args = parser.parse_args()
-	if args.sam_bam=="-":
-		args.sam_bam = sys.stdin
-	else:
-		args.sam_bam = open(args.sam_bam, 'r')
+    run_sam2bed()
 
-	filter_threshes = []
-	if args.filter_low is not None:
-		filter_threshes.append(args.filter_low)
-	else:
-		filter_threshes.append(float("-inf"))
-	if args.filter_high is not None:
-		filter_threshes.append(args.filter_high)
-	else:
-		filter_threshes.append(float("inf"))
-
-
-	if args.out_bed is not None:
-		of = open(args.out_bed, "w")
-		fragments(args.sam_bam, out_file=of, filter_threshes = filter_threshes)
-		of.close()
-	else:
-		fragments(args.sam_bam, filter_threshes = filter_threshes)
 
 
 

@@ -3,9 +3,9 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+    setuptools.setup(
     name="henipipe",
-    version="0.1.7",
+    version="0.1.23",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast processing of sequencing data using CutnRun or CutnTag",
@@ -20,11 +20,11 @@ setuptools.setup(
     ],
     python_requires='>=2.5',
     entry_points={'console_scripts': [
-    'henipipe = henipipe.henipipe:run_henipipe',
-    'sam2bed = henipipe.sam2bed:__main__',
-    'pyWriter = henipipe.pyWriter:__main__',
+        'henipipe = henipipe.__main__:run_henipipe',
+        'sam2bed = henipipe.sam2bed:run_sam2bed',
+        'pyWriter = henipipe.pyWriter:__main__',
     ]},
-)
+    )
 
 ##Install pipx
 
@@ -37,14 +37,15 @@ setuptools.setup(
 # pip install --index-url https://test.pypi.org/henipipe/ henipipe
 
 
+#FOR REAL
 ## run this to make package: python3 setup.py sdist bdist_wheel
 ## run this to upload to pypi: python3 -m twine upload dist/*
-## run this to install from test pypi: pip install --index-url https://test.pypi.org/henipipe 
+
 
 
 ##PIPX on PBS
 ## module load python/3.6.5
 ## python3 -m pip install --user pipx
 ## python3 -m pipx ensurepath
-## pipx install --spec git+https://github.com/scfurl/henipipe henipipe
-## pip install git+https://github.com/scfurl/henipipe --user
+## pip install henipipe --trusted-host pypi.org --trusted-host files.pythonhosted.org --user
+## pipx install --spec git+https://github.com/scfurl/henipipe
