@@ -161,3 +161,8 @@ henipipe ALIGN -r runsheet.csv
 henipipe NORM -r runsheet.csv
 henipipe SEACR -r runsheet.csv
 ```
+
+
+##Acknowledgements
+
+Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe uses a custom python script sam2bed2.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam
