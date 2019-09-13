@@ -33,6 +33,9 @@ from itertools import chain, compress
 import json
 #import pandas as pd
 
+_ROOT = os.path.abspath(os.path.dirname(__file__))
+GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
+
 
 class SampleFactory:
     def __init__(self, *args, **kwargs):
