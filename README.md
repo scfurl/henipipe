@@ -19,7 +19,9 @@ pip install henipipe --user
 
 If you run into errors that look like this...
 ```bash
-Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken\n by 'SSLError(SSLError(1, u'[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:618)\n'),)': /simple/henipipe/
+Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) 
+  after connection broken by 'SSLError(SSLError(1, u'[SSL: CERTIFICATE_VERIFY_FAILED] 
+  certificate verify failed (_ssl.c:618)'),)': /simple/henipipe/
 ```
 
 Try rerunning with trusted host options
