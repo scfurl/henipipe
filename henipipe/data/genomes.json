@@ -1,0 +1,12 @@
+{
+    "blank": {
+        "fasta": "ADD_BOWTIE_INDEX_HERE - i.e. path to the Bowtie2 indexed FASTA genome file",
+        "genome_sizes": "ADD GENOME SIZES FILE HERE",
+        "spikein_fasta": "ADD_BOWTIE_SPIKEIN_INDEX_HERE - i.e. path to the Bowtie2 indexed spike-in FASTA genome file"
+    },
+    "furlan_hg38": {
+        "fasta": "/active/furlan_s/refs/hg38/bowtie_hg38_p12",
+        "genome_sizes": "/active/furlan_s/Data/CNR/190801_CNRNotch/fastq/sizes.genome",
+        "spikein_fasta": "/active/furlan_s/refs/ecoli/GCF_000005845.2_ASM584v2"
+    }
+}

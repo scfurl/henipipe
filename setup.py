@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="0.1.25",
+    version="0.1.26",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast processing of sequencing data using CutnRun or CutnTag",
@@ -13,6 +13,7 @@ with open("README.md", "r") as fh:
     long_description_content_type="text/markdown",
     url="https://github.com/scfurl/henipipe.git",
     packages=setuptools.find_packages(),
+    package_data={'henipipe': ['henipipe/data/genomes.json']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -30,6 +30,7 @@ import re
 import string
 import random
 from itertools import chain, compress
+import json
 #import pandas as pd
 
 
@@ -61,7 +62,7 @@ class SampleFactory:
                 #to_append = "#!/bin/bash\n#PBS -N %s\n#PBS -l  %s\n#PBS -j oe\n#PBS -o $PBS_JOBDIR/%s\n#PBS -A %s\ncd $PBS_O_WORKDIR\n%s\nsed -e 's/^/[HENIPIPE] %s: /' $PBS_JOBDIR/%s >> %s\n" % (job_name, self.processor_line, log_file, self.user, command, job_name, log_file, self.log_name)
                 to_append = "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file)
             if self.cluster=="SLURM":
-                to_append = '#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --ntasks=1\n#SBATCH --cpus-per-task=1\n#SBATCH --mem-per-cpu=8000\n%s' % (job_name, command)
+                to_append = '#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --ntasks=1\n%s\n%s' % (job_name, self.processor_line, command)
             job_string.append(to_append)
         return job_string
 
@@ -145,7 +146,7 @@ class Align(SampleFactory, object):
         if self.cluster=="PBS":
             return """select=1:mem=16GB:ncpus=4"""
         if self.cluster=="SLURM":
-            return ''
+            return '#SBATCH --cpus-per-task=4\n#SBATCH --mem-per-cpu=4000'
 
 
 class Norm(SampleFactory, object):
@@ -357,38 +358,27 @@ def find_colnames(runsheet, header=True):
             reader = csv.reader(f)
             return(next(reader))            # read header
 
-def make_runsheet(folder, sample_flag = "samples", output=None, fasta=None, spikein_fasta=None, genome_sizes=None, furlan=True):
-    #folder = '/active/furlan_s/Data/CNR/190801_CNRNotch/fastq/mini/fastq'
-    if furlan:
-        genome_sizes = '/active/furlan_s/Data/CNR/190801_CNRNotch/fastq/sizes.genome'
-        fasta = '/active/furlan_s/refs/hg38/bowtie_hg38_p12'
-        spikein_fasta = '/active/furlan_s/refs/ecoli/GCF_000005845.2_ASM584v2'
-    if output is None:
-        output = os.path.join(os.getcwd(), "HeniPipeOut")
+
+def load_genomes(genomes_file):
+    with open(genomes_file, "r") as read_file:
+        genome_data = json.load(read_file)
+    return genome_data
+
+def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta=None, spikein_fasta=None, genome_sizes=None):
+    genome_data = load_genomes(GENOMES_JSON).get(genome_key)
     ddir=[x[0] for x in os.walk(folder)]
     dat=list(map(find_fastq_mate, ddir))
     good_dat = [i for i in dat if i.get('has_fastq') is True]
     good_dat = [i for i in good_dat if re.compile(r'.*'+sample_flag).search(i.get('directory_short'))]
-
     for i in good_dat:
         i.update({'sample': i.get('directory_short'), \
             'bed_out': os.path.join(output, i.get('directory_short')+".bed"), \
             'spikein_bed_out': os.path.join(output, i.get('directory_short')+"_spikein.bed"), \
             'bedgraph': os.path.join(output, i.get('directory_short')+".bedgraph"), \
             'SEACR_key': i.get('directory_short'), \
-            'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR.bedgraph")})
-        if fasta is None:
-            i.update({'fasta': 'ADD_BOWTIE_INDEX_HERE - i.e. path to the Bowtie2 indexed FASTA genome file'})
-        else: i.update({'fasta': fasta})
-        if spikein_fasta is None:
-            i.update({'spikein_fasta': 'ADD_BOWTIE_SPIKEIN_INDEX_HERE - i.e. path to the Bowtie2 indexed spike-in FASTA genome file'})
-        else: i.update({'spikein_fasta': spikein_fasta})
-        if genome_sizes is None:
-            i.update({'genome_sizes': 'ADD GENOME SIZES FILE HERE'})
-        else: i.update({'genome_sizes':  genome_sizes})
-    #print(good_dat)
+            'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR.bedgraph"), \
+            'fasta': fasta, 'spikein_fasta': spikein_fasta, 'genome_sizes':  genome_sizes})
     keys = good_dat[0].keys()
-    LOGGER.info("Writing runsheet to - "+os.path.join(output, 'runsheet.csv')+" ...")
     with open(os.path.join(output, 'runsheet.csv'), 'wb') as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
         dict_writer.writeheader()
@@ -571,5 +561,41 @@ def parse_range_list(rl):
 #       LOGGER.info("Running SEACR using settings: SEACR_norm = %s, SEACR_stringency = %s" % (args.SEACR_norm, args.SEACR_stringency))
 #       SEACRjob = SEACR(runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, norm=args.SEACR_norm, stringency=args.SEACR_stringency, user=args.user, log=args.log_prefix)
 #       SEACRjob.run_job()
+
+
+
+
+
+
+# json_file = "/Users/sfurla/Box Sync/PI_FurlanS/computation/develop/henipipe/henipipe/data/genomes.json"
+# genome_data = {
+#         "blank": {  'fasta': 'ADD_BOWTIE_INDEX_HERE - i.e. path to the Bowtie2 indexed FASTA genome file',
+#                     'spikein_fasta': 'ADD_BOWTIE_SPIKEIN_INDEX_HERE - i.e. path to the Bowtie2 indexed spike-in FASTA genome file',
+#                     'genome_sizes': 'ADD GENOME SIZES FILE HERE'},
+#     "furlan": {
+#         "genome_sizes": "/active/furlan_s/Data/CNR/190801_CNRNotch/fastq/sizes.genome",
+#         "fasta": "/active/furlan_s/refs/hg38/bowtie_hg38_p12",
+#         "spikein_fasta": "/active/furlan_s/refs/ecoli/GCF_000005845.2_ASM584v2"
+#     }
+# }
+
+# with open(json_file, "w") as write_file:
+#     json.dump(genome_data, write_file, indent = 4, sort_keys = True)
+
+# del genome_data
+
+# with open(json_file, "r") as read_file:
+#     genome_data = json.load(read_file)
+
+
+
+
+
+
+
+
+
+
+
 
 
