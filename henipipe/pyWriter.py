@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-
-if __name__ == '__main__':
+def run_pyWriter():
     # use stdin if it's full
     if not sys.stdin.isatty():
         input_stream = sys.stdin
@@ -32,3 +31,5 @@ if __name__ == '__main__':
             i += 1
         print("\n[GENOMECOVERAGEBED] Wrote %s lines to bedgraph %s...\n" % (i, output_filename))
         output.close()
+if __name__ == '__main__':
+    run_pyWriter()
