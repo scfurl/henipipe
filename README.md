@@ -121,6 +121,7 @@ The runsheet is the brains of the henipipe workflow.  You can make a runsheet us
 
 ### Example Runsheet 
 
+**absolute paths are best for runsheets**
 
 | sample | fasta | spikein_fasta | fastq1 | fastq2 | bed_out | spikein_bed_out | genome_sizes | bedgraph |  SEACR_key  | SEACR_out |
 |--------|-------|---------------|--------|--------|---------|-----------------|--------------|----------|-------------|-----------|
@@ -152,7 +153,7 @@ ls
 ... you'd get a bunch of folders, each of which would be filled with fastqs.  Each folder name should correspond to a sample name.
 
 
-To run henipipe, do the following...
+**To run henipipe, do the following...**
 1. Make a new output directory 'henipipe'.
 2. Go into that directory and make a runsheet pointing to the fastq folder ( folder level above.  (henipipe is cool with realtive and absolute pathnames here; but as stated earlier, absolute pathnames are best for the runsheet.)  
 3.  Optionally you can only select directories of fastq files that contain the string denoted using the -sf flag.  
