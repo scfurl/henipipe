@@ -1,5 +1,5 @@
 # henipipe
-==========  
+==========
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
@@ -121,7 +121,7 @@ The runsheet is the brains of the henipipe workflow.  You can make a runsheet us
 
 ### Example Runsheet 
 
-**absolute paths are best for runsheets**
+**absolute pathnames are required for runsheets**
 
 | sample | fasta | spikein_fasta | fastq1 | fastq2 | bed_out | spikein_bed_out | genome_sizes | bedgraph |  SEACR_key  | SEACR_out |
 |--------|-------|---------------|--------|--------|---------|-----------------|--------------|----------|-------------|-----------|
@@ -155,7 +155,7 @@ ls
 
 **To run henipipe, do the following...**
 1. Make a new output directory 'henipipe'.
-2. Go into that directory and make a runsheet pointing to the fastq folder ( folder level above.  (henipipe is cool with realtive and absolute pathnames here; but as stated earlier, absolute pathnames are best for the runsheet.)  
+2. Go into that directory and make a runsheet pointing to the fastq folder i.e. the folder level above.  (at the command line, henipipe is cool with either relative or absolute pathnames here; but as stated earlier, absolute pathnames are best for the runsheet.)  
 3.  Optionally you can only select directories of fastq files that contain the string denoted using the -sf flag.  
 4. After inspecting and completing the runsheet, run ALIGN, NORM, and SEACR.  
 5. Sit back have a cocktail.
