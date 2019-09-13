@@ -3,12 +3,38 @@
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
+## Requirements
+
+1. Python > 3.5
+2. Computing cluster with PBS or SLURM
+3. Modules for python, bowtie2, samtools, bedtools, R, SEACR
+
 ## Installation
 
+Load python 3 then install henipipe
 ```bash
-pip install --user pipx
-pipx install henipipe
+module load python
+pip install henipipe --user
+```
 
+If you run into errors that look like this...
+```bash
+Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLError(1, u'[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:618)'),)': /simple/henipipe/
+```
+
+Try this...
+```bash
+pip install henipipe --trusted-host pypi.org --trusted-host files.pythonhosted.org --user
+```
+
+Unfortunately, current version of henipipe requires PATH prepending.  So finally run this...
+```bash
+python3 -m site &> /dev/null && PATH="$PATH:`python3 -m site --user-base`/bin"
+```
+
+You should then be able to get henipipe to run on command line as such and see the help screen
+```bash
+henipipe
 ```
 
 ## Usage
