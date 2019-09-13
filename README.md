@@ -7,7 +7,7 @@ A python wrapper for processing of sequencing data generated using CutnRun or Cu
 
 1. Python > 3.5
 2. Computing cluster with PBS or SLURM
-3. Modules for python, bowtie2, samtools, bedtools, R, SEACR
+3. Modules installed for python, bowtie2, samtools, bedtools, R, SEACR
 
 ## Installation
 
@@ -19,20 +19,21 @@ pip install henipipe --user
 
 If you run into errors that look like this...
 ```bash
-Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLError(1, u'[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:618)'),)': /simple/henipipe/
+Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken\n by 'SSLError(SSLError(1, u'[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:618)\n'),)': /simple/henipipe/
 ```
 
-Try this...
+Try rerunning with trusted host options
 ```bash
 pip install henipipe --trusted-host pypi.org --trusted-host files.pythonhosted.org --user
 ```
 
-Unfortunately, current version of henipipe requires PATH prepending.  So finally run this...
+Unfortunately, current version of henipipe requires PATH prepending.  So finally you will need to run something like this below to run henipipe directly from the command line.
 ```bash
 python3 -m site &> /dev/null && PATH="$PATH:`python3 -m site --user-base`/bin"
 ```
 
-You should then be able to get henipipe to run on command line as such and see the help screen
+You should then be able to test installation by calling henipipe.  You should see the help screen displayed.
+
 ```bash
 henipipe
 ```
@@ -116,7 +117,7 @@ optional arguments:
 
 ## Runsheet
 
-The runsheet is the brains of the henipipe workflow.  You can make it using the MAKERUNSHEET command and it will find fastq mates for you.  *You should take a look at the runsheet in Excel or Numbers to make sure things look okay...*  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
+The runsheet is the brains of the henipipe workflow.  You can make a runsheet using the MAKERUNSHEET command.  This command will parse a directory of fastq folder (specified using the -fq flag; fastq files should be organized in subfolders named by sample) and will find fastq mates (R1 and R2).  There are optional for selecting only folders that contain a specific string (using the -sf flag).  *After generation of a runsheet (csv file), you should take a look at it in Excel or Numbers to make sure things look okay...*  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
 
 ### Example Runsheet 
 
