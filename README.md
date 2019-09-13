@@ -15,27 +15,23 @@ A python wrapper for processing of sequencing data generated using CutnRun or Cu
 
 ## Installation
 
-Load python 3 then install henipipe
+Installation can probably be done correctly many different ways.  Here are the methods that have worked for us.  We recommend that henipipe be installed with pipx.
+
+**At SCRI do the following**
 ```bash
 module load python
-pip install henipipe --user
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+pipx install --include-deps --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org' henipipe
 ```
 
-If you run into errors that look like this...
-```bash
-Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) 
-  after connection broken by 'SSLError(SSLError(1, u'[SSL: CERTIFICATE_VERIFY_FAILED] 
-  certificate verify failed (_ssl.c:618)'),)': /simple/henipipe/
-```
 
-Try rerunning with trusted host options
+**At the FHCRC do the following...**
 ```bash
-pip install henipipe --trusted-host pypi.org --trusted-host files.pythonhosted.org --user
-```
-
-Unfortunately, current version of henipipe requires PATH prepending.  So finally you will need to run something like this below to run henipipe directly from the command line.
-```bash
-python3 -m site &> /dev/null && PATH="$PATH:`python3 -m site --user-base`/bin"
+module load Python/3.6.7-foss-2016b-fh1
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+pipx install --include-deps henipippipx install --include-deps henipipe
 ```
 
 You should then be able to test installation by calling henipipe.  You should see the help screen displayed.
