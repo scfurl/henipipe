@@ -90,7 +90,12 @@ class SampleFactory:
                 if self.debug==False:
                     #open("temp.sh", 'w').write(script+'\n')
                     proc = Popen(['sbatch'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-                    out, err = proc.communicate(script)
+                    if (sys.version_info > (3, 0)):
+                        proc.stdin.write(script.encode('utf-8'))
+                        out, err = proc.communicate()
+                    else:
+                        proc.stdin.write(script)
+                        out, err = proc.communicate()
                 print(script)
                 if self.debug==False:
                     print(out)
@@ -129,7 +134,7 @@ class Align(SampleFactory, object):
             JOBSTRING = self.id_generator(size=10)
             sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
             if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nml SEACR\nml bowtie2\nmodule load samtools\n"""
+                modules = """\nml bowtie2\nmodule load samtools\nmodule load Python/3.6.7-foss-2016b-fh1\n"""
             else:
                 modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
             norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
@@ -214,7 +219,7 @@ class Norm(SampleFactory, object):
         for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\n"""
+                modules = """\nml bedtools\n"""
             else:
                 modules = """\nmodule load bedtools\n"""
                 #modules = """\nmodule load bedtools\necho '\n[GENOMECOVERAGEBED] Making bedgraph... Output (None is good):\n'"""
