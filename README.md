@@ -9,7 +9,7 @@ A python wrapper for processing of sequencing data generated using CutnRun or Cu
 
 ## Requirements
 
-1. Python > 3.5
+1. Python > 3.5 (henipipe uses the 'six' package but will attempt to install if not already installed)
 2. Computing cluster with PBS or SLURM
 3. Modules installed for python, bowtie2, samtools, bedtools, R, SEACR
 

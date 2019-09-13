@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="0.1.26",
+    version="0.1.27",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast processing of sequencing data using CutnRun or CutnTag",
@@ -14,6 +14,7 @@ with open("README.md", "r") as fh:
     url="https://github.com/scfurl/henipipe.git",
     packages=setuptools.find_packages(),
     package_data={'henipipe': ['henipipe/data/genomes.json']},
+    install_requires=['six >= 1'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -50,6 +51,6 @@ with open("README.md", "r") as fh:
 ## python3 -m pipx ensurepath
 ## pip install henipipe --trusted-host pypi.org --trusted-host files.pythonhosted.org --user
 ## pipx uninstall henipipe
-## pipx install --spec git+https://github.com/scfurl/henipipe henipipe
+## pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe
 
 ##
