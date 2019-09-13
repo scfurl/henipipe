@@ -144,15 +144,21 @@ The runsheet is the brains of the henipipe workflow.  You can make a runsheet us
 
 ## Examples
 
-Say your fastqs live in a subfolder 'fastq' in the folder 'data'.  So if you were to...
+Say your fastqs live within within subfolders of a folder 'fastq' in the folder 'data'.  So if you were to...
 ```bash
 cd /data/fastq
 ls
 ```
-... you'd get a bunch of folders filled with fastqs.  Each folder name will correspond to a particular sample.
+... you'd get a bunch of folders, each of which would be filled with fastqs.  Each folder name should correspond to a sample name.
 
 
-Then do this to run henipipe.  make a new output directory 'henipipe'.  go into that directory and make a runsheet pointing to the fastq folder.  Optionally you can only select directories of fastq files that contain the string denoted using the -sf flag.  After inspecting and completing the runsheet, run ALIGN, NORM, and SEACR.  Sit back have a cocktail.
+To run henipipe, do the following...
+1. Make a new output directory 'henipipe'.
+2. Go into that directory and make a runsheet pointing to the fastq folder ( folder level above.  (henipipe is cool with realtive and absolute pathnames here; but as stated earlier, absolute pathnames are best for the runsheet.)  
+3.  Optionally you can only select directories of fastq files that contain the string denoted using the -sf flag.  
+4. After inspecting and completing the runsheet, run ALIGN, NORM, and SEACR.  
+5. Sit back have a cocktail.
+
 ```bash
 cd ..
 mkdir henipipe
@@ -166,4 +172,4 @@ henipipe SEACR -r runsheet.csv
 
 ##Acknowledgements
 
-Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe uses a custom python script sam2bed2.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam
+Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe includes a python script sam2bed2.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam
