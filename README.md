@@ -1,3 +1,7 @@
+[![PyPI](https://img.shields.io/pypi/v/simplesam.svg?)](https://pypi.org/project/henipipe/)
+<!-- [![Build Status](https://travis-ci.org/mdshw5/simplesam.svg?branch=master)](https://travis-ci.org/mdshw5/simplesam) -->
+[![Documentation Status](https://henipipe.readthedocs.io/en/latest/badge/?version=latest)](https://henipipe.readthedocs.io/en/latest/?badge=latest)
+
 # henipipe
 ==========
 
@@ -119,7 +123,7 @@ optional arguments:
 
 ## Runsheet
 
-The runsheet is the brains of the henipipe workflow.  You can make a runsheet using the MAKERUNSHEET command.  This command will parse a directory of fastq folder (specified using the -fq flag; fastq files should be organized in subfolders named by sample) and will find fastq mates (R1 and R2).  There are optional for selecting only folders that contain a specific string (using the -sf flag).  *After generation of a runsheet (csv file), you should take a look at it in Excel or Numbers to make sure things look okay...*  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
+The runsheet is the brains of the henipipe workflow.  You can make a runsheet using the MAKERUNSHEET command.  This command will parse a directory of fastq folder (specified using the -fq flag; fastq files should be organized in subfolders named by sample) and will find fastq mates (R1 and R2).  There is an option for selecting only folders that contain a specific string (using the -sf flag).  *After generation of a runsheet (csv file), you should take a look at it in Excel or Numbers to make sure things look okay...*  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
 
 ### Example Runsheet 
 
@@ -173,6 +177,6 @@ henipipe SEACR -r runsheet.csv
 ```
 
 
-##Acknowledgements
+## Acknowledgements
 
 Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe includes a python script sam2bed2.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam
