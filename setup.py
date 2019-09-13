@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="0.1.32",
+    version="0.1.35",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast processing of sequencing data using CutnRun or CutnTag",
@@ -24,7 +24,7 @@ with open("README.md", "r") as fh:
     python_requires='>=2.5',
     entry_points={'console_scripts': [
         'henipipe = henipipe.__main__:run_henipipe',
-        'sam2bed = henipipe.sam2bed:run_sam2bed',
+        'samTobed = henipipe.samTobed:run_sam2bed',
         'pyWriter = henipipe.pyWriter:run_pyWriter',
     ]},
     )
@@ -54,5 +54,6 @@ with open("README.md", "r") as fh:
 ## pipx uninstall henipipe
 ## pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org'
 ## pipx install --include-deps --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org' henipipe
+## pipx install --include-deps henipipe
 
 ##

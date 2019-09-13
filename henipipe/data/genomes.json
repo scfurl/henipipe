@@ -8,5 +8,20 @@
         "fasta": "/active/furlan_s/refs/hg38/bowtie_hg38_p12",
         "genome_sizes": "/active/furlan_s/Data/CNR/190801_CNRNotch/fastq/sizes.genome",
         "spikein_fasta": "/active/furlan_s/refs/ecoli/GCF_000005845.2_ASM584v2"
+    },
+    "heni_hg38": {
+        "fasta": "/shared/biodata/ngs/Reference/iGenomes/Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome",
+        "genome_sizes": "/active/furlan_s/Data/CNR/190801_CNRNotch/fastq/sizes.genome",
+        "spikein_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
+    },
+    "heni_hg19": {
+        "fasta": "/shared/biodata/ngs/Reference/iGenomes/Homo_sapiens/UCSC/hg19/Sequence/Bowtie2Index/genome",
+        "genome_sizes": "/shared/ngs/illumina/henikoff/solexa/databases/human/hg19/chr_lens.txt",
+        "spikein_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
+    },
+    "heni_GRCh38": {
+        "fasta": "/shared/biodata/ngs/Reference/iGenomes/Homo_sapiens/NCBI/GRCh38/Sequence/Bowtie2Index/genome",
+        "genome_sizes": "/shared/ngs/illumina/henikoff/solexa/databases/human/hg38/chr_lens.txt",
+        "spikein_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
     }
 }

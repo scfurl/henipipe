@@ -4,7 +4,7 @@
 
 # A wrapper that performs the necessary pipeline for generation of CNR/CNT data
 # Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; 
-# uses a custom python script sam2bed2.py which takes code from a fantastic 
+# uses a custom python script samTobed.py which takes code from a fantastic 
 # sam reader "simplesam" - https://github.com/mdshw5/simplesam
 
 # runsheet columns
@@ -127,17 +127,17 @@ class Align(SampleFactory, object):
             fastq1=re.sub('\t', ',', sample['fastq1'])
             fastq2=re.sub('\t', ',', sample['fastq2'])
             JOBSTRING = self.id_generator(size=10)
-            sam2bed_string = """| sam2bed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
+            sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nml SEACR\nml bowtie2\nmodule load samtools\n"""
             else:
-                modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to sam2bed...\n[BOWTIE] Output:\n'\n"""
+                modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
             norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
             commandline = """bowtie2 %s -p 4 -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, fastq1, fastq2, sample['fasta'], sam2bed_string)
             commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
             commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
             if self.norm_method == "spike_in":
-                commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to sam2bed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | /home/sfurla/Scripts/sam2bed.py - -o %s\n""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
+                commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s\n""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
                 commandline = commandline + """\necho 'Sorting Bed for spikein...\n'sort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
             commandline = modules + commandline
@@ -380,9 +380,10 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
             'bedgraph': os.path.join(output, i.get('directory_short')+".bedgraph"), \
             'SEACR_key': i.get('directory_short'), \
             'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR.bedgraph"), \
-            'fasta': fasta, 'spikein_fasta': spikein_fasta, 'genome_sizes':  genome_sizes})
+            'fasta': genome_data.get('fasta'), 'spikein_fasta': genome_data.get('spikein_fasta'), 'genome_sizes':  genome_data.get('genome_sizes')})
+    #print(good_dat)
     keys = good_dat[0].keys()
-    with open(os.path.join(output, 'runsheet.csv'), 'wb') as output_file:
+    with open(os.path.join(output, 'runsheet.csv'), 'w') as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
         dict_writer.writeheader()
         dict_writer.writerows(good_dat)
@@ -422,7 +423,7 @@ def check_runsheet_parameter(runsheet, parameter, verbose=False):
             if verbose: print("no data for paramter "+parameter)
             return 0
         if i.get(parameter) is "":
-            if vebose: print("header present, but no or incomplete data for "+parameter)
+            if verbose: print("header present, but no or incomplete data for "+parameter)
             return 0
     if verbose: print("runsheet_okay_for_parameter_"+parameter)
     return 1
