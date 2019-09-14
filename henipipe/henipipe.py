@@ -65,7 +65,7 @@ class SampleFactory:
                 #to_append = "#!/bin/bash\n#PBS -N %s\n#PBS -l  %s\n#PBS -j oe\n#PBS -o $PBS_JOBDIR/%s\n#PBS -A %s\ncd $PBS_O_WORKDIR\n%s\nsed -e 's/^/[HENIPIPE] %s: /' $PBS_JOBDIR/%s >> %s\n" % (job_name, self.processor_line, log_file, self.user, command, job_name, log_file, self.log_name)
                 to_append = "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file)
             if self.cluster=="SLURM":
-                to_append = "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)
+                to_append = "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=outtmp\n#SBATCH --error=errtmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)
                 #to_append = '#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --ntasks=1\n%s\n%s' % (job_name, self.processor_line, command)
             job_string.append(to_append)
         return job_string
@@ -169,27 +169,6 @@ class Norm(SampleFactory, object):
         self.script = self.generate_job()
     def __call__():
         pass
-
-    # def get_norm_values(self, method):
-    #   if method=="read_count":
-    #       for sample in self.runsheet_data:
-    #           count = 0
-    #           for line in open(sample['bed_out']).xreadlines(): count += 1
-    #           ncount = 0
-    #           for line in open(sample['spikein_bed_out']).xreadlines(): ncount += 1
-    #           sample['scale_factor'] = (1/(float(count)/float(ncount))*100)
-    #   if method=="coverage":
-    #       for sample in self.runsheet_data:
-    #           count = 0
-    #           with open(sample['bed_out']) as infile:
-    #               for line in infile:
-    #                   count += int(line.split("\t")[4])
-    #           ncount = 0
-    #           with open(sample['spikein_bed_out']) as infile:
-    #               for line in infile:
-    #                   ncount += int(line.split("\t")[4])
-    #           sample['scale_factor'] = (1/(float(count)/float(ncount))*100)# print(sample_norm_values)
-    #   return
 
     def get_norm_values(self, method):
         if method=="read_count":
@@ -314,16 +293,6 @@ def convert_windows_newlines(file_name):
 def reduce_concat(x, sep=""):
     return functools.reduce(lambda x, y: str(x) + sep + str(y), x)
 
-# def paste(*lists, sep=" ", collapse=None):
-#   result = map(lambda x: reduce_concat(x, sep=sep), zip(*lists))
-#   if collapse is not None:
-#       return reduce_concat(result, sep=collapse)
-#   return list(result)
-# def print_iterator(it):
-#   for x in it:
-#       print(x, end='\n')
-#   print(' ')  # for new line
-
 def find_fastq_mate(dir, sample_flag=None, full_name=True):
     fastqs=[]
     fastq1=[]
@@ -355,13 +324,6 @@ def find_fastq_mate(dir, sample_flag=None, full_name=True):
 
 
 def find_colnames(runsheet, header=True):
-    """
-    Helper function for getting headers for a runsheet.
-    Args:
-        runsheet (file): file object to runsheet.  CSV file with header is supported.
-    Yields:
-        Colnames of CSV
-    """
     if header==True:
         with open(runsheet, 'r') as f:
             reader = csv.reader(f)
@@ -484,128 +446,3 @@ def parse_range_list(rl):
         return range(parts[0], parts[-1] + 1)
     ranges = sorted(set(map(parse_range, rl.split(","))), key=lambda x: (x.start, x.stop))
     return chain.from_iterable(collapse_range(ranges))
-
-
-# if __name__ == '__main__':
-#   parser = argparse.ArgumentParser('A wrapper for running henipipe')
-#   parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'SEACR'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "SEACR" - to perform SEACR.')
-#   parser.add_argument('--sample_flag', '-sf', type=str, help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
-#   parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
-#   parser.add_argument('--filter_high', '-fh', type=int, default=None, help='For ALIGN only: upper limit of fragment size to exclude, defaults is no upper limit.  OPTIONAL')
-#   parser.add_argument('--filter_low', '-fl', type=int, default=None, help='For ALIGN only: lower limit of fragment size to exclude, defaults is no lower limit.  OPTIONAL')
-#   parser.add_argument('--output', '-o', type=str, default=".", help='For MAKERUNSHEET only: Pathname to write runsheet.csv file (folder must exist already!!), Defaults to current directory')
-#   parser.add_argument('--runsheet', '-r', type=str, help='tab-delim file with sample fields as defined in the script. - REQUIRED for all jobs except MAKERUNSHEET')
-#   parser.add_argument('--log_prefix', '-l', type=str, default='henipipe.log', help='Prefix specifying log files for henipipe output from henipipe calls. OPTIONAL')
-#   parser.add_argument('--select', '-s', type=str, default=None, help='To only run the selected row in the runsheet, OPTIONAL')
-#   parser.add_argument('--debug', '-d', action='store_true', help='To print commands (For testing flow). OPTIONAL')
-#   parser.add_argument('--bowtie_flags', '-b', type=str, default='--end-to-end --very-sensitive --no-mixed --no-discordant -q --phred33 -I 10 -X 700', help='For ALIGN: bowtie flags, OPTIONAL')
-#   parser.add_argument('--cluster', '-c', type=str, default='PBS', choices=['PBS', 'SLURM'], help='Cluster software.  OPTIONAL Currently supported: PBS and SLURM')
-#   parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in'], help='For ALIGN and NORM: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
-#   parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
-#   parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
-#   parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
-#   parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
-#   #call = '/home/sfurla/Scripts/runHeniPipe.py MAKERUNSHEET -sf mini -fq /active/furlan_s/Data/CNR/190801_CNRNotch/fastq/mini/fastqs'
-
-#   #args = parser.parse_args(call.split(" ")[1:])
-#   args = parser.parse_args()
-
-#   #log
-#   if args.debug == False:
-#       LOGGER.info("Logging to %s... examine this file if samples fail." % args.log_prefix)
-
-#   #deal with user
-#   if args.user is None:
-#       args.user = getpass.getuser()
-
-#   #deal with paths
-#   if args.job=="MAKERUNSHEET":
-#       if os.path.isabs(args.fastq_folder) is False:
-#           if args.fastq_folder == ".":
-#               args.fastq_folder = os.getcwd()
-#           else :
-#               args.fastq_folder = os.path.abspath(args.fastq_folder)
-#       if os.path.exists(args.fastq_folder) is False:
-#           raise ValueError('Path: '+args.fastq_folder+' not found')
-#       if os.path.isabs(args.output) is False:
-#           if args.output == ".":
-#               args.output = os.getcwd()
-#           else :
-#               args.output = os.path.abspath(args.output)
-#       if os.path.exists(args.output) is False:
-#           raise ValueError('Path: '+args.output+' not found')
-#   if args.job != "MAKERUNSHEET":
-#       if os.path.exists(args.runsheet) is False:
-#           raise ValueError('Path: '+args.runsheet+' not found')
-
-#   if args.job=="MAKERUNSHEET":
-#       LOGGER.info("Parsing fastq folder - "+args.fastq_folder+" ...")
-#       make_runsheet(folder=args.fastq_folder, output=args.output, furlan=True, sample_flag = args.sample_flag)
-#       exit()
-
-#   #parse and chech runsheet
-#   args.runsheet = os.path.abspath(args.runsheet)
-#   parsed_runsheet = list(parse_runsheet(args.runsheet))
-#   check_runsheet(args, parsed_runsheet, verbose=args.verbose)
-
-#   #deal with sample selection
-#   if args.select is not None:
-#       pare_down = [int(args.select) -1]
-#   else:
-#       pare_down = list(range(len(parsed_runsheet)))
-
-#   if args.job=="ALIGN":
-#       #deal with filtering
-#       LOGGER.info("Aligning reads...")
-#       Alignjob = Align(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
-#       LOGGER.info("Submitting alignment jobs... Debug mode is %s" % args.debug)
-#       Alignjob.run_job()
-
-#   if args.job=="NORM":
-#       LOGGER.info("Calculating %s", args.norm_method)
-#       Normjob = Norm(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
-#       LOGGER.info("Submitting bedgraph jobs... Debug mode is %s" % args.debug)
-#       Normjob.run_job()
-
-#   if args.job=="SEACR":
-#       LOGGER.info("Running SEACR using settings: SEACR_norm = %s, SEACR_stringency = %s" % (args.SEACR_norm, args.SEACR_stringency))
-#       SEACRjob = SEACR(runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, norm=args.SEACR_norm, stringency=args.SEACR_stringency, user=args.user, log=args.log_prefix)
-#       SEACRjob.run_job()
-
-
-
-
-
-
-# json_file = "/Users/sfurla/Box Sync/PI_FurlanS/computation/develop/henipipe/henipipe/data/genomes.json"
-# genome_data = {
-#         "blank": {  'fasta': 'ADD_BOWTIE_INDEX_HERE - i.e. path to the Bowtie2 indexed FASTA genome file',
-#                     'spikein_fasta': 'ADD_BOWTIE_SPIKEIN_INDEX_HERE - i.e. path to the Bowtie2 indexed spike-in FASTA genome file',
-#                     'genome_sizes': 'ADD GENOME SIZES FILE HERE'},
-#     "furlan": {
-#         "genome_sizes": "/active/furlan_s/Data/CNR/190801_CNRNotch/fastq/sizes.genome",
-#         "fasta": "/active/furlan_s/refs/hg38/bowtie_hg38_p12",
-#         "spikein_fasta": "/active/furlan_s/refs/ecoli/GCF_000005845.2_ASM584v2"
-#     }
-# }
-
-# with open(json_file, "w") as write_file:
-#     json.dump(genome_data, write_file, indent = 4, sort_keys = True)
-
-# del genome_data
-
-# with open(json_file, "r") as read_file:
-#     genome_data = json.load(read_file)
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,11 +1,11 @@
 import sys
 import argparse
-from . import henipipe
 import logging
 import getpass
 import os
 from . import sam2bed
 from . import pyWriter
+from . import henipipe
 
 POLL_TIME = 5
 LOG_PREFIX = '[HENIPIPE]: '
@@ -23,9 +23,8 @@ myFormatter._fmt = "[HENIPIPE]: " + myFormatter._fmt
 def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
-
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'SEACR'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "SEACR" - to perform SEACR.')
+    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'SEACR', 'GENOMESFILE'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "SEACR" - to perform SEACR; 5) "GENOMESFILE" - print location of genomes.json file.')
     parser.add_argument('--sample_flag', '-sf', type=str, default="Sample", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--genome_key', '-gk', type=str, default="blank", help='For MAKERUNSHEET only: abbreviation to use "installed" genomes in the runsheet (See README.md for more details')
@@ -43,11 +42,17 @@ def run_henipipe(args=None):
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
     parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
-    #call = '/home/sfurla/Scripts/runHeniPipe.py MAKERUNSHEET -sf mini -fq /active/furlan_s/Data/CNR/190801_CNRNotch/fastq/mini/fastqs'
+    #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
+    #call = 'henipipe GENOMESFILE'
 
     #args = parser.parse_args(call.split(" ")[1:])
     args = parser.parse_args()
 
+    if args.job=="GENOMESFILE":
+        _ROOT = os.path.abspath(os.path.dirname(__file__))
+        GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
+        print(GENOMES_JSON)
+        exit()
     #log
     if args.debug == False:
         LOGGER.info("Logging to %s... examine this file if samples fail." % args.log_prefix)

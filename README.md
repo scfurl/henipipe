@@ -31,14 +31,16 @@ pipx install --include-deps --pip-args '--trusted-host pypi.org --trusted-host f
 module load Python/3.6.7-foss-2016b-fh1
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
-pipx install --include-deps henipippipx install --include-deps henipipe
+pipx install --include-deps henipipe
 ```
 
-You should then be able to test installation by calling henipipe.  You should see the help screen displayed.
+You should then be able to test installation by calling henipipe.  After running the folllowing, you should see the help screen displayed.
 
 ```bash
 henipipe
 ```
+
+
 
 ## Usage
 
@@ -143,7 +145,24 @@ The runsheet is the brains of the henipipe workflow.  You can make a runsheet us
 * 'SEACR_key' sample key corresponding to sample groups to be run against an IgG (or other) contol.  all samples to be run against a control are given the same name and the control is labeleled with the an additional string underscore + 'CONTROL' (i.e. 4JS_CONTROL) OPTIONAL.  
 * 'SEACR_out' file name of SEACR output OPTIONAL.  
 
+## Genomes and adding genome locations
 
+Henipipe uses Bowtie2 for alignment.  As such, you should have a previously indexed location your genome index accessible to henipipe.  This location is referred to in henipipe as the 'fasta'.  Similarly, one should provide the location of the spike_in indexed reference genome in the 'spikein_fasta' field.  For bedgraph conversion, a text file of genome sizes text file is also needed.  See the following for a discussion on how to make a 'genome_sizes' file https://www.biostars.org/p/173963/.
+
+Henipipe provides an easy way to add these locations to your system for repeated use using the --genome_key (-gk) option diring MAKERUNSHEET commands.  A file called genomes.json can be found in the 'data' directory of the henipipe install folder.  This file can be edited to include those locations you want to regularly put in the runsheet.  The following shows an example of a genomes.json file.  The files "top level" is a name that can be used in the --genome_key field (-gk) during runsheet generation to populate the columns of the runsheet with fasta, spikein_fasta, and genome_sizes locations associated with that genome_key.  The 'default' key will be used when no genome_key is specified.
+
+```json
+{
+    "default": {
+        "fasta": "/path/path/hg38/bowtie2_index",
+        "genome_sizes": "/path/path/hg38/genome_sizes.txt",
+        "spikein_fasta": "/path/path/Ecoli/bowtie2_index"},
+    "my_hg38": {
+        "fasta": "/shared/biodata/ngs/Reference/iGenomes/Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome",
+        "genome_sizes": "/shared/ngs/illumina/henikoff/solexa/databases/human/hg38/chr_lens.txt",
+        "spikein_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
+    }
+```
 
 ## Examples
 
@@ -157,8 +176,8 @@ ls
 
 **To run henipipe, do the following...**
 1. Make a new output directory 'henipipe'.
-2. Go into that directory and make a runsheet pointing to the fastq folder i.e. the folder level above.  (at the command line, henipipe is cool with either relative or absolute pathnames here; but as stated earlier, absolute pathnames are best for the runsheet.)  
-3.  Optionally you can only select directories of fastq files that contain the string denoted using the -sf flag.  
+2. Go into that directory and make a runsheet pointing to the fastq folder i.e. the folder level above.  (at the command line, henipipe is cool with either relative or absolute pathnames; but as stated earlier, absolute pathnames are required for the runsheet.)
+3.  Optionally you can only select directories of fastq files that contain in their name the string denoted using the -sf flag.
 4. After inspecting and completing the runsheet, run ALIGN, NORM, and SEACR.  
 5. Sit back have a cocktail.
 
