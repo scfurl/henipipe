@@ -121,7 +121,7 @@ optional arguments:
 
 ## Runsheet
 
-The runsheet is the brains of the henipipe workflow.  You can make a runsheet using the MAKERUNSHEET command.  This command will parse a directory of fastq folder (specified using the -fq flag; fastq files should be organized in subfolders named by sample) and will find fastq mates (R1 and R2).  There is an option for selecting only folders that contain a specific string (using the -sf flag).  *After generation of a runsheet (csv file), you should take a look at it in Excel or Numbers to make sure things look okay...*  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) are suggested.
+The runsheet is the brains of the henipipe workflow.  You can make a runsheet using the MAKERUNSHEET command.  This command will parse a directory of fastq folder (specified using the -fq flag; fastq files should be organized in subfolders named by sample) and will find fastq mates (R1 and R2 - Currently only PE sequencing is supported).  Running henipipe MAKERUNSHEET will find and pair these fastqs for you and populate the runsheet with genome index locations (see below) and output filenames with locations as specified using the -o flag.  Note that thenipie output will default to the current working directory if no location is otherwise specified.  There is an option for selecting only folders that contain a specific string (using the -sf flag).  *After generation of a runsheet (csv file), you should take a look at it in Excel or Numbers to make sure things look okay...*  Here are the columns that you can include.  Order is irrelevant.  Column names (headers) exactly as written below are required.
 
 ### Example Runsheet 
 
@@ -164,7 +164,7 @@ Henipipe provides an easy way to add these locations to your system for repeated
     }
 ```
 
-## Examples
+## Doing a henipipe run
 
 Say your fastqs live within within subfolders of a folder 'fastq' in the folder 'data'.  So if you were to...
 ```bash
@@ -185,7 +185,7 @@ ls
 cd ..
 mkdir henipipe
 cd henipipe
-henipipe MAKERUNSHEET -fq ../fastq -sf MySamplesStartWithThisString -o henipipe
+henipipe MAKERUNSHEET -fq ../fastq -sf MySampleDirectoriesStartWithThisString -o .
 henipipe ALIGN -r runsheet.csv
 henipipe NORM -r runsheet.csv
 henipipe SEACR -r runsheet.csv
