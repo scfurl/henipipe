@@ -353,7 +353,7 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
     #keys = good_dat[0].keys()
     keys = ["sample", "SEACR_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
     with open(os.path.join(output, 'runsheet.csv'), 'w') as output_file:
-        dict_writer = csv.DictWriter(output_file, fieldnames = keys, keysextrasaction='ignore')
+        dict_writer = csv.DictWriter(output_file, fieldnames = keys, extrasaction='ignore')
         dict_writer.writeheader()
         dict_writer.writerows(good_dat)
 
