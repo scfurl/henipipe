@@ -252,11 +252,11 @@ class SEACR(SampleFactory, object):
         for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nml SEACR\n"""
+                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\n"""
             else:
                 modules = """\nmodule load SEACR\nmodule load R\nmodule load bedtools\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            commandline = """bash echo '\n[SEACR] Running SEACR... Output:\n'\nbash SEACR_1.1.sh %s %s %s %s %s\n""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
+            commandline = """echo '\n[SEACR] Running SEACR... Output:\n'\nbash SEACR_1.1.sh %s %s %s %s %s\n""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             commandline = modules + commandline
             command.append(commandline)
         return command
