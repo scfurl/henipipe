@@ -23,5 +23,10 @@
         "fasta": "/shared/biodata/ngs/Reference/iGenomes/Homo_sapiens/NCBI/GRCh38/Sequence/Bowtie2Index/genome",
         "genome_sizes": "/shared/ngs/illumina/henikoff/solexa/databases/human/hg38/chr_lens.txt",
         "spikein_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
-    }
+    },
+    "default": {
+        "fasta": "/shared/biodata/ngs/Reference/iGenomes/Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome",
+        "genome_sizes": "/shared/ngs/illumina/henikoff/solexa/databases/human/hg38/chr_lens.txt",
+        "spikein_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
+    },
 }
