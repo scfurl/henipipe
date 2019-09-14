@@ -35,6 +35,7 @@ import json
 
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
+SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.1.sh')
 
 
 class SampleFactory:
@@ -256,7 +257,7 @@ class SEACR(SampleFactory, object):
             else:
                 modules = """\nmodule load SEACR\nmodule load R\nmodule load bedtools\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            commandline = """echo '\n[SEACR] Running SEACR... Output:\n'\nbash SEACR_1.1.sh %s %s %s %s %s\n""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
+            commandline = """echo '\n[SEACR] Running SEACR... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             commandline = modules + commandline
             command.append(commandline)
         return command
