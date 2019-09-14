@@ -684,7 +684,7 @@ class fragments(object):
                 self.read_count += 1
             except StopIteration:
                 done_looping = True
-                print("\n[SAM2BED] Output: \n Processed %s reads.  Found %s usable fragments.\nOf these, %s passed_filter.\n" % (self.read_count, self.fragment_count, self.passed_filter))
+                print("\n[SAM2BED] Output: \n Processed %s read pairs.  Found %s usable fragments.\nOf these, %s passed_filter.\n" % (self.read_count/2, self.fragment_count, self.passed_filter))
             else:
                 return_val = self.qualify_reads(read1, read2, filter = self.filter_threshes)
                 if return_val is not None:
