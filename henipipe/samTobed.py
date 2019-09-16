@@ -608,7 +608,7 @@ class fragment(object):
         return "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (self.loc,self.bed_start,self.end,self.fraglen,self.R1_mapq,self.R2_mapq,self.R1_flag, self.R2_flag, self.direction)
 
 class fragments(object):
-    def __init__(self, in_file, out_file=None, skip_dups = False, filter_threshes = None):
+    def __init__(self, in_file, out_file=None, skip_dups = True, filter_threshes = None):
         #self.in_file = in_file
         self.read_count=0
         self.fragment_count = 0

@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
     version="0.3.1",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
-    description="A python wrapper for fast processing of sequencing data using CutnRun or CutnTag",
+    description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/scfurl/henipipe.git",

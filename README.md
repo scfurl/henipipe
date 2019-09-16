@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-version 0.3.1
+version 0.3.2
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
@@ -196,4 +196,4 @@ henipipe SEACR -r runsheet.csv
 
 ## Acknowledgements
 
-Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe includes a python script sam2bed2.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam
+Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe includes a python script samTobed.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam.  samTobed.py uses specific sam-sorting parameters as written in Jorja Henikoff's PERL script.

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # PBS/SLURM cluster job submission in Python
-#v 0.1
+#v 0.3.2
 
 # A wrapper that performs the necessary pipeline for generation of CNR/CNT data
 # Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; 
