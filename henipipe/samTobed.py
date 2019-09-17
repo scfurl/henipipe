@@ -741,7 +741,7 @@ class fragments(object):
             self.fragment_count+=1
             if (end - begin) > filter[0] and (end - begin) < filter[1]:
                 self.passed_filter+=1
-                return fragment(read1.rname, begin, end, end - begin, read1.mapq, read2.mapq, read1.flag, read2.flag, direction)
+                return fragment(read1.rname, (begin -1) , (end - 1) , end - begin, read1.mapq, read2.mapq, read1.flag, read2.flag, direction)
 
 
 def run_sam2bed():
