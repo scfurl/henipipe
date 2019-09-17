@@ -619,8 +619,10 @@ class fragments(object):
         self.passed_filter = 0
         if skip_dups:
             self.forward_list = [99, 163, 355, 419]
+            self.plus_list = [99, 355]
         else:
             self.forward_list = [99, 163, 355, 419, 1123, 1187]
+            self.plus_list = [99, 355, 1123]
         if out_file is None:
             self.return_fragments(in_file)
         else:
@@ -690,6 +692,32 @@ class fragments(object):
                 if return_val is not None:
                     out_file.writelines(str(line) for line in [return_val])
 
+    # def qualify_reads_old(self, read1, read2, filter = [float("-inf"),float("inf")]):
+    #     direction = "Unk"
+    #     r1_unique = r2_unique = False
+    #     if read1.flag in self.forward_list:
+    #         if "XS" not in read1.tags:
+    #             r1_unique=True
+    #             if "XS" not in read2.tags:
+    #                 r2_unique=True
+    #                 begin = read1.pos
+    #                 end = (read2.pos + len(read2.seq))
+    #                 direction = "+"
+    #     if read2.flag in self.forward_list:
+    #         if "XS" not in read2.tags:
+    #             r2_unique=True
+    #             if "XS" not in read1.tags:
+    #                 r1_unique=True
+    #                 begin = read2.pos
+    #                 end = read1.pos - len(read1.seq)
+    #                 direction = "-"
+    #     if r1_unique and r2_unique and direction is not "Unk" and (end - begin) >0 :
+    #         self.fragment_count+=1
+    #         if (end - begin) > filter[0] and (end - begin) < filter[1]:
+    #             self.passed_filter+=1
+    #             return fragment(read1.rname, begin, end, end - begin, read1.mapq, read2.mapq, read1.flag, read2.flag, direction)
+
+    # Sam fields: qname='', flag=4, rname='*', pos=0, mapq=255, cigar='*', rnext='*', pnext=0, tlen=0, seq='*', qual='*', tags=[]
     def qualify_reads(self, read1, read2, filter = [float("-inf"),float("inf")]):
         direction = "Unk"
         r1_unique = r2_unique = False
@@ -699,7 +727,7 @@ class fragments(object):
                 if "XS" not in read2.tags:
                     r2_unique=True
                     begin = read1.pos
-                    end = (read2.pos + len(read2.seq))
+                    end = read1.pos + read1.tlen
                     direction = "+"
         if read2.flag in self.forward_list:
             if "XS" not in read2.tags:
@@ -707,13 +735,14 @@ class fragments(object):
                 if "XS" not in read1.tags:
                     r1_unique=True
                     begin = read2.pos
-                    end = read1.pos - len(read1.seq)
+                    end = read2.pos + read2.tlen
                     direction = "-"
-        if r1_unique and r2_unique and direction is not "Unk" and (end - begin) >0 :
+        if r1_unique and r2_unique and direction is not "Unk" and (end - begin) >0 and read1.rnext == "=" and read2.rnext == "=":
             self.fragment_count+=1
             if (end - begin) > filter[0] and (end - begin) < filter[1]:
                 self.passed_filter+=1
                 return fragment(read1.rname, begin, end, end - begin, read1.mapq, read2.mapq, read1.flag, read2.flag, direction)
+
 
 def run_sam2bed():
     parser = argparse.ArgumentParser('A script for converting sam file to bed for eventual bedgraph conversion')
