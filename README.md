@@ -47,8 +47,9 @@ henipipe
 ## Usage
 
 ```bash
-henipipe [-h] [--sample_flag SAMPLE_FLAG]
+henipipe usage: A wrapper for running henipipe [-h] [--sample_flag SAMPLE_FLAG]
                                       [--fastq_folder FASTQ_FOLDER]
+                                      [--genome_key GENOME_KEY]
                                       [--filter_high FILTER_HIGH]
                                       [--filter_low FILTER_LOW]
                                       [--output OUTPUT] [--runsheet RUNSHEET]
@@ -60,15 +61,16 @@ henipipe [-h] [--sample_flag SAMPLE_FLAG]
                                       [--user USER] [--SEACR_norm {non,norm}]
                                       [--SEACR_stringency {stringent,relaxed}]
                                       [--verbose]
-                                      {MAKERUNSHEET,ALIGN,NORM,SEACR}
+                                      {MAKERUNSHEET,ALIGN,NORM,SEACR,GENOMESFILE}
 
 positional arguments:
-  {MAKERUNSHEET,ALIGN,NORM,SEACR}
+  {MAKERUNSHEET,ALIGN,NORM,SEACR,GENOMESFILE}
                         a required string denoting segment of pipeline to run.
                         1) "MAKERUNSHEET" - to parse a folder of fastqs; 2)
                         "ALIGN" - to perform alignment using bowtie and output
                         bed files; 3) "NORM" - to normalize data to reference
-                        (spike in); 4) "SEACR" - to perform SEACR.
+                        (spike in); 4) "SEACR" - to perform SEACR; 5)
+                        "GENOMESFILE" - print location of genomes.json file.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -78,6 +80,10 @@ optional arguments:
   --fastq_folder FASTQ_FOLDER, -fq FASTQ_FOLDER
                         For MAKERUNSHEET only: Pathname of fastq folder (files
                         must be organized in folders named by sample)
+  --genome_key GENOME_KEY, -gk GENOME_KEY
+                        For MAKERUNSHEET only: abbreviation to use "installed"
+                        genomes in the runsheet (See README.md for more
+                        details
   --filter_high FILTER_HIGH, -fh FILTER_HIGH
                         For ALIGN only: upper limit of fragment size to
                         exclude, defaults is no upper limit. OPTIONAL
