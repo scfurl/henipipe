@@ -297,8 +297,8 @@ class Merge(SampleFactory, object):
         command = []
         #print("Runmode is " + self.runmode)
         keys = [self.runsheet_data[i].get("merge_key") for i in pare_down]
-        print(key)
         for key in keys:
+            print(key)
             seperator = ' '
             bedgraph_line = seperator.join(self.run_data.get(key))
             bedgraph_out=str(os.path.join(self.out, key))+"_merged.bedgraph"
