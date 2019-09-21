@@ -298,7 +298,7 @@ class Merge(SampleFactory, object):
         keys = [self.runsheet_data[i].get("merge_key") for i in pare_down]
         for key in keys:
             seperator = ' '
-            bedgraph_line = seperator.join(self.run_data.get(key)
+            bedgraph_line = seperator.join(self.run_data.get(key))
             bedgraph_out=os.path.join(self.out, keys)+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
