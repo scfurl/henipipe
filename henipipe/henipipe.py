@@ -297,6 +297,7 @@ class Merge(SampleFactory, object):
         command = []
         #print("Runmode is " + self.runmode)
         keys = [self.runsheet_data[i].get("merge_key") for i in pare_down]
+        print(keys)
         for key in keys:
             print(key)
             seperator = ' '
