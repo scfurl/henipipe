@@ -274,7 +274,7 @@ class Merge(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(Merge, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_MERGE"
-        self.out = 
+        self.out = kwargs.get('output')
         self.run_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
         self.processor_line = self.Merge_processor_line()
         self.command = self.Merge_executable()
