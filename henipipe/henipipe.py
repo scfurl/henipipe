@@ -293,7 +293,6 @@ class Merge(SampleFactory, object):
 
 
     def Merge_executable(self, pare_down):
-        print(self.run_data)
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
@@ -301,7 +300,7 @@ class Merge(SampleFactory, object):
         for key in keys:
             seperator = ' '
             bedgraph_line = seperator.join(self.run_data.get(key))
-            bedgraph_out=os.path.join(self.out, keys)+"_merged.bedgraph"
+            bedgraph_out=str(os.path.join(self.out, keys))+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\n"""
