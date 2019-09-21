@@ -24,7 +24,7 @@ def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'SEACR', 'GENOMESFILE'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "SEACR" - to perform SEACR; 5) "GENOMESFILE" - print location of genomes.json file.')
+    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'MERGE', 'SEACR', 'GENOMESFILE'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "GENOMESFILE" - print location of genomes.json file.')
     parser.add_argument('--sample_flag', '-sf', type=str, default="Sample", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--genome_key', '-gk', type=str, default="default", help='For MAKERUNSHEET only: abbreviation to use "installed" genomes in the runsheet (See README.md for more details')
@@ -43,6 +43,7 @@ def run_henipipe(args=None):
     parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
+    #call = 'henipipe MERGE -r ./runsheet_new.csv'
     #call = 'henipipe GENOMESFILE'
 
     #args = parser.parse_args(call.split(" ")[1:])
@@ -89,6 +90,9 @@ def run_henipipe(args=None):
         exit()
 
     #parse and chech runsheet
+    # args.runsheet = os.path.abspath(args.runsheet)
+    # parsed_runsheet = list(parse_runsheet(args.runsheet))
+    # check_runsheet(args, parsed_runsheet, verbose=args.verbose)
     args.runsheet = os.path.abspath(args.runsheet)
     parsed_runsheet = list(henipipe.parse_runsheet(args.runsheet))
     henipipe.check_runsheet(args, parsed_runsheet, verbose=args.verbose)
@@ -112,6 +116,13 @@ def run_henipipe(args=None):
         Normjob = henipipe.Norm(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
         LOGGER.info("Submitting bedgraph jobs... Debug mode is %s" % args.debug)
         Normjob.run_job()
+        exit()
+
+    if args.job=="MERGE":
+        Mergejob = henipipe.Merge(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user, out=args.output)
+        #Mergejob = Merge(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
+        LOGGER.info("Submitting merge-bedgraph jobs... Debug mode is %s" % args.debug)
+        Mergejob.run_job()
         exit()
 
     if args.job=="SEACR":

@@ -32,7 +32,7 @@ import random
 from itertools import chain, compress
 import json
 #import pandas as pd
-
+#_ROOT = os.getcwd()
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.1.sh')
@@ -255,7 +255,7 @@ class SEACR(SampleFactory, object):
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\n"""
             else:
-                modules = """\nmodule load SEACR\nmodule load R\nmodule load bedtools\n"""
+                modules = """\nmodule load R\nmodule load bedtools\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             commandline = """echo '\n[SEACR] Running SEACR... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             commandline = modules + commandline
@@ -269,6 +269,53 @@ class SEACR(SampleFactory, object):
         if self.cluster=="SLURM":
             return ''
 
+
+class Merge(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(Merge, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_MERGE"
+        self.out = 
+        self.run_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
+        self.processor_line = self.Merge_processor_line()
+        self.command = self.Merge_executable()
+        self.script = self.generate_job()
+    def __call__():
+        pass
+
+    def Merge_match(self, pare_down):
+        key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
+        bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
+        merge_dict = dict.fromkeys(key_data, "NotFound")
+        for key in merge_dict.keys():
+            # do something with value
+            merge_dict[key] = list(compress(bg_data, is_in(key, key_data)))
+
+
+    def Merge_executable(self):
+        commandline=""
+        command = []
+        #print("Runmode is " + self.runmode)
+        keys = [self.runsheet_data[i].get("merge_key") for i in pare_down]
+        for key in keys:
+            seperator = ' '
+            bedgraph_line = seperator.join(self.run_data.get{key})
+            bedgraph_out=os.path.join(self.out, keys)+"_merged.bedgraph"
+            JOBSTRING = self.id_generator(size=10)
+            if self.cluster=="SLURM":
+                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\n"""
+            else:
+                modules = """\nmodule load bedtools\n"""
+            commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum/(NF-4+1); }' > %s""" % (bedgraph_line, bedgraph_line, bedgraph_out)
+            commandline = modules + commandline
+            command.append(commandline)
+        return command
+
+
+    def Merge_processor_line(self):
+        if self.cluster=="PBS":
+            return """select=1:mem=8GB:ncpus=2"""
+        if self.cluster=="SLURM":
+            return ''
 
 def convert_windows_newlines(file_name):
     """`
@@ -290,6 +337,15 @@ def convert_windows_newlines(file_name):
     with open(file_name, 'w') as output:
         output.write(file_text)
 
+def is_in(string, list):
+    outlist=[]
+    #This function returns a list of booleans for matching a string in a list of strings
+    for i in list:
+        if i == string:
+            outlist.append(True)
+        else:
+            outlist.append(False)
+    return(outlist)
 
 def reduce_concat(x, sep=""):
     return functools.reduce(lambda x, y: str(x) + sep + str(y), x)
@@ -348,11 +404,12 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
             'spikein_bed_out': os.path.join(output, i.get('directory_short')+"_spikein.bed"), \
             'bedgraph': os.path.join(output, i.get('directory_short')+".bedgraph"), \
             'SEACR_key': i.get('directory_short'), \
-            'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR.bedgraph"), \
+            'MERGE_key': i.get('directory_short'), \
+            'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR"), \
             'fasta': genome_data.get('fasta'), 'spikein_fasta': genome_data.get('spikein_fasta'), 'genome_sizes':  genome_data.get('genome_sizes')})
     #print(good_dat)
     #keys = good_dat[0].keys()
-    keys = ["sample", "SEACR_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
+    keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
     with open(os.path.join(output, 'runsheet.csv'), 'w') as output_file:
         dict_writer = csv.DictWriter(output_file, fieldnames = keys, extrasaction='ignore')
         dict_writer.writeheader()
