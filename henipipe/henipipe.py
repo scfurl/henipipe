@@ -273,6 +273,7 @@ class SEACR(SampleFactory, object):
 class Merge(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(Merge, self).__init__(*args, **kwargs)
+        print(self.runsheet_data)
         self.job = "HENIPIPE_MERGE"
         self.out = kwargs.get('out')
         self.run_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
@@ -299,9 +300,9 @@ class Merge(SampleFactory, object):
         command = []
         #print("Runmode is " + self.runmode)
         keys = [self.runsheet_data[i].get("merge_key") for i in pare_down]
-        print(keys)
+        #print(keys)
         for key in keys:
-            print(key)
+            #print(key)
             seperator = ' '
             bedgraph_line = seperator.join(self.run_data.get(key))
             bedgraph_out=str(os.path.join(self.out, key))+"_merged.bedgraph"
