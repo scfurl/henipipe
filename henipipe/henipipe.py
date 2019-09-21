@@ -277,13 +277,14 @@ class Merge(SampleFactory, object):
         self.out = kwargs.get('output')
         self.run_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
         self.processor_line = self.Merge_processor_line()
-        self.command = self.Merge_executable()
+        self.command = self.Merge_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
     def __call__():
         pass
 
     def Merge_match(self, pare_down):
         print(self.runsheet_data)
+        print(pare_down)
         print(pare_down)
         key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
         bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
@@ -293,7 +294,7 @@ class Merge(SampleFactory, object):
             merge_dict[key] = list(compress(bg_data, is_in(key, key_data)))
 
 
-    def Merge_executable(self):
+    def Merge_executable(self, pare_down):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
