@@ -283,9 +283,6 @@ class Merge(SampleFactory, object):
         pass
 
     def Merge_match(self, pare_down):
-        print(self.runsheet_data)
-        print(pare_down)
-        print(pare_down)
         key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
         bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
         merge_dict = dict.fromkeys(key_data, "NotFound")
@@ -295,6 +292,7 @@ class Merge(SampleFactory, object):
 
 
     def Merge_executable(self, pare_down):
+        print(self.run_data)
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
