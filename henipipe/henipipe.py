@@ -289,6 +289,7 @@ class Merge(SampleFactory, object):
         for key in merge_dict.keys():
             # do something with value
             merge_dict[key] = list(compress(bg_data, is_in(key, key_data)))
+        return(merge_dict)
 
 
     def Merge_executable(self, pare_down):
