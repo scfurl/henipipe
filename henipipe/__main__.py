@@ -119,7 +119,7 @@ def run_henipipe(args=None):
         exit()
 
     if args.job=="MERGE":
-        Mergejob = henipipe.Merge(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user, out=args.output)
+        Mergejob = henipipe.Merge(runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user, out=args.output)
         #Mergejob = Merge(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
         LOGGER.info("Submitting merge-bedgraph jobs... Debug mode is %s" % args.debug)
         Mergejob.run_job()
