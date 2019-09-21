@@ -140,7 +140,7 @@ class Align(SampleFactory, object):
             else:
                 modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
             norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
-            commandline = """bowtie2 %s -p 4 -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, fastq1, fastq2, sample['fasta'], sam2bed_string)
+            commandline = """bowtie2 %s -p 16 -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, fastq1, fastq2, sample['fasta'], sam2bed_string)
             commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
             commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
             if self.norm_method == "spike_in":
@@ -154,9 +154,9 @@ class Align(SampleFactory, object):
 
     def align_processor_line(self):
         if self.cluster=="PBS":
-            return """select=1:mem=16GB:ncpus=4"""
+            return """select=1:mem=64GB:ncpus=16"""
         if self.cluster=="SLURM":
-            return '#SBATCH --cpus-per-task=4\n#SBATCH --mem-per-cpu=4000'
+            return '#SBATCH --cpus-per-task=16\n#SBATCH --mem-per-cpu=4000'
 
 
 class Norm(SampleFactory, object):
