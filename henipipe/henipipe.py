@@ -338,6 +338,7 @@ class MACS2(SampleFactory, object):
         #will need to change this when multiple selections are implemented; for now just allow user to specify sample, then find control
         if self.merged:
             key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
+            print(key_data)
             bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
             merge_dict = dict.fromkeys(key_data, "NotFound")
             for key in merge_dict.keys():
@@ -365,6 +366,7 @@ class MACS2(SampleFactory, object):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
+        print(self.run_data)
         dicts = [self.run_data[i] for i in pare_down]
         for item in dicts:
             JOBSTRING = self.id_generator(size=10)
@@ -375,7 +377,7 @@ class MACS2(SampleFactory, object):
             else:
                 modules = """\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcomp -t %s -c %s -o %s\n""" % (sample['MACS2_in'], sample['MACS2_control'], "test")
+            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcomp -t %s -c %s -o %s\n""" % (item['MACS2_in'], item['MACS2_control'], "test")
             commandline = modules + commandline
             command.append(commandline)
         return command
