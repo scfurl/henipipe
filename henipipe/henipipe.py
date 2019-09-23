@@ -327,8 +327,8 @@ class MACS2(SampleFactory, object):
         self.job = "HENIPIPE_MACS2"
         self.merged = kwargs.get('merged')
         self.norm = kwargs.get('norm')
-        self.run_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
-        print(self.run_data)
+        self.runsheet_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
+        #print(self.run_data)
         self.processor_line = self.MACS2_processor_line()
         self.command = self.MACS2_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
@@ -366,7 +366,7 @@ class MACS2(SampleFactory, object):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
-        for item in self.run_data:
+        for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             #print(sample)
             #macs2_out = str(sample['MACS2_in'][0])+'MACS2_bedgraph'
