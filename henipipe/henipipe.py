@@ -338,7 +338,6 @@ class MACS2(SampleFactory, object):
         #will need to change this when multiple selections are implemented; for now just allow user to specify sample, then find control
         if self.merged:
             key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
-            print(key_data)
             bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
             merge_dict = dict.fromkeys(key_data, "NotFound")
             for key in merge_dict.keys():
