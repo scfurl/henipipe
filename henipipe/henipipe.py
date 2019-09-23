@@ -373,10 +373,16 @@ class MACS2(SampleFactory, object):
             else:
                 modules = """\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcomp -t %s -c %s -o \n""" % (sample['MACS2_in'], sample['MACS2_control'], sample['MACS2_out'])
+            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcomp -t %s -c %s -o %s\n""" % (sample['MACS2_in'], sample['MACS2_control'], sample['MACS2_out'])
             commandline = modules + commandline
             command.append(commandline)
         return command
+
+    def MACS2_processor_line(self):
+        if self.cluster=="PBS":
+            return """select=1:mem=8GB:ncpus=2"""
+        if self.cluster=="SLURM":
+            return ''
 
 
 def convert_windows_newlines(file_name):
