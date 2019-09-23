@@ -365,9 +365,7 @@ class MACS2(SampleFactory, object):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
-        print(self.run_data)
-        dicts = [self.run_data[i] for i in pare_down]
-        for item in dicts:
+        for item in self.run_data:
             JOBSTRING = self.id_generator(size=10)
             #print(sample)
             #macs2_out = str(sample['MACS2_in'][0])+'MACS2_bedgraph'
