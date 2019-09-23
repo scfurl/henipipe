@@ -367,7 +367,7 @@ class MACS2(SampleFactory, object):
         #print("Runmode is " + self.runmode)
         for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
-            macs2_out = sample['MACS2_in']+'MACS2_bedgraph'
+            macs2_out = str(sample['MACS2_in'])+'MACS2_bedgraph'
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
             else:
