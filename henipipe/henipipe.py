@@ -320,6 +320,64 @@ class Merge(SampleFactory, object):
         if self.cluster=="SLURM":
             return ''
 
+
+class MACS2(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(MACS2, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_MACS2"
+        self.merged = kwargs.get('merged')
+        self.norm = kwargs.get('norm')
+        self.runsheet_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
+        self.processor_line = self.MACS2_processor_line()
+        self.command = self.MACS2_executable()
+        self.script = self.generate_job()
+    def __call__():
+        pass
+
+    def MACS2_match(self, pare_down):
+        #will need to change this when multiple selections are implemented; for now just allow user to specify sample, then find control
+        if self.merged:
+            key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
+            bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
+            merge_dict = dict.fromkeys(key_data, "NotFound")
+            for key in merge_dict.keys():
+                # do something with value
+                merge_dict[key] = list(compress(bg_data, is_in(key, key_data)))
+            return(merge_dict)
+        else:
+            desired_samples = [self.runsheet_data[i].get("sample") for i in pare_down]
+            sk = [i.get('MACS2_key') for i in self.runsheet_data]
+            controls_b = [bool(re.search(r'._CONTROL$', i)) for i in sk]
+            controls = list(compress(self.runsheet_data, controls_b))
+            samples_b = [not i for i in controls_b]
+            samples = list(compress(self.runsheet_data, samples_b))
+            samples = [i for i in samples if i.get("sample") in desired_samples]
+            for sample in samples:
+                control_name = sample.get('MACS2_key')+"_CONTROL"
+                control_bed = next(item for item in controls if item["MACS2_key"] == control_name).get('bedgraph')
+                sample.update( {'MACS2_in' : sample.get('bedgraph')})
+                sample.update( {'MACS2_control' : control_bed})
+            return samples
+
+
+    def MACS2_executable(self):
+        commandline=""
+        command = []
+        #print("Runmode is " + self.runmode)
+        for sample in self.runsheet_data:
+            JOBSTRING = self.id_generator(size=10)
+            sample['MACS2_out'] = sample['MACS2_in']+'MACS2_bedgraph'
+            if self.cluster=="SLURM":
+                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
+            else:
+                modules = """\n"""
+            #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
+            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcomp -t %s -c %s -o \n""" % (sample['MACS2_in'], sample['MACS2_control'], sample['MACS2_out'])
+            commandline = modules + commandline
+            command.append(commandline)
+        return command
+
+
 def convert_windows_newlines(file_name):
     """`
     Helper function for converting windows newlines in a file as a preprocessing step in case users make samplesheet
