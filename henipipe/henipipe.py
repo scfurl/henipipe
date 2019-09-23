@@ -352,6 +352,7 @@ class MACS2(SampleFactory, object):
             samples_b = [not i for i in controls_b]
             samples = list(compress(self.runsheet_data, samples_b))
             samples = [i for i in samples if i.get("sample") in desired_samples]
+            print(samples)
             for sample in samples:
                 control_name = sample.get('MACS2_key')+"_CONTROL"
                 control_bed = next(item for item in controls if item["MACS2_key"] == control_name).get('bedgraph')
