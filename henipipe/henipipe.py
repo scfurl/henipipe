@@ -329,7 +329,7 @@ class MACS2(SampleFactory, object):
         self.norm = kwargs.get('norm')
         self.run_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
         self.processor_line = self.MACS2_processor_line()
-        self.command = self.MACS2_executable()
+        self.command = self.MACS2_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
     def __call__():
         pass
@@ -361,7 +361,7 @@ class MACS2(SampleFactory, object):
             return samples
 
 
-    def MACS2_executable(self):
+    def MACS2_executable(self, pare_down):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
