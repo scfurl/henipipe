@@ -328,6 +328,7 @@ class MACS2(SampleFactory, object):
         self.merged = kwargs.get('merged')
         self.norm = kwargs.get('norm')
         self.run_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
+        print(self.run_data)
         self.processor_line = self.MACS2_processor_line()
         self.command = self.MACS2_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
