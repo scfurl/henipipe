@@ -331,7 +331,7 @@ class MACS2(SampleFactory, object):
         print(self.runsheet_data)
         self.processor_line = self.MACS2_processor_line()
         self.command = self.MACS2_executable(pare_down = kwargs.get('pare_down'))
-        #self.script = self.generate_job()
+        self.script = self.generate_job()
     def __call__():
         pass
 
