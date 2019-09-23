@@ -343,7 +343,8 @@ class MACS2(SampleFactory, object):
             for key in merge_dict.keys():
                 # do something with value
                 merge_dict[key] = list(compress(bg_data, is_in(key, key_data)))
-            return(merge_dict)
+                bedgraph_in =  [self.runsheet_data[i].get("merge_key")+"_merged.bedgraph" for i in pare_down]
+            return(bedgraph_in)
         else:
             desired_samples = [self.runsheet_data[i].get("sample") for i in pare_down]
             sk = [i.get('MACS2_key') for i in self.runsheet_data]
@@ -352,8 +353,8 @@ class MACS2(SampleFactory, object):
             samples_b = [not i for i in controls_b]
             samples = list(compress(self.runsheet_data, samples_b))
             samples = [i for i in samples if i.get("sample") in desired_samples]
-            print(samples)
             for sample in samples:
+                print(sample)
                 control_name = sample.get('MACS2_key')+"_CONTROL"
                 control_bed = next(item for item in controls if item["MACS2_key"] == control_name).get('bedgraph')
                 sample.update( {'MACS2_in' : sample.get('bedgraph')})
