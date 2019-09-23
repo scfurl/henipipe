@@ -277,7 +277,7 @@ class Merge(SampleFactory, object):
         self.out = kwargs.get('out')
         self.run_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
         self.processor_line = self.Merge_processor_line()
-        self.command = self.Merge_executable(pare_down = kwargs.get('pare_down'))
+        #self.command = self.Merge_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
     def __call__():
         pass
@@ -346,20 +346,19 @@ class MACS2(SampleFactory, object):
                 bedgraph_in =  [self.runsheet_data[i].get("merge_key")+"_merged.bedgraph" for i in pare_down]
             return(bedgraph_in)
         else:
-            desired_samples = [self.runsheet_data[i].get("sample") for i in pare_down]
-            sk = [i.get('MACS2_key') for i in self.runsheet_data]
+            desired_samples = [self.runsheet_data[i] for i in pare_down]
+            sk = [i.get('MACS2_key') for i in desired_samples]
             controls_b = [bool(re.search(r'._CONTROL$', i)) for i in sk]
-            controls = list(compress(self.runsheet_data, controls_b))
+            controls = list(compress(desired_samples, controls_b))
             samples_b = [not i for i in controls_b]
-            samples = list(compress(self.runsheet_data, samples_b))
-            samples = [i for i in samples if i.get("sample") in desired_samples]
+            samples = list(compress(desired_samples, samples_b))
             for sample in samples:
-                print(sample)
                 control_name = sample.get('MACS2_key')+"_CONTROL"
                 control_bed = next(item for item in controls if item["MACS2_key"] == control_name).get('bedgraph')
                 sample.update( {'MACS2_in' : sample.get('bedgraph')})
                 sample.update( {'MACS2_control' : control_bed})
             return samples
+
 
 
     def MACS2_executable(self, pare_down):

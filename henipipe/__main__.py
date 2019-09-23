@@ -44,7 +44,7 @@ def run_henipipe(args=None):
     parser.add_argument('--MACS2_merged', '-mk', action ='store_true', default=False, help='FOR MACS2: use this flag to select merged bedgraphs (generated using MERGE function and merge_key column in runsheet) instead of the individual bedgraphs output by NORM.  To select controls for MACS2, (as in SEACR), append controls with the "_CONTROL" string in the "MACS2_key" column in the runsheet.')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
-    #call = 'henipipe MERGE -r ./runsheet_new.csv'
+    #call = 'henipipe MACS2 -r ./runsheet.csv -d'
     #call = 'henipipe GENOMESFILE'
 
     #args = parser.parse_args(call.split(" ")[1:])
@@ -91,10 +91,12 @@ def run_henipipe(args=None):
         exit()
 
     #parse and chech runsheet
-    # args.runsheet = os.path.abspath(args.runsheet)
-    # parsed_runsheet = list(parse_runsheet(args.runsheet))
-    # check_runsheet(args, parsed_runsheet, verbose=args.verbose)
     args.runsheet = os.path.abspath(args.runsheet)
+
+    """
+    parsed_runsheet = list(parse_runsheet(args.runsheet))
+    check_runsheet(args, parsed_runsheet, verbose=args.verbose)
+    """
     parsed_runsheet = list(henipipe.parse_runsheet(args.runsheet))
     henipipe.check_runsheet(args, parsed_runsheet, verbose=args.verbose)
 
@@ -135,6 +137,7 @@ def run_henipipe(args=None):
     if args.job=="MACS2":
         LOGGER.info("Running MACS2 %son merged files" % ('not ' if args.MACS2_merged is False else ''))
         MACS2job = henipipe.MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix)
+        #MACS2job = MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix)
         MACS2job.run_job()
         exit()
 
