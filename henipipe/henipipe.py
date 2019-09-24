@@ -344,6 +344,12 @@ class MACS2(SampleFactory, object):
             merge_dict = dict.fromkeys(key_data, "NotFound")
             for key in merge_dict.keys():
                 merge_dict[key]=list(compress(mc2_data, is_in(key, key_data)))
+                bools = [bool(re.search(r'._CONTROL$', i)) for i in merge_dict[key]]
+                control_b = all_the_same(bools)
+                if control_b == 'mixed':
+                    raise ValueError("Some discrepency bertween merge_key and MACS2_key ")
+                merge_dict[key] = { "MACS2_key":list(compress(mc2_data, is_in(key, key_data))),
+                                    "IsControl": control_b}
             return(merge_dict)
             # MACS2_filenames = key_data +"_merged.bedgraph"
             # is_control = [i.get("MACS2_key") for i in desired_samples]
@@ -456,7 +462,14 @@ def find_fastq_mate(dir, sample_flag=None, full_name=True):
     values=[dir, os.path.basename(dir), "\t".join(fastq1), "\t".join(fastq1_mate), len(fastq1)>0]
     return(dict(zip(keys, values)))
 
-
+def all_the_same(list_in):
+    #this function takes a list of booleans and characterizes them as all true, all false or mixed.
+    if all(list_in) is True:
+        return(True)
+    elif all([not i for i in list_in]) is True:
+        return(False)
+    else:
+        return("mixed")
 
 def find_colnames(runsheet, header=True):
     if header==True:
