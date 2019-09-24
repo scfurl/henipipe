@@ -277,7 +277,7 @@ class Merge(SampleFactory, object):
         self.out = kwargs.get('out')
         self.run_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
         self.processor_line = self.Merge_processor_line()
-        #self.command = self.Merge_executable(pare_down = kwargs.get('pare_down'))
+        self.command = self.Merge_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
     def __call__():
         pass
