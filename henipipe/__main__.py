@@ -44,7 +44,7 @@ def run_henipipe(args=None):
     parser.add_argument('--MACS2_merged', '-mk', action ='store_true', default=False, help='FOR MACS2: use this flag to select merged bedgraphs (generated using MERGE function and merge_key column in runsheet) instead of the individual bedgraphs output by NORM.  To select controls for MACS2, (as in SEACR), append controls with the "_CONTROL" string in the "MACS2_key" column in the runsheet.')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
-    #call = 'henipipe MACS2 -r ./runsheet.csv -d'
+    #call = 'henipipe MACS2 -r ./runsheet.csv -d -mk'
     #call = 'henipipe GENOMESFILE'
 
     #args = parser.parse_args(call.split(" ")[1:])

@@ -339,29 +339,28 @@ class MACS2(SampleFactory, object):
         #will need to change this when multiple selections are implemented; for now just allow user to specify sample, then find control
         if self.merged:
             desired_samples = [self.runsheet_data[i] for i in pare_down]
+            #desired_samples = [parsed_runsheet[i] for i in pare_down]
             key_data = [i.get("merge_key") for i in desired_samples]
-            mc2_data = [i.get("MACS2_key") for i in desired_samples]
+            match_data = [i.get("merge_MACS2_key") for i in desired_samples]
             unique_keys = unique(key_data)
-            samples = []
+            run_list = []
+            key = unique_keys[0]
+            which(query[0], match_data)
             for key in unique_keys:
-                query=list(compress(mc2_data, is_in(key, key_data)))
+                #find out if file is sample or control by searching lists 
+                query = [match_data[i] for i in which(key, key_data)]
                 bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
-                control_b = all_the_same(bools)
-                if control_b == 'mixed':
+                is_control = all_the_same(bools)
+                if is_control == 'mixed':
                     raise ValueError("Some discrepency between merge_key and MACS2_key ")
-                samples.append({    "MACS2_in":(key+"_merged.bedgraph"),
-                                    "MACS2_control": control_b,
-                                    "sample": key})
-            return(samples)
-            # MACS2_filenames = key_data +"_merged.bedgraph"
-            # is_control = [i.get("MACS2_key") for i in desired_samples]
-            # MACS2_key = [desired_samples[i].get("MACS2_key") for i in desired_samples]
-            # sk = [i.get('MACS2_key') for i in desired_samples]
-            # controls_b = [bool(re.search(r'._CONTROL$', i)) for i in sk]
-            # controls = list(compress(desired_samples, controls_b))
-            # samples_b = [not i for i in controls_b]
-            # samples = list(compress(desired_samples, samples_b))
-            # runsheet_data<-[]
+                if is_control:
+                    control_filename = key +"_merged.bedgraph"
+                    sample = re.sub("_CONTROL", "", query[0])
+                    sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
+                    run_list.append({   "MACS2_in": sample_filename,
+                                        "MACS2_control": control_filename,
+                                        "sample": sample_filename})
+            return(run_list)
         else:
             desired_samples = [self.runsheet_data[i] for i in pare_down]
             sk = [i.get('MACS2_key') for i in desired_samples]
@@ -401,6 +400,17 @@ class MACS2(SampleFactory, object):
             return """select=1:mem=8GB:ncpus=2"""
         if self.cluster=="SLURM":
             return ''
+
+def which(string, list):
+    return [i for i, x in enumerate(list) if x == string]
+
+def unique_indices(list):
+    result = {}
+    for key, val in zip(keys, vals):
+        if key not in result:
+            result[key] = 0
+        result[key] += val
+    return(result)
 
 
 def unique(list1):
