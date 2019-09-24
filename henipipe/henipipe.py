@@ -301,6 +301,7 @@ class Merge(SampleFactory, object):
         for key in keys:
             #print(key)
             seperator = ' '
+            nfiles = len(self.run_data.get(key))
             bedgraph_line = seperator.join(self.run_data.get(key))
             bedgraph_out=str(os.path.join(self.out, key))+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
@@ -308,7 +309,7 @@ class Merge(SampleFactory, object):
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\n"""
             else:
                 modules = """\nmodule load bedtools\n"""
-            commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s'\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum/(NF-4+1); }' > %s\n""" % (bedgraph_line, bedgraph_line, bedgraph_out)
+            commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s'\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum/(NF-4+1); }' > %s\ncut -d$'\t' -f -3,%s %s > %s\n rm %s""" % (bedgraph_line, bedgraph_line, bedgraph_out+'temp', bedgraph_out+'temp', (nfiles+4), bedgraph_out, bedgraph_out+'temp', )
             commandline = modules + commandline
             command.append(commandline)
         return command
