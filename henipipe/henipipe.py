@@ -382,13 +382,13 @@ class MACS2(SampleFactory, object):
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             #print(sample)
-            #macs2_out = str(sample['MACS2_in'][0])+'MACS2_bedgraph'
+            macs2_out = re.sub("_merged.bedgraph", "MACS2_bedgraph",item['MACS2_in'])
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
             else:
                 modules = """\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcomp -t %s -c %s -o %s\n""" % (item['MACS2_in'], item['MACS2_control'], "test")
+            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcomp -t %s -c %s -o %s\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
             commandline = modules + commandline
             command.append(commandline)
         return command
