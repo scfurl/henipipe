@@ -295,10 +295,7 @@ class Merge(SampleFactory, object):
     def Merge_executable(self, pare_down):
         commandline=""
         command = []
-        #print("Runmode is " + self.runmode)
-        keys = [self.run_data[i].get("merge_key") for i in pare_down]
-        #print(keys)
-        for key in keys:
+        for key in self.run_data:
             #print(key)
             seperator = ' '
             nfiles = len(self.run_data.get(key))
