@@ -341,16 +341,17 @@ class MACS2(SampleFactory, object):
             desired_samples = [self.runsheet_data[i] for i in pare_down]
             key_data = [i.get("merge_key") for i in desired_samples]
             mc2_data = [i.get("MACS2_key") for i in desired_samples]
-            merge_dict = dict.fromkeys(key_data, "NotFound")
-            for key in merge_dict.keys():
-                merge_dict[key]=list(compress(mc2_data, is_in(key, key_data)))
-                bools = [bool(re.search(r'._CONTROL$', i)) for i in merge_dict[key]]
+            unique_keys = unique(key_data)
+            samples = []
+            for key in unique_keys:
+                query=list(compress(mc2_data, is_in(key, key_data)))
+                bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
                 control_b = all_the_same(bools)
                 if control_b == 'mixed':
-                    raise ValueError("Some discrepency bertween merge_key and MACS2_key ")
-                merge_dict[key] = { "MACS2_key":list(compress(mc2_data, is_in(key, key_data))),
-                                    "IsControl": control_b}
-            return(merge_dict)
+                    raise ValueError("Some discrepency between merge_key and MACS2_key ")
+                samples.append({    "MACS2_in":(query+"_merged.bedgraph"),
+                                    "MACS2_control": control_b})
+            return(samples)
             # MACS2_filenames = key_data +"_merged.bedgraph"
             # is_control = [i.get("MACS2_key") for i in desired_samples]
             # MACS2_key = [desired_samples[i].get("MACS2_key") for i in desired_samples]
@@ -400,6 +401,17 @@ class MACS2(SampleFactory, object):
         if self.cluster=="SLURM":
             return ''
 
+
+def unique(list1):
+    # function to get unique values
+    # intilize a null list
+    unique_list = []
+    # traverse for all elements
+    for x in list1:
+        # check if exists in unique_list or not
+        if x not in unique_list:
+            unique_list.append(x)
+    return(unique_list)
 
 def convert_windows_newlines(file_name):
     """`
