@@ -275,7 +275,7 @@ class Merge(SampleFactory, object):
         super(Merge, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_MERGE"
         self.out = kwargs.get('out')
-        self.run_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
+        self.runsheet_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
         self.processor_line = self.Merge_processor_line()
         self.command = self.Merge_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
@@ -295,7 +295,10 @@ class Merge(SampleFactory, object):
     def Merge_executable(self, pare_down):
         commandline=""
         command = []
-        for key in self.run_data:
+        #print("Runmode is " + self.runmode)
+        keys = [self.runsheet_data[i].get("merge_key") for i in pare_down]
+        #print(keys)
+        for key in keys:
             #print(key)
             seperator = ' '
             nfiles = len(self.run_data.get(key))
