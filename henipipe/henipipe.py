@@ -350,7 +350,8 @@ class MACS2(SampleFactory, object):
                 if control_b == 'mixed':
                     raise ValueError("Some discrepency between merge_key and MACS2_key ")
                 samples.append({    "MACS2_in":(key+"_merged.bedgraph"),
-                                    "MACS2_control": control_b})
+                                    "MACS2_control": control_b,
+                                    "sample": key})
             return(samples)
             # MACS2_filenames = key_data +"_merged.bedgraph"
             # is_control = [i.get("MACS2_key") for i in desired_samples]
