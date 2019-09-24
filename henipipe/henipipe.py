@@ -340,10 +340,10 @@ class MACS2(SampleFactory, object):
         if self.merged:
             desired_samples = [self.runsheet_data[i] for i in pare_down]
             key_data = [i.get("merge_key") for i in desired_samples]
+            mc2_data = [i.get("MACS2_key") for i in desired_samples]
             merge_dict = dict.fromkeys(key_data, "NotFound")
             for key in merge_dict.keys():
-                merge_dict[key]={   "MACS_in":"macsin",
-                                    "MACS_control":"macscontrol"}
+                merge_dict[key]=list(compress(mc2_data, is_in(key, key_data)))
             return(merge_dict)
             # MACS2_filenames = key_data +"_merged.bedgraph"
             # is_control = [i.get("MACS2_key") for i in desired_samples]
@@ -355,7 +355,7 @@ class MACS2(SampleFactory, object):
             # samples = list(compress(desired_samples, samples_b))
             # runsheet_data<-[]
         else:
-            desired_samples = [self.runsheet_data[i] for i in pare_down]
+            desired_samples = [self.runsheets_data[i] for i in pare_down]
             sk = [i.get('MACS2_key') for i in desired_samples]
             controls_b = [bool(re.search(r'._CONTROL$', i)) for i in sk]
             controls = list(compress(desired_samples, controls_b))
