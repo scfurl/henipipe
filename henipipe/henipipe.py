@@ -344,8 +344,6 @@ class MACS2(SampleFactory, object):
             match_data = [i.get("merge_MACS2_key") for i in desired_samples]
             unique_keys = unique(key_data)
             run_list = []
-            key = unique_keys[0]
-            which(query[0], match_data)
             for key in unique_keys:
                 #find out if file is sample or control by searching lists 
                 query = [match_data[i] for i in which(key, key_data)]
