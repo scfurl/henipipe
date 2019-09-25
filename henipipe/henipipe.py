@@ -302,8 +302,8 @@ class Merge(SampleFactory, object):
         for i in self.runsheet_data:
             #print(key)
             seperator = ' '
-            nfiles = len(self.runsheet_data[i].get("files_to_merge"))
-            bedgraph_line = seperator.join(self.runsheet_data[i].get("files_to_merge"))
+            nfiles = len(i.get("files_to_merge"))
+            bedgraph_line = seperator.join(i.get("files_to_merge"))
             bedgraph_out=str(os.path.join(self.out, self.runsheet_data[i].get("sample")))+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
