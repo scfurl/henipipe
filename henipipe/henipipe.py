@@ -286,10 +286,12 @@ class Merge(SampleFactory, object):
         key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
         bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
         merge_dict = dict.fromkeys(key_data, "NotFound")
+        samples = []
         for key in merge_dict.keys():
             # do something with value
-            merge_dict[key] = list(compress(bg_data, is_in(key, key_data)))
-        return(merge_dict)
+            samples.append({    "sample" : key,
+                                "files_to_merge": list(compress(bg_data, is_in(key, key_data))),})
+        return(samples)
 
 
     def Merge_executable(self, pare_down):
@@ -297,12 +299,12 @@ class Merge(SampleFactory, object):
         command = []
         #print("Runmode is " + self.runmode)
         #print(keys)
-        for key in self.runsheet_data.keys():
+        for i in self.runsheet_data:
             #print(key)
             seperator = ' '
-            nfiles = len(self.runsheet_data.get(key))
-            bedgraph_line = seperator.join(self.runsheet_data.get(key))
-            bedgraph_out=str(os.path.join(self.out, key))+"_merged.bedgraph"
+            nfiles = len(self.runsheet_data[i].get(key))
+            bedgraph_line = seperator.join(self.runsheet_data[i].get("files_to_merge"))
+            bedgraph_out=str(os.path.join(self.out, self.runsheet_data[i].get("sample")))+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\n"""
