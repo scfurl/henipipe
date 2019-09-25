@@ -140,9 +140,15 @@ class Align(SampleFactory, object):
             else:
                 modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
             norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
-            commandline = """bowtie2 %s -p 16 -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, fastq1, fastq2, sample['fasta'], sam2bed_string)
-            commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
-            commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
+            if self.pipe:
+                commandline = """bowtie2 %s -p 16 -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, fastq1, fastq2, sample['fasta'], sam2bed_string)
+                commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
+                commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
+            else:
+                commandline = """bowtie2 %s -p 16 -1 %s -2 %s -x %s -S %s\n""" % (self.bowtie_flags, fastq1, fastq2, sample['fasta'], sample['sample']+".sam")
+                commandline = """samtools view -bS %s > %s\n""" % (sample['sample']+".sam", sample['sample']+".bam")
+                commandline = commandline + """\necho 'samToBed...\n'\nsamTobed %s -o %s %s\n""" % (sample['sample']+".sam", sample['bed_out']+'tmp', self.filter_string)
+                commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
             if self.norm_method == "spike_in":
                 commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s\n""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
                 commandline = commandline + """\necho 'Sorting Bed for spikein...\n'sort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
