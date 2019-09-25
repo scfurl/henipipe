@@ -304,7 +304,7 @@ class Merge(SampleFactory, object):
             seperator = ' '
             nfiles = len(i.get("files_to_merge"))
             bedgraph_line = seperator.join(i.get("files_to_merge"))
-            bedgraph_out=str(os.path.join(self.out, self.runsheet_data[i].get("sample")))+"_merged.bedgraph"
+            bedgraph_out=str(os.path.join(self.out, i.get("sample")))+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\n"""
