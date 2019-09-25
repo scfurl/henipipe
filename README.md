@@ -14,6 +14,7 @@ A python wrapper for processing of sequencing data generated using CutnRun or Cu
 1. Python > 3.5 (henipipe uses the 'six' package but will attempt to install if not already installed)
 2. Computing cluster with PBS or SLURM
 3. Modules installed for python, bowtie2, samtools, bedtools, R
+4. MACS2 is required for MACS2 function
 
 ## Installation
 
@@ -60,16 +61,17 @@ henipipe usage: A wrapper for running henipipe [-h] [--sample_flag SAMPLE_FLAG]
                                       [--norm_method {coverage,read_count,spike_in}]
                                       [--user USER] [--SEACR_norm {non,norm}]
                                       [--SEACR_stringency {stringent,relaxed}]
-                                      [--verbose]
-                                      {MAKERUNSHEET,ALIGN,NORM,SEACR,GENOMESFILE}
+                                      [--MACS2_merged] [--no_pipe] [--verbose]
+                                      {MAKERUNSHEET,ALIGN,NORM,MERGE,SEACR,MACS2,GENOMESFILE}
 
 positional arguments:
-  {MAKERUNSHEET,ALIGN,NORM,SEACR,GENOMESFILE}
+  {MAKERUNSHEET,ALIGN,NORM,MERGE,SEACR,MACS2,GENOMESFILE}
                         a required string denoting segment of pipeline to run.
                         1) "MAKERUNSHEET" - to parse a folder of fastqs; 2)
                         "ALIGN" - to perform alignment using bowtie and output
                         bed files; 3) "NORM" - to normalize data to reference
-                        (spike in); 4) "SEACR" - to perform SEACR; 5)
+                        (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR"
+                        - to perform SEACR; 6) "MACS" - to perform MACS2; 7)
                         "GENOMESFILE" - print location of genomes.json file.
 
 optional arguments:
@@ -122,6 +124,14 @@ optional arguments:
   --SEACR_stringency {stringent,relaxed}, -Ss {stringent,relaxed}
                         FOR SEACR: Default will run as "stringent", other
                         option is "relaxed". OPTIONAL
+  --MACS2_merged, -mk   FOR MACS2: use this flag to select merged bedgraphs
+                        (generated using MERGE function and merge_key column
+                        in runsheet) instead of the individual bedgraphs
+                        output by NORM. To select controls for MACS2, (as in
+                        SEACR), append controls with the "_CONTROL" string in
+                        the "MACS2_key" column in the runsheet.
+  --no_pipe, -np        FOR ALIGN: use this flag to turn off piping (Wil
+                        generate all files).
   --verbose, -v         Run with some additional ouput - not much though...
                         OPTIONAL
 ```
