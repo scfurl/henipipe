@@ -296,13 +296,12 @@ class Merge(SampleFactory, object):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
-        keys = [self.runsheet_data[i].get("merge_key") for i in pare_down]
         #print(keys)
-        for key in keys:
+        for key in self.runsheet_data.keys():
             #print(key)
             seperator = ' '
-            nfiles = len(self.run_data.get(key))
-            bedgraph_line = seperator.join(self.run_data.get(key))
+            nfiles = len(self.runsheet_data.get(key))
+            bedgraph_line = seperator.join(self.runsheet_data.get(key))
             bedgraph_out=str(os.path.join(self.out, key))+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
