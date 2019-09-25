@@ -39,8 +39,9 @@ with open("README.md", "r") as fh:
 
 
 #FOR REAL
-## run this to make package: python3 setup.py sdist bdist_wheel
-## run this to upload to pypi: python3 -m twine upload dist/*
+cd '~/Box\ Sync/PI_FurlanS/computation/develop/henipipe/''
+run this to make package: python3 setup.py sdist bdist_wheel
+run this to upload to pypi: python3 -m twine upload dist/*
 
 ##Install pipx
 ## python3 -m pip install --user pipx
