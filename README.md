@@ -58,6 +58,7 @@ henipipe usage: A wrapper for running henipipe [-h] [--sample_flag SAMPLE_FLAG]
                                       [--select SELECT] [--debug]
                                       [--bowtie_flags BOWTIE_FLAGS]
                                       [--cluster {PBS,SLURM}]
+                                      [--threads THREADS] [--gb_ram GB_RAM]
                                       [--norm_method {coverage,read_count,spike_in}]
                                       [--user USER] [--SEACR_norm {non,norm}]
                                       [--SEACR_stringency {stringent,relaxed}]
@@ -110,6 +111,10 @@ optional arguments:
   --cluster {PBS,SLURM}, -c {PBS,SLURM}
                         Cluster software. OPTIONAL Currently supported: PBS
                         and SLURM
+  --threads THREADS, -t THREADS
+                        FOR ALIGN: number of threads
+  --gb_ram GB_RAM, -gb GB_RAM
+                        FOR ALIGN: gigabytes of RAM
   --norm_method {coverage,read_count,spike_in}, -n {coverage,read_count,spike_in}
                         For ALIGN and NORM: Normalization method, by
                         "read_count", "coverage", or "spike_in". If method is

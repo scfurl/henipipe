@@ -602,7 +602,7 @@ def getKeysByValues(dictOfElements, listOfValues):
     for item  in listOfItems:
         if item[1] in listOfValues:
             listOfKeys.append(item[0])
-    return  listOfKeys 
+    return  listOfKeys
 
 
 def parse_range_list(rl):
