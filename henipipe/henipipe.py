@@ -42,6 +42,8 @@ class SampleFactory:
     def __init__(self, *args, **kwargs):
         self.user = kwargs.get('user')
         self.cluster = kwargs.get('cluster')
+        self.threads = kwargs.get('threads')
+        self.gb_ram = kwargs.get('gb_ram')
         self.runsheet_data = kwargs.get('runsheet_data')
         self.debug = kwargs.get('debug')
         self.log_name = kwargs.get('log')
@@ -161,9 +163,9 @@ class Align(SampleFactory, object):
 
     def align_processor_line(self):
         if self.cluster=="PBS":
-            return """select=1:mem=64GB:ncpus=16"""
+            return """select=1:mem=%sGB:ncpus=%s""" %(self.gb_ram*self.gb_ram, self.threads)
         if self.cluster=="SLURM":
-            return '#SBATCH --cpus-per-task=16\n#SBATCH --mem-per-cpu=4000'
+            return '#SBATCH --cpus-per-task=%s\n#SBATCH --mem-per-cpu=%s000' %(self.threads, self.gb_ram)
 
 
 class Norm(SampleFactory, object):

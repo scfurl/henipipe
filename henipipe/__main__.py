@@ -37,6 +37,8 @@ def run_henipipe(args=None):
     parser.add_argument('--debug', '-d', action='store_true', help='To print commands (For testing flow). OPTIONAL')
     parser.add_argument('--bowtie_flags', '-b', type=str, default='--end-to-end --very-sensitive --no-mixed --no-discordant -q --phred33 -I 10 -X 700', help='For ALIGN: bowtie flags, OPTIONAL')
     parser.add_argument('--cluster', '-c', type=str, default='PBS', choices=['PBS', 'SLURM'], help='Cluster software.  OPTIONAL Currently supported: PBS and SLURM')
+    parser.add_argument('--threads', '-t', type=str, default='4', help='FOR ALIGN: number of threads')
+    parser.add_argument('--gb_ram', '-gb', type=str, default='4', help='FOR ALIGN: gigabytes of RAM')
     parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in'], help='For ALIGN and NORM: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
     parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
