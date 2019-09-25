@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-version 0.7
+version 0.8
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
