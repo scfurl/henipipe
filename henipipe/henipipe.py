@@ -42,8 +42,8 @@ class SampleFactory:
     def __init__(self, *args, **kwargs):
         self.user = kwargs.get('user')
         self.cluster = kwargs.get('cluster')
-        self.threads = kwargs.get('threads')
-        self.gb_ram = kwargs.get('gb_ram')
+        self.threads = int(kwargs.get('threads'))
+        self.gb_ram = int(kwargs.get('gb_ram'))
         self.runsheet_data = kwargs.get('runsheet_data')
         self.debug = kwargs.get('debug')
         self.log_name = kwargs.get('log')
