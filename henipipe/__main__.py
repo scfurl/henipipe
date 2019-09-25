@@ -112,7 +112,7 @@ def run_henipipe(args=None):
     if args.job=="ALIGN":
         #deal with filtering
         LOGGER.info("Aligning reads...")
-        Alignjob = henipipe.Align(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, no_pipe=args.no_pipe, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
+        Alignjob = henipipe.Align(runsheet_data = [parsed_runsheet[i] for i in pare_down], threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, no_pipe=args.no_pipe, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
         LOGGER.info("Submitting alignment jobs... Debug mode is %s" % args.debug)
         Alignjob.run_job()
         exit()
