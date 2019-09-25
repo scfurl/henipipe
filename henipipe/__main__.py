@@ -42,6 +42,7 @@ def run_henipipe(args=None):
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
     parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
     parser.add_argument('--MACS2_merged', '-mk', action ='store_true', default=False, help='FOR MACS2: use this flag to select merged bedgraphs (generated using MERGE function and merge_key column in runsheet) instead of the individual bedgraphs output by NORM.  To select controls for MACS2, (as in SEACR), append controls with the "_CONTROL" string in the "MACS2_key" column in the runsheet.')
+    parser.add_argument('--no_pipe', '-np', action ='store_true', default=False, help='FOR ALIGN: use this flag to turn off piping (Wil generate all files).')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
     #call = 'henipipe MACS2 -r ./runsheet.csv -d -mk'
@@ -109,7 +110,7 @@ def run_henipipe(args=None):
     if args.job=="ALIGN":
         #deal with filtering
         LOGGER.info("Aligning reads...")
-        Alignjob = henipipe.Align(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
+        Alignjob = henipipe.Align(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, no_pipe=args.no_pipe, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
         LOGGER.info("Submitting alignment jobs... Debug mode is %s" % args.debug)
         Alignjob.run_job()
         exit()

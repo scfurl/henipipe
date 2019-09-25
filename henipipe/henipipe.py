@@ -109,6 +109,7 @@ class Align(SampleFactory, object):
         super(Align, self).__init__(*args, **kwargs)
         self.bowtie_flags = kwargs.get('bowtie_flags')
         self.job = "HENIPIPE_ALIGN"
+        self.pipe = not kwargs.get('no_pipe')
         self.filter_string = self.make_filter_string(kwargs.get('filter')[0], kwargs.get('filter')[1])
         self.norm_method = kwargs.get('norm_method')
         self.processor_line = self.align_processor_line()
