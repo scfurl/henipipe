@@ -348,11 +348,33 @@ class MACS2(SampleFactory, object):
 
     def MACS2_match(self, pare_down):
         #will need to change this when multiple selections are implemented; for now just allow user to specify sample, then find control
+        # if self.merged:
+        #     desired_samples = [self.runsheet_data[i] for i in pare_down]
+        #     #desired_samples = [parsed_runsheet[i] for i in pare_down]
+        #     key_data = [i.get("merge_key") for i in desired_samples]
+        #     match_data = [i.get("merge_MACS2_key") for i in desired_samples]
+        #     unique_keys = unique(key_data)
+        #     run_list = []
+        #     for key in unique_keys:
+        #         #find out if file is sample or control by searching lists 
+        #         query = [match_data[i] for i in which(key, key_data)]
+        #         bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
+        #         is_control = all_the_same(bools)
+        #         if is_control == 'mixed':
+        #             raise ValueError("Some discrepency between merge_key and MACS2_key ")
+        #         if is_control:
+        #             control_filename = key +"_merged.bedgraph"
+        #             sample = re.sub("_CONTROL", "", query[0])
+        #             sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
+        #             run_list.append({   "MACS2_in": sample_filename,
+        #                                 "MACS2_control": control_filename,
+        #                                 "sample": sample_filename})
+        #     return(run_list)
         if self.merged:
             desired_samples = [self.runsheet_data[i] for i in pare_down]
             #desired_samples = [parsed_runsheet[i] for i in pare_down]
             key_data = [i.get("merge_key") for i in desired_samples]
-            match_data = [i.get("merge_MACS2_key") for i in desired_samples]
+            match_data = [i.get("SEACR_key") for i in desired_samples]
             unique_keys = unique(key_data)
             run_list = []
             for key in unique_keys:
@@ -361,13 +383,13 @@ class MACS2(SampleFactory, object):
                 bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
                 is_control = all_the_same(bools)
                 if is_control == 'mixed':
-                    raise ValueError("Some discrepency between merge_key and MACS2_key ")
+                    raise ValueError("Some discrepency between merge_key and SEACR_key ")
                 if is_control:
                     control_filename = key +"_merged.bedgraph"
                     sample = re.sub("_CONTROL", "", query[0])
                     sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
-                    run_list.append({   "MACS2_in": sample_filename,
-                                        "MACS2_control": control_filename,
+                    run_list.append({   "treatment_in": sample_filename,
+                                        "control_in": control_filename,
                                         "sample": sample_filename})
             return(run_list)
         else:

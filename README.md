@@ -138,7 +138,7 @@ optional arguments:
   --no_pipe, -np        FOR ALIGN: use this flag to turn off piping (Wil
                         generate all files).
   --verbose, -v         Run with some additional ouput - not much though...
-                        OPTIONAL
+                        Optionally
 ```
 
 
