@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="0.8",
+    version="0.81",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -39,9 +39,12 @@ with open("README.md", "r") as fh:
 
 
 #FOR REAL
-cd '~/Box\ Sync/PI_FurlanS/computation/develop/henipipe/''
-run this to make package: python3 setup.py sdist bdist_wheel
-run this to upload to pypi: python3 -m twine upload dist/*
+cd ~/Box\ Sync/PI_FurlanS/computation/develop/henipipe/
+rm dist/*
+python3 setup.py sdist bdist_wheel
+python3 -m twine upload dist/*
+scfurl
+"pw"<-PW2019
 
 ##Install pipx
 ## python3 -m pip install --user pipx

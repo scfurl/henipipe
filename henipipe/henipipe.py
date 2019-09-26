@@ -537,7 +537,7 @@ def load_genomes(genomes_file):
         genome_data = json.load(read_file)
     return genome_data
 
-def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta=None, spikein_fasta=None, genome_sizes=None):
+def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta=None, spikein_fasta=None, genome_sizes=None, no_pipe = True):
     genome_data = load_genomes(GENOMES_JSON).get(genome_key)
     ddir=[x[0] for x in os.walk(folder)]
     dat=list(map(find_fastq_mate, ddir))
@@ -552,9 +552,15 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
             'MERGE_key': i.get('directory_short'), \
             'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR"), \
             'fasta': genome_data.get('fasta'), 'spikein_fasta': genome_data.get('spikein_fasta'), 'genome_sizes':  genome_data.get('genome_sizes')})
+    if no_pipe:
+        i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
+            'bam': os.path.join(output, i.get('directory_short')+".bam")})
     #print(good_dat)
     #keys = good_dat[0].keys()
     keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
+    if no_pipe:
+        keys.append("sam")
+        keys.append("bam")
     with open(os.path.join(output, 'runsheet.csv'), 'w') as output_file:
         dict_writer = csv.DictWriter(output_file, fieldnames = keys, extrasaction='ignore')
         dict_writer.writeheader()
