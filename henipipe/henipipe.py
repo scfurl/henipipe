@@ -42,8 +42,6 @@ class SampleFactory:
     def __init__(self, *args, **kwargs):
         self.user = kwargs.get('user')
         self.cluster = kwargs.get('cluster')
-        self.threads = int(kwargs.get('threads'))
-        self.gb_ram = int(kwargs.get('gb_ram'))
         self.runsheet_data = kwargs.get('runsheet_data')
         self.debug = kwargs.get('debug')
         self.log_name = kwargs.get('log')
@@ -112,6 +110,8 @@ class Align(SampleFactory, object):
         self.bowtie_flags = kwargs.get('bowtie_flags')
         self.job = "HENIPIPE_ALIGN"
         self.pipe = not kwargs.get('no_pipe')
+        self.threads = int(kwargs.get('threads'))
+        self.gb_ram = int(kwargs.get('gb_ram'))
         self.filter_string = self.make_filter_string(kwargs.get('filter')[0], kwargs.get('filter')[1])
         self.norm_method = kwargs.get('norm_method')
         self.processor_line = self.align_processor_line()
