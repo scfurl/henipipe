@@ -336,7 +336,7 @@ class MACS2(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(MACS2, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_MACS2"
-        self.merged = kwargs.get('merged')
+        #self.merged = kwargs.get('merged')
         self.norm = kwargs.get('norm')
         self.runsheet_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
         print(self.runsheet_data)
@@ -370,41 +370,52 @@ class MACS2(SampleFactory, object):
         #                                 "MACS2_control": control_filename,
         #                                 "sample": sample_filename})
         #     return(run_list)
-        if self.merged:
-            desired_samples = [self.runsheet_data[i] for i in pare_down]
-            #desired_samples = [parsed_runsheet[i] for i in pare_down]
-            key_data = [i.get("merge_key") for i in desired_samples]
-            match_data = [i.get("SEACR_key") for i in desired_samples]
-            unique_keys = unique(key_data)
-            run_list = []
-            for key in unique_keys:
-                #find out if file is sample or control by searching lists 
-                query = [match_data[i] for i in which(key, key_data)]
-                bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
-                is_control = all_the_same(bools)
-                if is_control == 'mixed':
-                    raise ValueError("Some discrepency between merge_key and SEACR_key ")
-                if is_control:
-                    control_filename = key +"_merged.bedgraph"
-                    sample = re.sub("_CONTROL", "", query[0])
-                    sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
-                    run_list.append({   "treatment_in": sample_filename,
-                                        "control_in": control_filename,
-                                        "sample": sample_filename})
-            return(run_list)
-        else:
-            desired_samples = [self.runsheet_data[i] for i in pare_down]
-            sk = [i.get('MACS2_key') for i in desired_samples]
-            controls_b = [bool(re.search(r'._CONTROL$', i)) for i in sk]
-            controls = list(compress(desired_samples, controls_b))
-            samples_b = [not i for i in controls_b]
-            samples = list(compress(desired_samples, samples_b))
-            for sample in samples:
-                control_name = sample.get('MACS2_key')+"_CONTROL"
-                control_bed = next(item for item in controls if item["MACS2_key"] == control_name).get('bedgraph')
-                sample.update( {'MACS2_in' : sample.get('bedgraph')})
-                sample.update( {'MACS2_control' : control_bed})
-            return samples
+        # if self.merged:
+        #     desired_samples = [self.runsheet_data[i] for i in pare_down]
+        #     #desired_samples = [parsed_runsheet[i] for i in pare_down]
+        #     key_data = [i.get("merge_key") for i in desired_samples]
+        #     match_data = [i.get("SEACR_key") for i in desired_samples]
+        #     unique_keys = unique(key_data)
+        #     run_list = []
+        #     for key in unique_keys:
+        #         #find out if file is sample or control by searching lists 
+        #         query = [match_data[i] for i in which(key, key_data)]
+        #         bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
+        #         is_control = all_the_same(bools)
+        #         if is_control == 'mixed':
+        #             raise ValueError("Some discrepency between merge_key and SEACR_key ")
+        #         if is_control:
+        #             control_filename = key +"_merged.bedgraph"
+        #             sample = re.sub("_CONTROL", "", query[0])
+        #             sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
+        #             run_list.append({   "treatment_in": sample_filename,
+        #                                 "control_in": control_filename,
+        #                                 "sample": sample_filename})
+        #     return(run_list)
+        # else:
+
+        desired_samples = [self.runsheet_data[i] for i in pare_down]
+        #desired_samples = [parsed_runsheet[i] for i in pare_down]
+        key_data = [i.get("SEACR_key") for i in desired_samples]
+        match_data = [i.get("MACS2_key") for i in desired_samples]
+        unique_keys = unique(key_data)
+        run_list = []
+        for key in unique_keys:
+            #find out if file is sample or control by searching lists 
+            query = [match_data[i] for i in which(key, key_data)]
+            bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
+            is_control = all_the_same(bools)
+            if is_control == 'mixed':
+                raise ValueError("Some discrepency between merge_key and MACS2_key ")
+            if is_control:
+                control_filename = key +"_merged.bedgraph"
+                sample = re.sub("_CONTROL", "", query[0])
+                sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
+                run_list.append({   "MACS2_in": sample_filename,
+                                    "MACS2_control": control_filename,
+                                    "sample": sample_filename})
+        return(run_list)
+
 
 
 
@@ -415,13 +426,14 @@ class MACS2(SampleFactory, object):
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             #print(sample)
-            macs2_out = re.sub("_merged.bedgraph", "_MACS2.bedgraph",item['MACS2_in'])
+            output = os.path.join(self.out, item['sample'])
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
             else:
                 modules = """\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
+            #commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
+            commandline = """echo '\n[MACS2] Running MACS2 callpeak... Output:\n'\nmacs2 callpeak -t %s -c %s -f BEDPE -g hs -o %s -n %s\n""" % (item['MACS2_in'], item['MACS2_control'], output)
             commandline = modules + commandline
             command.append(commandline)
         return command
