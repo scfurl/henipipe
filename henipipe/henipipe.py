@@ -337,6 +337,7 @@ class MACS2(SampleFactory, object):
         super(MACS2, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_MACS2"
         #self.merged = kwargs.get('merged')
+        self.out = kwargs.get('out')
         self.norm = kwargs.get('norm')
         self.runsheet_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
         print(self.runsheet_data)
