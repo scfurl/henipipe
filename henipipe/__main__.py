@@ -139,7 +139,7 @@ def run_henipipe(args=None):
 
     if args.job=="MACS2":
         LOGGER.info("Running MACS2 %son merged files" % ('not ' if args.MACS2_merged is False else ''))
-        MACS2job = henipipe.MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix)
+        MACS2job = henipipe.MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
         #MACS2job = MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix)
         MACS2job.run_job()
         exit()
