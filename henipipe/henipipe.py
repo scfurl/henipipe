@@ -32,8 +32,8 @@ import random
 from itertools import chain, compress
 import json
 #import pandas as pd
-#_ROOT = os.getcwd()
-_ROOT = os.path.abspath(os.path.dirname(__file__))
+_ROOT = os.getcwd()
+#_ROOT = os.path.abspath(os.path.dirname(__file__))
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.1.sh')
 
@@ -397,24 +397,45 @@ class MACS2(SampleFactory, object):
 
         desired_samples = [self.runsheet_data[i] for i in pare_down]
         #desired_samples = [parsed_runsheet[i] for i in pare_down]
-        key_data = [i.get("sample") for i in desired_samples]
-        match_data = [i.get("MACS2_key") for i in desired_samples]
-        unique_keys = unique(key_data)
+        sample_key = [i.get("sample") for i in desired_samples]
+        biomatch_data = [i.get("MACS2_key") for i in desired_samples]
+        abmatch_data = [i.get("SEACR_key") for i in desired_samples]
+        unique_keys = unique(sample_key)
         run_list = []
+        key = unique_keys[2]
         for key in unique_keys:
-            #find out if file is sample or control by searching lists 
-            query = [match_data[i] for i in which(key, key_data)]
-            bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
-            is_control = all_the_same(bools)
-            if is_control == 'mixed':
+            #find out if file is bio sample or control or ab sample or control by searching lists of the two keys
+            biomatch_key = [biomatch_data[i] for i in which(key, sample_key)]
+            is_biomatch_control = [bool(re.search(r'._CONTROL$', i)) for i in biomatch_key]
+            abmatch_key = [abmatch_data[i] for i in which(key, sample_key)]
+            is_abmatch_control = [bool(re.search(r'._CONTROL$', i)) for i in abmatch_key]
+            is_biomatch_control = all_the_same(is_biomatch_control)
+            is_biomatch_control = all_the_same(is_abmatch_control)
+            if type(is_abmatch_control) is str:
                 raise ValueError("Some discrepency between merge_key and MACS2_key ")
-            if is_control:
-                control_filename = key +"_merged.bedgraph"
-                sample = re.sub("_CONTROL", "", query[0])
-                sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
-                run_list.append({   "MACS2_in": sample_filename,
-                                    "MACS2_control": control_filename,
-                                    "sample": sample_filename})
+            if type(is_biomatch_control) is str:
+                raise ValueError("Some discrepency between merge_key and MACS2_key ")
+            if not is_biomatch_control and not is_biomatch_control:
+                #treatment bed is just key
+                treatment_bed = get_key_from_dict_list(desired_samples, {"sample":key}, 'bed_out')
+                #for all non-controls we will output a list of relevant files to process using macs2
+                #first find biomatch control
+                biomatch_control_key = biomatch_key[0]+"_CONTROL"
+                #get bed of this control
+                control_bed = get_key_from_dict_list(desired_samples, {"sample":key_data[which(biomatch_control_key, biomatch_data)[0]]}, 'bed_out')
+                #get bed of antibody control for treatment
+                abmatch_control_key = abmatch_key[0]+"_CONTROL"
+                treatment_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":key_data[which(abmatch_control_key, abmatch_data)[0]]}, 'bed_out')
+                #get bed of antibody control for control
+                control_control_key = get_key_from_dict_list(desired_samples, {"sample":key_data[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
+                control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":key_data[which(control_control_key, abmatch_data)[0]]}, 'bed_out')
+                run_list.append({   "MACS2DIFF_treatment": key,
+                                    "MACS2CP_treat_sample": treatment_bed,
+                                    "MACS2CP_treat_control": treatment_abcontrol_bed,
+                                    "MACS2DIFF_control": key_data[which(biomatch_control_key, biomatch_data)[0]],
+                                    "MACS2CP_control_sample": control_bed,
+                                    "MACS2CP_control_control": control_abcontrol_bed,
+                                    "sample": key})
         return(run_list)
 
 
@@ -444,6 +465,11 @@ class MACS2(SampleFactory, object):
             return """select=1:mem=8GB:ncpus=2"""
         if self.cluster=="SLURM":
             return ''
+
+def get_key_from_dict_list(list_of_dicts, dict_in, key_out):
+    #this function takes a list of dicts, returns the value associated with key_out for the element in the list_of_dicts which has the key:value combo given in dict_in
+    dict_out = next(item for item in list_of_dicts if item[list(dict_in.keys())[0]] == dict_in.get(list(dict_in.keys())[0]))
+    return dict_out.get(key_out)
 
 def which(string, list):
     return [i for i, x in enumerate(list) if x == string]
