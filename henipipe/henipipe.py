@@ -340,7 +340,6 @@ class MACS2(SampleFactory, object):
         self.out = kwargs.get('out')
         self.norm = kwargs.get('norm')
         self.runsheet_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
-        print(self.runsheet_data)
         self.processor_line = self.MACS2_processor_line()
         self.command = self.MACS2_executable(pare_down = kwargs.get('pare_down'))
         self.script = self.generate_job()
@@ -422,17 +421,17 @@ class MACS2(SampleFactory, object):
                 #first find biomatch control
                 biomatch_control_key = biomatch_key[0]+"_CONTROL"
                 #get bed of this control
-                control_bed = get_key_from_dict_list(desired_samples, {"sample":key_data[which(biomatch_control_key, biomatch_data)[0]]}, 'bed_out')
+                control_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'bed_out')
                 #get bed of antibody control for treatment
                 abmatch_control_key = abmatch_key[0]+"_CONTROL"
-                treatment_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":key_data[which(abmatch_control_key, abmatch_data)[0]]}, 'bed_out')
+                treatment_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(abmatch_control_key, abmatch_data)[0]]}, 'bed_out')
                 #get bed of antibody control for control
-                control_control_key = get_key_from_dict_list(desired_samples, {"sample":key_data[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
-                control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":key_data[which(control_control_key, abmatch_data)[0]]}, 'bed_out')
+                control_control_key = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
+                control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(control_control_key, abmatch_data)[0]]}, 'bed_out')
                 run_list.append({   "MACS2DIFF_treatment": key,
                                     "MACS2CP_treat_sample": treatment_bed,
                                     "MACS2CP_treat_control": treatment_abcontrol_bed,
-                                    "MACS2DIFF_control": key_data[which(biomatch_control_key, biomatch_data)[0]],
+                                    "MACS2DIFF_control": sample_key[which(biomatch_control_key, biomatch_data)[0]],
                                     "MACS2CP_control_sample": control_bed,
                                     "MACS2CP_control_control": control_abcontrol_bed,
                                     "sample": key})
