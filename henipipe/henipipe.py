@@ -32,8 +32,8 @@ import random
 from itertools import chain, compress
 import json
 #import pandas as pd
-_ROOT = os.getcwd()
-#_ROOT = os.path.abspath(os.path.dirname(__file__))
+#_ROOT = os.getcwd()
+_ROOT = os.path.abspath(os.path.dirname(__file__))
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.1.sh')
 
@@ -401,20 +401,20 @@ class MACS2(SampleFactory, object):
         abmatch_data = [i.get("SEACR_key") for i in desired_samples]
         unique_keys = unique(sample_key)
         run_list = []
-        key = unique_keys[2]
         for key in unique_keys:
             #find out if file is bio sample or control or ab sample or control by searching lists of the two keys
+            #print(key)
             biomatch_key = [biomatch_data[i] for i in which(key, sample_key)]
             is_biomatch_control = [bool(re.search(r'._CONTROL$', i)) for i in biomatch_key]
             abmatch_key = [abmatch_data[i] for i in which(key, sample_key)]
             is_abmatch_control = [bool(re.search(r'._CONTROL$', i)) for i in abmatch_key]
             is_biomatch_control = all_the_same(is_biomatch_control)
-            is_biomatch_control = all_the_same(is_abmatch_control)
+            is_abmatch_control = all_the_same(is_abmatch_control)
             if type(is_abmatch_control) is str:
                 raise ValueError("Some discrepency between merge_key and MACS2_key ")
             if type(is_biomatch_control) is str:
                 raise ValueError("Some discrepency between merge_key and MACS2_key ")
-            if not is_biomatch_control and not is_biomatch_control:
+            if not is_abmatch_control and not is_biomatch_control:
                 #treatment bed is just key
                 treatment_bed = get_key_from_dict_list(desired_samples, {"sample":key}, 'bed_out')
                 #for all non-controls we will output a list of relevant files to process using macs2
