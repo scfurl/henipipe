@@ -427,14 +427,14 @@ class MACS2(SampleFactory, object):
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             #print(sample)
-            output = os.path.join(self.out, item['sample'])
+            #output = os.path.join(self.out, item['sample'])
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
             else:
                 modules = """\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             #commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
-            commandline = """echo '\n[MACS2] Running MACS2 callpeak... Output:\n'\nmacs2 callpeak -t %s -c %s -f BEDPE -g hs -o %s -n %s\n""" % (item['MACS2_in'], item['MACS2_control'], output)
+            commandline = """echo '\n[MACS2] Running MACS2 callpeak... Output:\n'\nmacs2 callpeak -t %s -c %s -f BEDPE -g hs --outdir %s -n %s\n""" % (item['MACS2_in'], item['MACS2_control'], self.out, item['sample'])
             commandline = modules + commandline
             command.append(commandline)
         return command
