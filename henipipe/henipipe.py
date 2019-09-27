@@ -454,7 +454,7 @@ class MACS2(SampleFactory, object):
                 modules = """\n"""
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             #commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
-            commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -t %s -c %s -f BEDPE -g hs --outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_sample"])
+            commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -t %s -c %s -f BEDPE -g hs --outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_treatment"])
             commandline = """echo '\n[MACS2] Running MACS2 callpeak on control... Output:\n'\nmacs2 callpeak -t %s -c %s -f BEDPE -g hs --outdir %s -n %s\n""" % (item["MACS2CP_control_sample"], item["MACS2CP_control_control"], self.out, item["MACS2DIFF_control"])
             commandline = modules + commandline
             command.append(commandline)
