@@ -397,7 +397,7 @@ class MACS2(SampleFactory, object):
 
         desired_samples = [self.runsheet_data[i] for i in pare_down]
         #desired_samples = [parsed_runsheet[i] for i in pare_down]
-        key_data = [i.get("SEACR_key") for i in desired_samples]
+        key_data = [i.get("sample") for i in desired_samples]
         match_data = [i.get("MACS2_key") for i in desired_samples]
         unique_keys = unique(key_data)
         run_list = []
