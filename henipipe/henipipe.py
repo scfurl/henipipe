@@ -446,6 +446,8 @@ class MACS2(SampleFactory, object):
         #print("Runmode is " + self.runmode)
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
+            treat_p = os.path.join(self.out, item["MACS2DIFF_treatment"])
+            cont_p = os.path.join(self.out, item["MACS2DIFF_conrol"])
             #print(sample)
             #output = os.path.join(self.out, item['sample'])
             if self.cluster=="SLURM":
@@ -456,7 +458,7 @@ class MACS2(SampleFactory, object):
             #commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
             commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147--outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_treatment"])
             commandline = commandline + """echo '\n[MACS2] Running MACS2 callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_control_sample"], item["MACS2CP_control_control"], self.out, item["MACS2DIFF_control"])
-            commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 %s --d2 %s -g 60 -l 147 --o-prefix %s\n""" % (item["MACS2DIFF_treatment"], item["MACS2DIFF_treatment"], item["MACS2DIFF_control"], item["MACS2DIFF_control"], 13000000, 13000000, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"])
+            commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 %s --d2 %s -g 60 -l 147 --o-prefix %s\n""" % (treat_p, treat_p, cont_p, cont_p, 13000000, 13000000, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"])
             commandline = modules + commandline
             command.append(commandline)
         return command
