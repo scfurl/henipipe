@@ -246,7 +246,10 @@ class SEACR(SampleFactory, object):
         samples = list(compress(self.runsheet_data, samples_b))
         for sample in samples:
             control_name = sample.get('SEACR_key')+"_CONTROL"
-            control_bed = next(item for item in controls if item["SEACR_key"] == control_name).get('bedgraph')
+            try:
+                control_bed = next(item for item in controls if item["SEACR_key"] == control_name).get('bedgraph')
+            except ValueError:
+                raise ValueError("Could not find matching file for : "+sample+"Make sure it is in the runsheet and/or your aren't selecting it out with the select flag")
             sample.update( {'SEACR_in' : sample.get('bedgraph')})
             sample.update( {'SEACR_control' : control_bed})
         return samples
