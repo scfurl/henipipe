@@ -47,7 +47,7 @@ def run_henipipe(args=None):
     parser.add_argument('--no_pipe', '-np', action ='store_true', default=False, help='FOR ALIGN: use this flag to turn off piping (Wil generate all files).')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
-    #call = 'henipipe MACS2 -r ./runsheet.csv -d -mk'
+    #call = 'henipipe MACS2 -r ./runsheet.csv -d -mk -s 1:10'
     #call = 'henipipe GENOMESFILE'
 
     #args = parser.parse_args(call.split(" ")[1:])
@@ -147,4 +147,11 @@ def run_henipipe(args=None):
 
 if __name__ == "__main__":
     run_henipipe()
+
+"""
+parsed_runsheet[i-1] for i in list(parse_range_list("1:4,11,12")
+
+"""
+
+
 
