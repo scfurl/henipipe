@@ -289,8 +289,8 @@ class Merge(SampleFactory, object):
         pass
 
     def Merge_match(self):
-        key_data = [self.runsheet_data[i].get("merge_key") for i in self.runsheet_data]
-        bg_data = [self.runsheet_data[i].get("bedgraph") for i in self.runsheet_data]
+        key_data = [i.get("merge_key") for i in self.runsheet_data]
+        bg_data = [i.get("bedgraph") for i in self.runsheet_data]
         merge_dict = dict.fromkeys(key_data, "NotFound")
         samples = []
         for key in merge_dict.keys():
