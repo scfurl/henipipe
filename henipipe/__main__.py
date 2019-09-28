@@ -105,7 +105,7 @@ def run_henipipe(args=None):
 
     #deal with sample selection
     print(args.select)
-    type(args.select)
+    print(type(args.select))
     if args.select is not None:
         [parsed_runsheet[i-1] for i in list(henipipe.parse_range_list(args.select))]
 
