@@ -347,52 +347,6 @@ class MACS2(SampleFactory, object):
         pass
 
     def MACS2_match(self, pare_down):
-        #will need to change this when multiple selections are implemented; for now just allow user to specify sample, then find control
-        # if self.merged:
-        #     desired_samples = [self.runsheet_data[i] for i in pare_down]
-        #     #desired_samples = [parsed_runsheet[i] for i in pare_down]
-        #     key_data = [i.get("merge_key") for i in desired_samples]
-        #     match_data = [i.get("merge_MACS2_key") for i in desired_samples]
-        #     unique_keys = unique(key_data)
-        #     run_list = []
-        #     for key in unique_keys:
-        #         #find out if file is sample or control by searching lists 
-        #         query = [match_data[i] for i in which(key, key_data)]
-        #         bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
-        #         is_control = all_the_same(bools)
-        #         if is_control == 'mixed':
-        #             raise ValueError("Some discrepency between merge_key and MACS2_key ")
-        #         if is_control:
-        #             control_filename = key +"_merged.bedgraph"
-        #             sample = re.sub("_CONTROL", "", query[0])
-        #             sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
-        #             run_list.append({   "MACS2_in": sample_filename,
-        #                                 "MACS2_control": control_filename,
-        #                                 "sample": sample_filename})
-        #     return(run_list)
-        # if self.merged:
-        #     desired_samples = [self.runsheet_data[i] for i in pare_down]
-        #     #desired_samples = [parsed_runsheet[i] for i in pare_down]
-        #     key_data = [i.get("merge_key") for i in desired_samples]
-        #     match_data = [i.get("SEACR_key") for i in desired_samples]
-        #     unique_keys = unique(key_data)
-        #     run_list = []
-        #     for key in unique_keys:
-        #         #find out if file is sample or control by searching lists 
-        #         query = [match_data[i] for i in which(key, key_data)]
-        #         bools = [bool(re.search(r'._CONTROL$', i)) for i in query]
-        #         is_control = all_the_same(bools)
-        #         if is_control == 'mixed':
-        #             raise ValueError("Some discrepency between merge_key and SEACR_key ")
-        #         if is_control:
-        #             control_filename = key +"_merged.bedgraph"
-        #             sample = re.sub("_CONTROL", "", query[0])
-        #             sample_filename = key_data[which(sample, match_data)[0]]+"_merged.bedgraph"
-        #             run_list.append({   "treatment_in": sample_filename,
-        #                                 "control_in": control_filename,
-        #                                 "sample": sample_filename})
-        #     return(run_list)
-        # else:
 
         desired_samples = [self.runsheet_data[i] for i in pare_down]
         #desired_samples = [parsed_runsheet[i] for i in pare_down]
@@ -458,7 +412,7 @@ class MACS2(SampleFactory, object):
             #commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
             commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_treatment"])
             commandline = commandline + """echo '\n[MACS2] Running MACS2 callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_control_sample"], item["MACS2CP_control_control"], self.out, item["MACS2DIFF_control"])
-            commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 %s --d2 %s -g 60 -l 147 --o-prefix %s\n""" % (treat_p, treat_p, cont_p, cont_p, 13000000, 13000000, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"])
+            commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 %s --d2 %s -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, 13000000, 13000000, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"], self.out)
             commandline = modules + commandline
             command.append(commandline)
         return command
