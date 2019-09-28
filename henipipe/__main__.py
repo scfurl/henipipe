@@ -107,7 +107,7 @@ def run_henipipe(args=None):
     print(args.select)
     print(type(args.select))
     if args.select is not None:
-        [parsed_runsheet[i-1] for i in list(henipipe.parse_range_list(args.select))]
+        parsed_runsheet = [parsed_runsheet[i-1] for i in list(henipipe.parse_range_list(args.select))]
 
     if args.job=="ALIGN":
         #deal with filtering
