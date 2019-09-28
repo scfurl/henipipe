@@ -447,7 +447,7 @@ class MACS2(SampleFactory, object):
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             treat_p = os.path.join(self.out, item["MACS2DIFF_treatment"])
-            cont_p = os.path.join(self.out, item["MACS2DIFF_conrol"])
+            cont_p = os.path.join(self.out, item["MACS2DIFF_control"])
             #print(sample)
             #output = os.path.join(self.out, item['sample'])
             if self.cluster=="SLURM":
