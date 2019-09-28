@@ -239,13 +239,11 @@ class SEACR(SampleFactory, object):
         pass
 
     def SEACR_match(self):
-        desired_samples = [self.runsheet_data[i].get("sample") for i in self.runsheet_data]
         sk = [i.get('SEACR_key') for i in self.runsheet_data]
         controls_b = [bool(re.search(r'._CONTROL$', i)) for i in sk]
         controls = list(compress(self.runsheet_data, controls_b))
         samples_b = [not i for i in controls_b]
         samples = list(compress(self.runsheet_data, samples_b))
-        samples = [i for i in samples if i.get("sample") in desired_samples]
         for sample in samples:
             control_name = sample.get('SEACR_key')+"_CONTROL"
             control_bed = next(item for item in controls if item["SEACR_key"] == control_name).get('bedgraph')
