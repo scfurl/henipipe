@@ -249,7 +249,7 @@ class SEACR(SampleFactory, object):
             try:
                 control_bed = next(item for item in controls if item["SEACR_key"] == control_name).get('bedgraph')
             except StopIteration:
-                raise ValueError("Could not find matching file for : "+sample+"Make sure it is in the runsheet and/or your aren't selecting it out with the select flag")
+                raise ValueError("Could not find matching files, make sure it is in the runsheet and/or your aren't selecting it out with the select flag")
             sample.update( {'SEACR_in' : sample.get('bedgraph')})
             sample.update( {'SEACR_control' : control_bed})
         return samples
