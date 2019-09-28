@@ -411,8 +411,11 @@ class MACS2(SampleFactory, object):
             #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             #commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
             commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_treatment"])
+            #get depth os.system("egrep "tags after filtering in treatment|tags after filtering in control" %s_peaks.xls")
+            commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
             commandline = commandline + """echo '\n[MACS2] Running MACS2 callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_control_sample"], item["MACS2CP_control_control"], self.out, item["MACS2DIFF_control"])
-            commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 %s --d2 %s -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, 13000000, 13000000, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"], self.out)
+            commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr2=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_c)
+            commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 $str1 --d2 $str2 -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"], self.out)
             commandline = modules + commandline
             command.append(commandline)
         return command
