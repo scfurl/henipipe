@@ -231,16 +231,15 @@ class SEACR(SampleFactory, object):
         self.job = "HENIPIPE_SEACR"
         self.method = kwargs.get('stringency')
         self.norm = kwargs.get('norm')
-        self.runsheet_data = self.SEACR_match(pare_down = kwargs.get('pare_down'))
+        self.runsheet_data = self.SEACR_match()
         self.processor_line = self.SEACR_processor_line()
         self.command = self.SEACR_executable()
         self.script = self.generate_job()
     def __call__():
         pass
 
-    def SEACR_match(self, pare_down):
-        #will need to change this when multiple selections are implemented; for now just allow user to specify sample, then find control
-        desired_samples = [self.runsheet_data[i].get("sample") for i in pare_down]
+    def SEACR_match(self):
+        desired_samples = [self.runsheet_data[i].get("sample") for i in self.runsheet_data]
         sk = [i.get('SEACR_key') for i in self.runsheet_data]
         controls_b = [bool(re.search(r'._CONTROL$', i)) for i in sk]
         controls = list(compress(self.runsheet_data, controls_b))
@@ -284,16 +283,16 @@ class Merge(SampleFactory, object):
         super(Merge, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_MERGE"
         self.out = kwargs.get('out')
-        self.runsheet_data = self.Merge_match(pare_down = kwargs.get('pare_down'))
+        self.runsheet_data = self.Merge_match()
         self.processor_line = self.Merge_processor_line()
-        self.command = self.Merge_executable(pare_down = kwargs.get('pare_down'))
+        self.command = self.Merge_executable()
         self.script = self.generate_job()
     def __call__():
         pass
 
-    def Merge_match(self, pare_down):
-        key_data = [self.runsheet_data[i].get("merge_key") for i in pare_down]
-        bg_data = [self.runsheet_data[i].get("bedgraph") for i in pare_down]
+    def Merge_match(self):
+        key_data = [self.runsheet_data[i].get("merge_key") for i in self.runsheet_data]
+        bg_data = [self.runsheet_data[i].get("bedgraph") for i in self.runsheet_data]
         merge_dict = dict.fromkeys(key_data, "NotFound")
         samples = []
         for key in merge_dict.keys():
@@ -303,7 +302,7 @@ class Merge(SampleFactory, object):
         return(samples)
 
 
-    def Merge_executable(self, pare_down):
+    def Merge_executable(self):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)
@@ -339,17 +338,17 @@ class MACS2(SampleFactory, object):
         #self.merged = kwargs.get('merged')
         self.out = kwargs.get('out')
         self.norm = kwargs.get('norm')
-        self.runsheet_data = self.MACS2_match(pare_down = kwargs.get('pare_down'))
+        self.runsheet_data = self.MACS2_match()
         self.processor_line = self.MACS2_processor_line()
-        self.command = self.MACS2_executable(pare_down = kwargs.get('pare_down'))
+        self.command = self.MACS2_executable()
         self.script = self.generate_job()
     def __call__():
         pass
 
-    def MACS2_match(self, pare_down):
+    def MACS2_match(self):
 
-        desired_samples = [self.runsheet_data[i] for i in pare_down]
-        #desired_samples = [parsed_runsheet[i] for i in pare_down]
+        desired_samples = self.runsheet_data
+        #desired_samples = parsed_runsheet
         sample_key = [i.get("sample") for i in desired_samples]
         biomatch_data = [i.get("MACS2_key") for i in desired_samples]
         abmatch_data = [i.get("SEACR_key") for i in desired_samples]
@@ -394,7 +393,7 @@ class MACS2(SampleFactory, object):
 
 
 
-    def MACS2_executable(self, pare_down):
+    def MACS2_executable(self):
         commandline=""
         command = []
         #print("Runmode is " + self.runmode)

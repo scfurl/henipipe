@@ -105,42 +105,40 @@ def run_henipipe(args=None):
 
     #deal with sample selection
     if args.select is not None:
-        pare_down = [int(args.select) -1]
-    else:
-        pare_down = list(range(len(parsed_runsheet)))
+        [parsed_runsheet[i-1] for i in list(parse_range_list(args.select))]
 
     if args.job=="ALIGN":
         #deal with filtering
         LOGGER.info("Aligning reads...")
-        Alignjob = henipipe.Align(runsheet_data = [parsed_runsheet[i] for i in pare_down], threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, no_pipe=args.no_pipe, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
+        Alignjob = henipipe.Align(runsheet_data = parsed_runsheet, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, no_pipe=args.no_pipe, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
         LOGGER.info("Submitting alignment jobs... Debug mode is %s" % args.debug)
         Alignjob.run_job()
         exit()
 
     if args.job=="NORM":
         LOGGER.info("Calculating %s", args.norm_method)
-        Normjob = henipipe.Norm(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
+        Normjob = henipipe.Norm(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
         LOGGER.info("Submitting bedgraph jobs... Debug mode is %s" % args.debug)
         Normjob.run_job()
         exit()
 
     if args.job=="MERGE":
-        Mergejob = henipipe.Merge(runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user, out=args.output)
-        #Mergejob = Merge(runsheet_data = [parsed_runsheet[i] for i in pare_down], debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
+        Mergejob = henipipe.Merge(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user, out=args.output)
+        #Mergejob = Merge(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
         LOGGER.info("Submitting merge-bedgraph jobs... Debug mode is %s" % args.debug)
         Mergejob.run_job()
         exit()
 
     if args.job=="SEACR":
         LOGGER.info("Running SEACR using settings: SEACR_norm = %s, SEACR_stringency = %s" % (args.SEACR_norm, args.SEACR_stringency))
-        SEACRjob = henipipe.SEACR(runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, norm=args.SEACR_norm, stringency=args.SEACR_stringency, user=args.user, log=args.log_prefix)
+        SEACRjob = henipipe.SEACR(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, norm=args.SEACR_norm, stringency=args.SEACR_stringency, user=args.user, log=args.log_prefix)
         SEACRjob.run_job()
         exit()
 
     if args.job=="MACS2":
-        LOGGER.info("Running MACS2 %son merged files" % ('not ' if args.MACS2_merged is False else ''))
-        MACS2job = henipipe.MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
-        #MACS2job = MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, pare_down = pare_down, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix)
+        LOGGER.info("Running MACS2")
+        MACS2job = henipipe.MACS2(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
+        #MACS2job = MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix)
         MACS2job.run_job()
         exit()
 
@@ -149,7 +147,7 @@ if __name__ == "__main__":
     run_henipipe()
 
 """
-parsed_runsheet[i-1] for i in list(parse_range_list("1:4,11,12")
+[parsed_runsheet[i-1] for i in list(parse_range_list("1:4,11,12"))]
 
 """
 
