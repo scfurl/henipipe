@@ -43,7 +43,6 @@ def run_henipipe(args=None):
     parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
     parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
-    parser.add_argument('--MACS2_merged', '-mk', action ='store_true', default=False, help='FOR MACS2: use this flag to select merged bedgraphs (generated using MERGE function and merge_key column in runsheet) instead of the individual bedgraphs output by NORM.  To select controls for MACS2, (as in SEACR), append controls with the "_CONTROL" string in the "MACS2_key" column in the runsheet.')
     parser.add_argument('--no_pipe', '-np', action ='store_true', default=False, help='FOR ALIGN: use this flag to turn off piping (Wil generate all files).')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
@@ -138,7 +137,6 @@ def run_henipipe(args=None):
     if args.job=="MACS2":
         LOGGER.info("Running MACS2")
         MACS2job = henipipe.MACS2(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
-        #MACS2job = MACS2(merged = args.MACS2_merged, runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix)
         MACS2job.run_job()
         exit()
 

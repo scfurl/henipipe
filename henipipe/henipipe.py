@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # PBS/SLURM cluster job submission in Python
-#v 0.3.2
 
 # A wrapper that performs the necessary pipeline for generation of CNR/CNT data
 # Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; 
@@ -31,7 +30,7 @@ import string
 import random
 from itertools import chain, compress
 import json
-#import pandas as pd
+
 #_ROOT = os.getcwd()
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
@@ -47,8 +46,6 @@ class SampleFactory:
         self.log_name = kwargs.get('log')
     def __call__():
         pass
-        # if self.debug == False:
-        #   open(self.log, 'w')
 
     def id_generator(self, size=6, chars=string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
@@ -84,20 +81,6 @@ class SampleFactory:
                 if self.debug==False:
                     print(out)
                     time.sleep(0.1)
-            # if self.cluster=="SLURM":
-            #     if self.debug==False:
-            #         #open("temp.sh", 'w').write(script+'\n')
-            #         proc = Popen(['sbatch'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            #         if (sys.version_info > (3, 0)):
-            #             proc.stdin.write(script.encode('utf-8'))
-            #             out, err = proc.communicate()
-            #         else:
-            #             proc.stdin.write(script)
-            #             out, err = proc.communicate()
-            #     print(script)
-            #     if self.debug==False:
-            #         print(out)
-            #         time.sleep(0.1)
 
 
 class Align(SampleFactory, object):

@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-version 0.81
+version 0.9
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
@@ -72,7 +72,7 @@ positional arguments:
                         "ALIGN" - to perform alignment using bowtie and output
                         bed files; 3) "NORM" - to normalize data to reference
                         (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR"
-                        - to perform SEACR; 6) "MACS" - to perform MACS2; 7)
+                        - to perform SEACR; 6) "MACS" - to perform MACS2 bdgdiff; 7)
                         "GENOMESFILE" - print location of genomes.json file.
 
 optional arguments:
@@ -129,16 +129,10 @@ optional arguments:
   --SEACR_stringency {stringent,relaxed}, -Ss {stringent,relaxed}
                         FOR SEACR: Default will run as "stringent", other
                         option is "relaxed". OPTIONAL
-  --MACS2_merged, -mk   FOR MACS2: use this flag to select merged bedgraphs
-                        (generated using MERGE function and merge_key column
-                        in runsheet) instead of the individual bedgraphs
-                        output by NORM. To select controls for MACS2, (as in
-                        SEACR), append controls with the "_CONTROL" string in
-                        the "MACS2_key" column in the runsheet.
   --no_pipe, -np        FOR ALIGN: use this flag to turn off piping (Wil
                         generate all files).
   --verbose, -v         Run with some additional ouput - not much though...
-                        Optionally
+                        OPTIONAL
 ```
 
 
@@ -217,4 +211,4 @@ henipipe SEACR -r runsheet.csv
 
 ## Acknowledgements
 
-Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe includes a python script samTobed.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam.  samTobed.py uses specific sam-sorting parameters as written in Jorja Henikoff's PERL script.
+Written by Scott Furlan with code inspiration from Andrew Hill's cellwrapper; Henipipe includes a python script samTobed.py which takes code from a fantastic sam reader "simplesam" - https://github.com/mdshw5/simplesam.  samTobed.py uses specific sam-sorting parameters similar to those written in Jorja Henikoff's PERL script.
