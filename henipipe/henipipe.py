@@ -60,23 +60,19 @@ class SampleFactory:
             log_file = self.id_generator()
             job_name = self.job + "_" + self.runsheet_data[i]['sample']
             command = self.command[i]
-            if self.cluster=="PBS":
-                #to_append = '#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/%s\n#PBS -A %s\ncd $PBS_O_WORKDIR\n%s' % (job_name, self.processor_line, self.log_name, self.user, command)
-                #to_append = '#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/%s\n#PBS -A %s\ncd $PBS_O_WORKDIR\n%s' % (job_name, self.processor_line, log_file, self.user, command)
-                #to_append = "#!/bin/bash\n#PBS -N %s\n#PBS -l  %s\n#PBS -j oe\n#PBS -o $PBS_JOBDIR/%s\n#PBS -A %s\ncd $PBS_O_WORKDIR\n%s\nsed -e 's/^/[HENIPIPE] %s: /' $PBS_JOBDIR/%s >> %s\n" % (job_name, self.processor_line, log_file, self.user, command, job_name, log_file, self.log_name)
-                to_append = "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file)
-            if self.cluster=="SLURM":
-                to_append = "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=outtmp\n#SBATCH --error=errtmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)
-                #to_append = '#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --ntasks=1\n%s\n%s' % (job_name, self.processor_line, command)
-            job_string.append(to_append)
+            to_appends = {  "PBS" : "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file),
+                            "SLURM" : "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=outtmp\n#SBATCH --error=errtmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)}
+            job_string.append(to_appends.get(self.cluster))
         return job_string
 
     def run_job(self):
+        popen_commands = {"PBS":'qsub', "SLURM":['sbatch']}
+        popen_command = popen_commands.get(self.cluster)
         for script in self.script:
             if self.cluster=="PBS":
                 if self.debug==False:
                     # Open a pipe to the command.
-                    proc = Popen('qsub', shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                    proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
                     if (sys.version_info > (3, 0)):
                         proc.stdin.write(script.encode('utf-8'))
                         out, err = proc.communicate()
@@ -88,20 +84,20 @@ class SampleFactory:
                 if self.debug==False:
                     print(out)
                     time.sleep(0.1)
-            if self.cluster=="SLURM":
-                if self.debug==False:
-                    #open("temp.sh", 'w').write(script+'\n')
-                    proc = Popen(['sbatch'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-                    if (sys.version_info > (3, 0)):
-                        proc.stdin.write(script.encode('utf-8'))
-                        out, err = proc.communicate()
-                    else:
-                        proc.stdin.write(script)
-                        out, err = proc.communicate()
-                print(script)
-                if self.debug==False:
-                    print(out)
-                    time.sleep(0.1)
+            # if self.cluster=="SLURM":
+            #     if self.debug==False:
+            #         #open("temp.sh", 'w').write(script+'\n')
+            #         proc = Popen(['sbatch'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            #         if (sys.version_info > (3, 0)):
+            #             proc.stdin.write(script.encode('utf-8'))
+            #             out, err = proc.communicate()
+            #         else:
+            #             proc.stdin.write(script)
+            #             out, err = proc.communicate()
+            #     print(script)
+            #     if self.debug==False:
+            #         print(out)
+            #         time.sleep(0.1)
 
 
 class Align(SampleFactory, object):
@@ -212,7 +208,6 @@ class Norm(SampleFactory, object):
                 modules = """\nml bedtools\n"""
             else:
                 modules = """\nmodule load bedtools\n"""
-                #modules = """\nmodule load bedtools\necho '\n[GENOMECOVERAGEBED] Making bedgraph... Output (None is good):\n'"""
             commandline = """genomeCoverageBed -bg -i %s -g %s -scale %s -trackline | pyWriter - %s\n""" % (sample['bed_out'], sample['genome_sizes'], sample['scale_factor'], sample['bedgraph'])
             commandline = modules + commandline
             command.append(commandline)
@@ -258,14 +253,12 @@ class SEACR(SampleFactory, object):
     def SEACR_executable(self):
         commandline=""
         command = []
-        #print("Runmode is " + self.runmode)
         for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\n"""
             else:
                 modules = """\nmodule load R\nmodule load bedtools\n"""
-            #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             commandline = """echo '\n[SEACR] Running SEACR... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
             commandline = modules + commandline
             command.append(commandline)
@@ -297,7 +290,6 @@ class Merge(SampleFactory, object):
         merge_dict = dict.fromkeys(key_data, "NotFound")
         samples = []
         for key in merge_dict.keys():
-            # do something with value
             samples.append({    "sample" : key,
                                 "files_to_merge": list(compress(bg_data, is_in(key, key_data))),})
         return(samples)
@@ -306,10 +298,7 @@ class Merge(SampleFactory, object):
     def Merge_executable(self):
         commandline=""
         command = []
-        #print("Runmode is " + self.runmode)
-        #print(keys)
         for i in self.runsheet_data:
-            #print(key)
             seperator = ' '
             nfiles = len(i.get("files_to_merge"))
             bedgraph_line = seperator.join(i.get("files_to_merge"))
@@ -347,7 +336,6 @@ class MACS2(SampleFactory, object):
         pass
 
     def MACS2_match(self):
-
         desired_samples = self.runsheet_data
         #desired_samples = parsed_runsheet
         sample_key = [i.get("sample") for i in desired_samples]
@@ -397,21 +385,15 @@ class MACS2(SampleFactory, object):
     def MACS2_executable(self):
         commandline=""
         command = []
-        #print("Runmode is " + self.runmode)
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
             treat_p = os.path.join(self.out, item["MACS2DIFF_treatment"])
             cont_p = os.path.join(self.out, item["MACS2DIFF_control"])
-            #print(sample)
-            #output = os.path.join(self.out, item['sample'])
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
             else:
                 modules = """\n"""
-            #commandline = """echo '\n[SEACR] Running SEACR... Output:\n'bash /home/sfurla/develop/SEACR/SEACR_1.1.sh %s %s %s %s %s""" % (sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            #commandline = """echo '\n[MACS2] Running MACS2... Output:\n'\nmacs2 bdgcmp -t %s -c %s -o %s -m FE\n""" % (item['MACS2_in'], item['MACS2_control'], macs2_out)
             commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_treatment"])
-            #get depth os.system("egrep "tags after filtering in treatment|tags after filtering in control" %s_peaks.xls")
             commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
             commandline = commandline + """echo '\n[MACS2] Running MACS2 callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_control_sample"], item["MACS2CP_control_control"], self.out, item["MACS2DIFF_control"])
             commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr2=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (cont_p)
@@ -554,8 +536,6 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
     if no_pipe:
         i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
             'bam': os.path.join(output, i.get('directory_short')+".bam")})
-    #print(good_dat)
-    #keys = good_dat[0].keys()
     keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
     if no_pipe:
         keys.append("sam")
@@ -587,7 +567,6 @@ def parse_runsheet(runsheet, header=True, colnames=None):
         if header==True:
             next(reader)            # skip header
         for line in f:
-                #print(line)
             entries = [entry.strip() for entry in line.strip().split(',')]
             if len(entries) != len(columns):
                 raise ValueError('Sample sheet does not match expected columns. Expects: %s' % ','.join(columns))
