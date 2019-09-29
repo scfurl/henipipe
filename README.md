@@ -43,8 +43,6 @@ You should then be able to test installation by calling henipipe.  After running
 henipipe
 ```
 
-
-
 ## Usage
 
 ```bash
@@ -62,7 +60,7 @@ henipipe usage: A wrapper for running henipipe [-h] [--sample_flag SAMPLE_FLAG]
                                       [--norm_method {coverage,read_count,spike_in}]
                                       [--user USER] [--SEACR_norm {non,norm}]
                                       [--SEACR_stringency {stringent,relaxed}]
-                                      [--MACS2_merged] [--no_pipe] [--verbose]
+                                      [--no_pipe] [--verbose]
                                       {MAKERUNSHEET,ALIGN,NORM,MERGE,SEACR,MACS2,GENOMESFILE}
 
 positional arguments:
@@ -72,7 +70,7 @@ positional arguments:
                         "ALIGN" - to perform alignment using bowtie and output
                         bed files; 3) "NORM" - to normalize data to reference
                         (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR"
-                        - to perform SEACR; 6) "MACS" - to perform MACS2 bdgdiff; 7)
+                        - to perform SEACR; 6) "MACS" - to perform MACS2; 7)
                         "GENOMESFILE" - print location of genomes.json file.
 
 optional arguments:
