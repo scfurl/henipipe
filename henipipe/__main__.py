@@ -84,6 +84,7 @@ def run_henipipe(args=None):
     if args.job != "MAKERUNSHEET":
         if os.path.exists(args.runsheet) is False:
             raise ValueError('Path: '+args.runsheet+' not found')
+        args.output = os.path.abspath(args.output)
 
 
     if args.job=="MAKERUNSHEET":
