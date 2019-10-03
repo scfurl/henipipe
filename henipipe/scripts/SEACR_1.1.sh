@@ -115,9 +115,6 @@ echo "Calculating optimal AUC threshold: $(date)"
 
 scriptloc="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 path=$(dirname "$scriptloc")
-echo "Using SEACR script: $scriptloc"
-echo "Using SEACR script: $path"
-
 
 if [[ -f $2 ]] && [[ $norm == "norm" ]]
 then
