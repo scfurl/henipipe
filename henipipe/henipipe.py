@@ -468,9 +468,9 @@ class FC(SampleFactory, object):
             treat_p = os.path.join(self.out, item["FC_DIFF_treatment"])
             cont_p = os.path.join(self.out, item["FC_DIFF_control"])
             if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools"""
+                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\n"""
             else:
-                modules = """\nmodule load bedtools"""
+                modules = """\nmodule load bedtools\n"""
             commandline = """echo '\n[FC] Merging sample bedgraphs for aggregated peak call...Output:\n'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_control_sample"], item["FC_DIFF_treatment"]+"_FC_combined.bedgraph")
             commandline = commandline + """echo '\n[FC] Merging control bedgraphs for aggregated peak call...Output:\n'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_control"], item["FC_CP_control_control"], item["FC_DIFF_control"]+"_FC_combined.bedgraph")
             commandline = commandline + """echo '\n[FC] Running SEACR on merged data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, item["FC_DIFF_treatment"]+"_combined.bedgraph", item["FC_DIFF_control"]+"_combined.bedgraph", self.norm, self.method, item["FC_DIFF_treatment"]+"_FC_SEACR")
