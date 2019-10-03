@@ -142,7 +142,7 @@ def run_henipipe(args=None):
 
     if args.job=="FC":
         LOGGER.info("Running FC")
-        FCjob = henipipe.FC(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
+        FCjob = henipipe.FC(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output, norm=args.SEACR_norm, stringency=args.SEACR_stringency)
         FCjob.run_job()
         exit()
 
