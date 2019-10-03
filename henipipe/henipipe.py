@@ -392,6 +392,105 @@ class MACS2(SampleFactory, object):
         if self.cluster=="SLURM":
             return ''
 
+
+#FC
+#1.  Additively merge normalized bedgraphs across biologic controls (for both ab and control)
+#2.  Call peaks using SEACR
+#3.  Use SEACR output to define range and calculate AUC for each biologic control and output FC bed
+
+class FC(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(MACS2, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_FC"
+        #self.merged = kwargs.get('merged')
+        self.out = kwargs.get('out')
+        self.norm = kwargs.get('norm')
+        self.method = kwargs.get('stringency')
+        self.runsheet_data = self.FC_match()
+        self.processor_line = self.FC_processor_line()
+        self.command = self.FC_executable()
+        self.script = self.generate_job()
+    def __call__():
+        pass
+
+    def FC_match(self):
+        desired_samples = self.runsheet_data
+        #desired_samples = parsed_runsheet
+        sample_key = [i.get("sample") for i in desired_samples]
+        biomatch_data = [i.get("MACS2_key") for i in desired_samples]
+        abmatch_data = [i.get("SEACR_key") for i in desired_samples]
+        unique_keys = unique(sample_key)
+        run_list = []
+        for key in unique_keys:
+            #find out if file is bio sample or control or ab sample or control by searching lists of the two keys
+            #print(key)
+            biomatch_key = [biomatch_data[i] for i in which(key, sample_key)]
+            is_biomatch_control = [bool(re.search(r'._CONTROL$', i)) for i in biomatch_key]
+            abmatch_key = [abmatch_data[i] for i in which(key, sample_key)]
+            is_abmatch_control = [bool(re.search(r'._CONTROL$', i)) for i in abmatch_key]
+            is_biomatch_control = all_the_same(is_biomatch_control)
+            is_abmatch_control = all_the_same(is_abmatch_control)
+            if type(is_abmatch_control) is str:
+                raise ValueError("Some discrepency between merge_key and MACS2_key ")
+            if type(is_biomatch_control) is str:
+                raise ValueError("Some discrepency between merge_key and MACS2_key ")
+            if not is_abmatch_control and not is_biomatch_control:
+                #treatment bed is just key
+                treatment_bed = get_key_from_dict_list(desired_samples, {"sample":key}, 'bedgraph')
+                #for all non-controls we will output a list of relevant files to process using macs2
+                #first find biomatch control
+                biomatch_control_key = biomatch_key[0]+"_CONTROL"
+                #get bed of this control
+                control_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'bedgraph')
+                #get bed of antibody control for treatment
+                abmatch_control_key = abmatch_key[0]+"_CONTROL"
+                treatment_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(abmatch_control_key, abmatch_data)[0]]}, 'bedgraph')
+                #get bed of antibody control for control
+                control_control_key = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
+                control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(control_control_key, abmatch_data)[0]]}, 'bedgraph')
+                run_list.append({   "FC_DIFF_treatment": key,
+                                    "FC_CP_treat_sample": treatment_bed,
+                                    "FC_CP_treat_control": treatment_abcontrol_bed,
+                                    "FC_DIFF_control": sample_key[which(biomatch_control_key, biomatch_data)[0]],
+                                    "FC_CP_control_sample": control_bed,
+                                    "FC_CP_control_control": control_abcontrol_bed,
+                                    "sample": key})
+        return(run_list)
+
+
+
+
+    def FC_executable(self):
+        commandline=""
+        command = []
+        for item in self.runsheet_data:
+            JOBSTRING = self.id_generator(size=10)
+            treat_p = os.path.join(self.out, item["FC_DIFF_treatment"])
+            cont_p = os.path.join(self.out, item["FC_DIFF_control"])
+            if self.cluster=="SLURM":
+                modules = """\nsource /app/Lmod/lmod/lmod/init/bash"""
+            else:
+                modules = """\n"""
+            commandline = """echo '\n[FC] Merging sample bedgraphs for aggregated peak call...Output:\n'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_control_sample"], item["FC_DIFF_treatment"]+"_FC_combined.bedgraph")
+            commandline = commandline + """echo '\n[FC] Merging control bedgraphs for aggregated peak call...Output:\n'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_control"], item["FC_CP_control_control"], item["FC_DIFF_control"]+"_FC_combined.bedgraph")
+            commandline = """echo '\n[FC] Running SEACR on merged data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, item["FC_DIFF_treatment"]+"_combined.bedgraph", item["FC_DIFF_control"]+"_combined.bedgraph", self.norm, self.method, item["FC_DIFF_treatment"]+"_FC_SEACR")
+            #commandline = commandline + """echo '\n[FC] Running FC callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_treat_control"], self.out, item["FC_DIFF_treatment"])
+            #commandline = commandline + """echo '\n[FC] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
+            #commandline = commandline + """echo '\n[FC] Running FC callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["FC_CP_control_sample"], item["FC_CP_control_control"], self.out, item["FC_DIFF_control"])
+            #commandline = commandline + """echo '\n[FC] Getting depth of sample... Output:\n'\nstr2=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (cont_p)
+            #commandline = commandline + """echo '\n[FC] Running FC bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 $str1 --d2 $str2 -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, item["FC_DIFF_treatment"]+"_v_"+item["FC_DIFF_control"], self.out)
+            commandline = modules + commandline
+            command.append(commandline)
+        return command
+
+    def FC_processor_line(self):
+        if self.cluster=="PBS":
+            return """select=1:mem=8GB:ncpus=2"""
+        if self.cluster=="SLURM":
+            return ''
+
+
+
 def get_key_from_dict_list(list_of_dicts, dict_in, key_out):
     #this function takes a list of dicts, returns the value associated with key_out for the element in the list_of_dicts which has the key:value combo given in dict_in
     dict_out = next(item for item in list_of_dicts if item[list(dict_in.keys())[0]] == dict_in.get(list(dict_in.keys())[0]))
