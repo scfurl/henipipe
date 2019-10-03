@@ -400,7 +400,7 @@ class MACS2(SampleFactory, object):
 
 class FC(SampleFactory, object):
     def __init__(self, *args, **kwargs):
-        super(MACS2, self).__init__(*args, **kwargs)
+        super(FC, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_FC"
         #self.merged = kwargs.get('merged')
         self.out = kwargs.get('out')

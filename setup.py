@@ -57,6 +57,7 @@ python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 pipx install --include-deps --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org' henipipe
 pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org'
+pipx install --spec git+https://github.com/scfurl/henipipe@devel --include-deps henipipe --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org'
 
 
 **At the FHCRC do the following...**
