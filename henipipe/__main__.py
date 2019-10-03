@@ -24,7 +24,7 @@ def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'MERGE', 'SEACR', 'MACS2', 'FC', 'GENOMESFILE'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "FC" - to calculate Fold-Change between two normalized bedgraphs; 8) "GENOMESFILE" - print location of genomes.json file.')
+    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file.')
     parser.add_argument('--sample_flag', '-sf', type=str, default="Sample", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--genome_key', '-gk', type=str, default="default", help='For MAKERUNSHEET only: abbreviation to use "installed" genomes in the runsheet (See README.md for more details')
@@ -141,10 +141,10 @@ def run_henipipe(args=None):
         MACS2job.run_job()
         exit()
 
-    if args.job=="FC":
-        LOGGER.info("Running FC")
-        FCjob = henipipe.FC(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output, norm=args.SEACR_norm, stringency=args.SEACR_stringency)
-        FCjob.run_job()
+    if args.job=="AUC":
+        LOGGER.info("Running AUC")
+        AUCjob = henipipe.AUC(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output, norm=args.SEACR_norm, stringency=args.SEACR_stringency)
+        AUCjob.run_job()
         exit()
 
 

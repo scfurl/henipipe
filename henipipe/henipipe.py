@@ -406,14 +406,14 @@ class FC(SampleFactory, object):
         self.out = kwargs.get('out')
         self.norm = kwargs.get('norm')
         self.method = kwargs.get('stringency')
-        self.runsheet_data = self.FC_match()
-        self.processor_line = self.FC_processor_line()
-        self.command = self.FC_executable()
+        self.runsheet_data = self.AUC_match()
+        self.processor_line = self.AUC_processor_line()
+        self.command = self.AUC_executable()
         self.script = self.generate_job()
     def __call__():
         pass
 
-    def FC_match(self):
+    def AUC_match(self):
         desired_samples = self.runsheet_data
         #desired_samples = parsed_runsheet
         sample_key = [i.get("sample") for i in desired_samples]
@@ -448,44 +448,44 @@ class FC(SampleFactory, object):
                 #get bed of antibody control for control
                 control_control_key = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
                 control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(control_control_key, abmatch_data)[0]]}, 'bedgraph')
-                run_list.append({   "FC_DIFF_treatment": key,
-                                    "FC_CP_treat_sample": treatment_bed,
-                                    "FC_CP_treat_control": treatment_abcontrol_bed,
-                                    "FC_DIFF_control": sample_key[which(biomatch_control_key, biomatch_data)[0]],
-                                    "FC_CP_control_sample": control_bed,
-                                    "FC_CP_control_control": control_abcontrol_bed,
+                run_list.append({   "AUC_DIFF_treatment": key,
+                                    "AUC_CP_treat_sample": treatment_bed,
+                                    "AUC_CP_treat_control": treatment_abcontrol_bed,
+                                    "AUC_DIFF_control": sample_key[which(biomatch_control_key, biomatch_data)[0]],
+                                    "AUC_CP_control_sample": control_bed,
+                                    "AUC_CP_control_control": control_abcontrol_bed,
                                     "sample": key})
         return(run_list)
 
 
 
 
-    def FC_executable(self):
+    def AUC_executable(self):
         commandline=""
         command = []
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
-            treat_comb = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_treatment_combined.bedgraph"))
-            cont_comb = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_cont_combined.bedgraph"))
-            seacr_merge_prefix = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_SEACR"))
-            seacr_merged_outfile = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_SEACR.")+self.norm+".bed")
+            treat_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_treatment_combined.bedgraph"))
+            cont_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_cont_combined.bedgraph"))
+            seacr_merge_prefix = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR"))
+            seacr_merged_outfile = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR.")+self.norm+".bed")
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\n"""
             else:
                 modules = """\nmodule load bedtools\nmodule load R\n"""
-            commandline = """echo '\n[FC] Merging sample bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_control_sample"], treat_comb)
-            commandline = commandline + """echo '\n[FC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["FC_CP_treat_control"], item["FC_CP_control_control"], cont_comb)
+            commandline = """echo '\n[FC] Merging sample bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_sample"], item["AUC_CP_control_sample"], treat_comb)
+            commandline = commandline + """echo '\n[FC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_control"], item["AUC_CP_control_control"], cont_comb)
             commandline = commandline + """echo '\n[FC] Running SEACR on merged sample data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, treat_comb, cont_comb, self.norm, self.method, seacr_merge_prefix)
-            #commandline = commandline + """echo '\n[FC] Running FC callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_treat_control"], self.out, item["FC_DIFF_treatment"])
+            #commandline = commandline + """echo '\n[FC] Running FC callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["AUC_CP_treat_sample"], item["AUC_CP_treat_control"], self.out, item["AUC_DIFF_treatment"])
             #commandline = commandline + """echo '\n[FC] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
-            #commandline = commandline + """echo '\n[FC] Running FC callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["FC_CP_control_sample"], item["FC_CP_control_control"], self.out, item["FC_DIFF_control"])
+            #commandline = commandline + """echo '\n[FC] Running FC callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["AUC_CP_control_sample"], item["AUC_CP_control_control"], self.out, item["AUC_DIFF_control"])
             #commandline = commandline + """echo '\n[FC] Getting depth of sample... Output:\n'\nstr2=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (cont_p)
-            #commandline = commandline + """echo '\n[FC] Running FC bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 $str1 --d2 $str2 -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, item["FC_DIFF_treatment"]+"_v_"+item["FC_DIFF_control"], self.out)
+            #commandline = commandline + """echo '\n[FC] Running FC bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 $str1 --d2 $str2 -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, item["AUC_DIFF_treatment"]+"_v_"+item["AUC_DIFF_control"], self.out)
             commandline = modules + commandline
             command.append(commandline)
         return command
 
-    def FC_processor_line(self):
+    def AUC_processor_line(self):
         if self.cluster=="PBS":
             return """select=1:mem=8GB:ncpus=2"""
         if self.cluster=="SLURM":
