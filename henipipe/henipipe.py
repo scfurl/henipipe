@@ -292,7 +292,7 @@ class Merge(SampleFactory, object):
             else:
                 modules = """\nmodule load bedtools\n"""
             #commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s'\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum/(NF-4+1); }' > %s\nsleep 10\ncut -d$'\t' -f1-3,%s %s > %s\nrm %s\n""" % (bedgraph_line, bedgraph_line, bedgraph_out+'temp', (nfiles+4), bedgraph_out+'temp', bedgraph_out, bedgraph_out+'temp')
-            commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s'\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum/(NF-4+1); }' > %s\n""" % (bedgraph_line, bedgraph_line, bedgraph_out)
+            commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s'\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum/(NF-4+1); }' > %s\n""" % (bedgraph_line, bedgraph_line, bedgraph_out)
             commandline = modules + commandline
             command.append(commandline)
         return command
