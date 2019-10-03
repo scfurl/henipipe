@@ -465,15 +465,17 @@ class FC(SampleFactory, object):
         command = []
         for item in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
-            treat_p = os.path.join(self.out, item["FC_DIFF_treatment"])
-            cont_p = os.path.join(self.out, item["FC_DIFF_control"])
+            treat_comb = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_treatment_combined.bedgraph"))
+            cont_comb = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_cont_combined.bedgraph"))
+            seacr_merge_prefix = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_SEACR"))
+            seacr_merged_outfile = os.path.join(self.out, (item["FC_DIFF_treatment"]+"_"+item["FC_DIFF_control"]+"_SEACR.")+self.norm+".bed")
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\n"""
             else:
                 modules = """\nmodule load bedtools\nmodule load R\n"""
-            commandline = """echo '\n[FC] Merging sample bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_control_sample"], os.path.join(self.out, (item["FC_DIFF_treatment"]+"_FC_combined.bedgraph")))
-            commandline = commandline + """echo '\n[FC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_control"], item["FC_CP_control_control"], os.path.join(self.out, (item["FC_DIFF_control"]+"_FC_combined.bedgraph")))
-            commandline = commandline + """echo '\n[FC] Running SEACR on merged data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, os.path.join(self.out, (item["FC_DIFF_treatment"]+"_FC_combined.bedgraph")), os.path.join(self.out, (item["FC_DIFF_control"]+"_FC_combined.bedgraph")), self.norm, self.method, (item["FC_DIFF_treatment"]+"_FC_SEACR"))
+            commandline = """echo '\n[FC] Merging sample bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_control_sample"], treat_comb)
+            commandline = commandline + """echo '\n[FC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum; }' > %s\n""" % (item["FC_CP_treat_control"], item["FC_CP_control_control"], cont_comb)
+            commandline = commandline + """echo '\n[FC] Running SEACR on merged data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, treat_comb, treat_comb, self.norm, self.method, seacr_merge_prefix)
             #commandline = commandline + """echo '\n[FC] Running FC callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["FC_CP_treat_sample"], item["FC_CP_treat_control"], self.out, item["FC_DIFF_treatment"])
             #commandline = commandline + """echo '\n[FC] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
             #commandline = commandline + """echo '\n[FC] Running FC callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["FC_CP_control_sample"], item["FC_CP_control_control"], self.out, item["FC_DIFF_control"])
