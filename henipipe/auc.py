@@ -15,15 +15,13 @@ import time
 
 class AUC:
     def __init__(self, *args, **kwargs):
-        start = time.time()
         self.peak_file = kwargs.get('peak_file')
         self.targets = kwargs.get('targets')
         self.file_out = kwargs.get('file_out')
         self.header = kwargs.get('header')
         self.peak_count=0
-        self.calculate_AUCs()
         end = time.time()
-        print("\n[AUC] Output: \n Execution took {0} seconds\n".format(end - start))
+
     def __call__():
         pass
 
@@ -48,12 +46,18 @@ class AUC:
             for i in self.targets:
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, wide_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
-                print(out)
-                #wide_values.append(out.decode('UTF-8').split()[0])
+               #print(out)
+                try:
+                    wide_values.append(out.decode('UTF-8').split()[0])
+                except IndexError:
+                    wide_values.append("NF")
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, narrow_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
-                print(out)
-                #narrow_values.append(out.decode('UTF-8').split()[0])
+                #print(out)
+                try:
+                    narrow_values.append(out.decode('UTF-8').split()[0])
+                except IndexError:
+                    narrow_values.append("NF")
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
         if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(["NF"]*len(self.targets))), narrow_peak])+"\n"
@@ -66,6 +70,7 @@ class AUC:
         targets = args.targets
         file_out = open(args.output, 'w')
         """
+        start = time.time()
         peak_file = open(self.peak_file, 'r')
         file_out = open(self.file_out, 'w')
         if self.header:
@@ -88,6 +93,7 @@ class AUC:
                 file_out.close()
                 print("\n[AUC] Output: \n Processed {0} peaks".format(self.peak_count))
                 done_looping = True
+                print("\n[AUC] Output: \n Execution took {0} seconds\n".format(end - start))
             else:
                 #line_out = peak_line(peak, args.targets)
                 if self.peak_count >= start:
@@ -104,7 +110,7 @@ def run_auc():
     parser.add_argument('targets', nargs='*')
     args = parser.parse_args()
     """
-    call = 'auc -o ./4N1_H3K27me3_4G1_H3K27me3_AUC.bed -p /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N1_H3K27me3_4G1_H3K27me3_SEACR.stringent.bed /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N1_H3K27me3.bedgraph.bz /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4G1_H3K27me3.bedgraph.bz'
+    call = 'auc -o fc/4N1_H3K27me3_4G1_H3K27me3_AUC.bed -p /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N1_H3K27me3_4G1_H3K27me3_SEACR.stringent.bed /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N1_H3K27me3.bedgraph.bz /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4G1_H3K27me3.bedgraph.bz'
     args = parser.parse_args(call.split(" ")[1:])
     """
 
@@ -112,7 +118,9 @@ def run_auc():
         args.output = os.path.abspath(args.output)
 
     AUCjob = AUC(peak_file = args.peak_file, targets = args.targets, file_out = args.output, header = not args.noheader)
-
+    # AUCjob.targets
+    # AUCjob.peak_file
+    AUCjob = calculate_AUCs()
 
 if __name__ == '__main__':
     run_auc()
