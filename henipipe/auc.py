@@ -40,6 +40,8 @@ class AUC:
         wide_peak = "{0:s}:{1:s}-{2:s}".format(*address)
         narrow_peak = peak.split("\t")[5].split()[0]
         #i = targets[0]
+        print(wide_peak)
+        print(narrow_peak)
         if self.address_ok(wide_peak) and self.address_ok(narrow_peak):
             wide_values=[]
             narrow_values=[]
