@@ -101,6 +101,7 @@ class AUC:
                     if line_out is not None: file_out.writelines(line_out)
         return
 
+
 def run_auc():
     parser = argparse.ArgumentParser('A script that will find AUC measurements using ranges taken from a peak_file and interrogating a number of target files')
     parser.add_argument('--peak_file', '-p', type=str, help='A peak file (only SEACR supported)')
