@@ -464,17 +464,14 @@ class AUC(SampleFactory, object):
         commandline=""
         command = []
         for item in self.runsheet_data:
-            print ("Self out is {0}".format(self.out))
             JOBSTRING = self.id_generator(size=10)
             treat_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_treatment_combined.bedgraph"))
             cont_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_cont_combined.bedgraph"))
             seacr_merge_prefix = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR"))
             peakfile = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR.")+self.method+".bed")
             out_file = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_AUC.bed"))
-            print ("Self out is {0}".format(self.out))
-            cp_treat_out = os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz')
-            cp_cont_out = os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz')
-            print ("Self out is {0}".format(self.out))
+            cp_treat_out = os.path.join(self.out, (item["AUC_CP_treat_sample"]+'.bz'))
+            cp_cont_out = os.path.join(self.out, (item["AUC_CP_control_sample"]+'.bz'))
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
             else:
