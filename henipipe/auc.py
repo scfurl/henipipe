@@ -37,22 +37,20 @@ class AUC:
         wide_peak = "{0:s}:{1:s}-{2:s}".format(*address)
         narrow_peak = peak.split("\t")[5].split()[0]
         #i = targets[0]
-        # print(wide_peak)
-        # print(narrow_peak)
+        #print(wide_peak)
+        #print(narrow_peak)
         if self.address_ok(wide_peak) and self.address_ok(narrow_peak):
             wide_values=[]
             narrow_values=[]
             for i in self.targets:
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, wide_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
-               #print(out)
                 try:
                     wide_values.append(out.decode('UTF-8').split()[0])
                 except IndexError:
                     wide_values.append("NF")
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, narrow_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
-                #print(out)
                 try:
                     narrow_values.append(out.decode('UTF-8').split()[0])
                 except IndexError:
@@ -69,7 +67,7 @@ class AUC:
         targets = args.targets
         file_out = open(args.output, 'w')
         """
-        start = time.time()
+        start_time = time.time()
         peak_file = open(self.peak_file, 'r')
         file_out = open(self.file_out, 'w')
         if self.header:
@@ -83,7 +81,7 @@ class AUC:
             try:
                 peak = next(iterator)
                 self.peak_count += 1
-                print(self.peak_count)
+                #print(self.peak_count)
                 if self.peak_count >= end:
                     done_looping = True #2265 error
                     print("\n[AUC] Output: \n Processed {0} peaks\n".format(self.peak_count))
@@ -92,8 +90,8 @@ class AUC:
                 file_out.close()
                 print("\n[AUC] Output: \n Processed {0} peaks".format(self.peak_count))
                 done_looping = True
-                end = time.time()
-                print("\n[AUC] Output: \n Execution took {0} seconds\n".format(end - start))
+                end_time = time.time()
+                print("\n[AUC] Output: \n Execution took {0} seconds\n".format(end_time - start_time))
             else:
                 #line_out = peak_line(peak, args.targets)
                 if self.peak_count >= start:
