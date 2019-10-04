@@ -101,7 +101,7 @@ def run_auc():
     if os.path.isabs(args.output) is False:
         args.output = os.path.abspath(args.output)
 
-    AUC = AUC(peak_file = args.peak_file, targets = args.targets, file_out = args.output, header = not args.noheader)
+    AUCjob = AUC(peak_file = args.peak_file, targets = args.targets, file_out = args.output, header = not args.noheader)
 
 
 if __name__ == '__main__':
