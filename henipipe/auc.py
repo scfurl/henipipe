@@ -53,7 +53,8 @@ class AUC:
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
         if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(["NF"]*len(self.targets))), narrow_peak])+"\n"
-
+        if not self.address_ok(wide_peak):
+            return None
 
     def calculate_AUCs(self, start=1, end=1e6):
         """
