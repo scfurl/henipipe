@@ -401,7 +401,7 @@ class MACS2(SampleFactory, object):
 class AUC(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(AUC, self).__init__(*args, **kwargs)
-        self.job = "HENIPIPE_FC"
+        self.job = "HENIPIPE_AUC"
         #self.merged = kwargs.get('merged')
         self.out = kwargs.get('out')
         self.norm = kwargs.get('norm')

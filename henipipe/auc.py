@@ -1,0 +1,112 @@
+#!/usr/bin/env python
+
+#AUC finder
+#this script will find AUC measurements using ranges taken from a peak_file and interrogating a number of target files
+#requires tabix
+
+#whole_peak and narrow_peak
+import argparse
+import os
+from subprocess import Popen, PIPE
+import time
+
+
+
+
+class AUC:
+    def __init__(self, *args, **kwargs):
+        start = time.time()
+        self.peak_file = kwargs.get('peak_file')
+        self.targets = kwargs.get('targets')
+        self.file_out = kwargs.get('file_out')
+        self.header = kwargs.get('header')
+        self.peak_count=0
+        self.calculate_AUCs()
+        end = time.time()
+        print("\n[AUC] Output: \n Execution took {0} seconds\n".format(end - start))
+    def __call__():
+        pass
+
+    def address_ok(self, address):
+        first_split = address.split(":")
+        locs = first_split[1].split("-")
+        if any([not s for s in first_split]) or any([not s for s in locs]):
+            return False
+        else:
+            return True
+
+    def peak_line(self, peak, targets):
+        address = peak.split("\t")[:3]
+        wide_peak = "{0:s}:{1:s}-{2:s}".format(*address)
+        narrow_peak = peak.split("\t")[5].split()[0]
+        if self.address_ok(wide_peak) and self.address_ok(narrow_peak):
+            wide_values=[]
+            narrow_values=[]
+            for i in targets:
+                proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, wide_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
+                out, err = proc.communicate()
+                wide_values.append(out.decode('UTF-8').split()[0])
+                proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, narrow_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
+                out, err = proc.communicate()
+                narrow_values.append(out.decode('UTF-8').split()[0])
+            return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
+        else:
+            return None
+
+
+    def calculate_AUCs(self, start=1, end=1e6):
+        #peak_file = open(args.peak_file, 'r')
+        #targets = args.targets
+        #file_out = open(file_out, 'w')
+        peak_file = open(self.peak_file, 'r')
+        file_out = open(self.file_out, 'w')
+        if self.header:
+            target_bn_wide = "\t".join([os.path.basename(i)+"_wide" for i in self.targets])
+            target_bn_narrow = "\t".join([os.path.basename(i)+"_narrow" for i in self.targets])
+            header = "seq\tbegin\tend\t"+target_bn_wide+"\t"+target_bn_narrow+"\tnarrow_coord\n"
+            file_out.writelines(header)
+        iterator = iter(peak_file)
+        done_looping = False
+        while not done_looping:
+            try:
+                peak = next(iterator)
+                self.peak_count += 1
+                #print(self.peak_count)
+                if self.peak_count >= end:
+                    done_looping = True #2265 error
+                    print("\n[AUC] Output: \n Processed {0} peaks\n".format(self.peak_count))
+            except StopIteration:
+                peak_file.close()
+                file_out.close()
+                print("\n[AUC] Output: \n Processed {0} peaks".format(self.peak_count))
+                done_looping = True
+            else:
+                #line_out = peak_line(peak, args.targets)
+                if self.peak_count >= start:
+                    line_out = self.peak_line(peak, self.targets)
+                    if line_out is not None: file_out.writelines(line_out)
+        return
+
+def run_auc():
+    parser = argparse.ArgumentParser('A script that will find AUC measurements using ranges taken from a peak_file and interrogating a number of target files')
+    parser.add_argument('--peak_file', '-p', type=str, help='A peak file (only SEACR supported)')
+    parser.add_argument('--output', '-o', type=str, default=".", help='Write files to this location')
+    parser.add_argument('--keepfiles', '-k', action ='store_true', default=False,  help='Write files to this location')
+    parser.add_argument('--noheader', '-nh', action ='store_true', default=False,  help='Do not include a header')
+    parser.add_argument('targets', nargs='*')
+    #args = parser.parse_args()
+    call = 'auc -o ./fc/4N2_H3K27me3_4G2_H3K27me3_AUC.bed -p /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3_4G2_H3K27me3_SEACR.stringent.bed /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3.bedgraph.bz /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4G2_H3K27me3.bedgraph.bz'
+    args = parser.parse_args(call.split(" ")[1:])
+
+    if os.path.isabs(args.output) is False:
+        args.output = os.path.abspath(args.output)
+
+    AUC = AUC(peak_file = args.peak_file, targets = args.targets, file_out = args.output, header = not args.noheader)
+
+
+if __name__ == '__main__':
+    run_auc()
+
+
+
+
