@@ -470,6 +470,8 @@ class AUC(SampleFactory, object):
             seacr_merge_prefix = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR"))
             peakfile = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR.")+self.method+".bed")
             out_file = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_AUC.bed"))
+            cp_treat_out = os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz')
+            cp_cont_out = os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz')
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
             else:
@@ -478,11 +480,11 @@ class AUC(SampleFactory, object):
             commandline = commandline + """echo '\n[AUC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_control"], item["AUC_CP_control_control"], cont_comb)
             commandline = commandline + """echo '\n[AUC] Running SEACR on merged sample data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, treat_comb, cont_comb, self.norm, self.method, seacr_merge_prefix)
             commandline = commandline + """echo '\n[AUC] Making Tabix files... \n'\nbgzip -c %s > %s\n""" % (item["AUC_CP_treat_sample"], os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'))
-            commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_treat_sample"], os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'))
-            commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_control_sample"], os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz'))
-            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'))
-            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz'))
-            commandline = commandline + """auc -o %s -p %s %s %s\n""" % (out_file, peakfile, os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'), (os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz')))
+            commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_treat_sample"], cp_treat_out)
+            commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_control_sample"], cp_cont_out)
+            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_treat_out)
+            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_cont_out)
+            commandline = commandline + """auc -o %s -p %s %s %s\n""" % (out_file, peakfile, cp_treat_out, cp_cont_out)
             commandline = modules + commandline
             command.append(commandline)
         return command
