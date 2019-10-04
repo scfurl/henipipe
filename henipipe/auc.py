@@ -20,7 +20,6 @@ class AUC:
         self.file_out = kwargs.get('file_out')
         self.header = kwargs.get('header')
         self.peak_count=0
-        end = time.time()
 
     def __call__():
         pass
@@ -93,6 +92,7 @@ class AUC:
                 file_out.close()
                 print("\n[AUC] Output: \n Processed {0} peaks".format(self.peak_count))
                 done_looping = True
+                end = time.time()
                 print("\n[AUC] Output: \n Execution took {0} seconds\n".format(end - start))
             else:
                 #line_out = peak_line(peak, args.targets)
