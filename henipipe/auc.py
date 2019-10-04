@@ -120,7 +120,7 @@ def run_auc():
     AUCjob = AUC(peak_file = args.peak_file, targets = args.targets, file_out = args.output, header = not args.noheader)
     # AUCjob.targets
     # AUCjob.peak_file
-    AUCjob = calculate_AUCs()
+    AUCjob = AUCjob.calculate_AUCs()
 
 if __name__ == '__main__':
     run_auc()
