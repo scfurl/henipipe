@@ -53,7 +53,7 @@ class AUC:
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, narrow_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
                 print(out)
-                narrow_values.append(out.decode('UTF-8').split()[0])
+                #narrow_values.append(out.decode('UTF-8').split()[0])
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
         if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(["NF"]*len(self.targets))), narrow_peak])+"\n"
