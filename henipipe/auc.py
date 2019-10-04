@@ -35,14 +35,15 @@ class AUC:
         else:
             return True
 
-    def peak_line(self, peak, targets):
+    def peak_line(self, peak):
         address = peak.split("\t")[:3]
         wide_peak = "{0:s}:{1:s}-{2:s}".format(*address)
         narrow_peak = peak.split("\t")[5].split()[0]
+        #i = targets[0]
         if self.address_ok(wide_peak) and self.address_ok(narrow_peak):
             wide_values=[]
             narrow_values=[]
-            for i in targets:
+            for i in self.targets:
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, wide_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
                 wide_values.append(out.decode('UTF-8').split()[0])
@@ -50,14 +51,16 @@ class AUC:
                 out, err = proc.communicate()
                 narrow_values.append(out.decode('UTF-8').split()[0])
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
-        else:
-            return None
+        if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
+            return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(["NF"]*len(self.targets))), narrow_peak])+"\n"
 
 
     def calculate_AUCs(self, start=1, end=1e6):
-        #peak_file = open(args.peak_file, 'r')
-        #targets = args.targets
-        #file_out = open(file_out, 'w')
+        """
+        peak_file = open(args.peak_file, 'r')
+        targets = args.targets
+        file_out = open(args.output, 'w')
+        """
         peak_file = open(self.peak_file, 'r')
         file_out = open(self.file_out, 'w')
         if self.header:
@@ -71,7 +74,7 @@ class AUC:
             try:
                 peak = next(iterator)
                 self.peak_count += 1
-                #print(self.peak_count)
+                print(self.peak_count)
                 if self.peak_count >= end:
                     done_looping = True #2265 error
                     print("\n[AUC] Output: \n Processed {0} peaks\n".format(self.peak_count))
@@ -95,8 +98,10 @@ def run_auc():
     parser.add_argument('--noheader', '-nh', action ='store_true', default=False,  help='Do not include a header')
     parser.add_argument('targets', nargs='*')
     args = parser.parse_args()
-    #call = 'auc -o ./fc/4N2_H3K27me3_4G2_H3K27me3_AUC.bed -p /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3_4G2_H3K27me3_SEACR.stringent.bed /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3.bedgraph.bz /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4G2_H3K27me3.bedgraph.bz'
-    #args = parser.parse_args(call.split(" ")[1:])
+    """
+    call = 'auc -o ./4N1_H3K27me3_4G1_H3K27me3_AUC.bed -p /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N1_H3K27me3_4G1_H3K27me3_SEACR.stringent.bed /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N1_H3K27me3.bedgraph.bz /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4G1_H3K27me3.bedgraph.bz'
+    args = parser.parse_args(call.split(" ")[1:])
+    """
 
     if os.path.isabs(args.output) is False:
         args.output = os.path.abspath(args.output)
