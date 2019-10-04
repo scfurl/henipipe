@@ -469,6 +469,7 @@ class AUC(SampleFactory, object):
             cont_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_cont_combined.bedgraph"))
             seacr_merge_prefix = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR"))
             peakfile = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR.")+self.method+".bed")
+            out_file = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_AUC.bed"))
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
             else:
@@ -481,7 +482,7 @@ class AUC(SampleFactory, object):
             commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_control_sample"], os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz'))
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'))
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz'))
-            commandline = commandline + """auc -o %s -p %s %s %s\n""" % (self.out, peakfile, os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'), (os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz')))
+            commandline = commandline + """auc -o %s -p %s %s %s\n""" % (out_file, peakfile, os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'), (os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz')))
             commandline = modules + commandline
             command.append(commandline)
         return command
