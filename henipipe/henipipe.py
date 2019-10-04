@@ -398,7 +398,7 @@ class MACS2(SampleFactory, object):
 #2.  Call peaks using SEACR
 #3.  Use SEACR output to define range and calculate AUC for each biologic control and output FC bed
 
-class FC(SampleFactory, object):
+class AUC(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(FC, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_FC"
