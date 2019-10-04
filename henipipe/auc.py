@@ -40,17 +40,19 @@ class AUC:
         wide_peak = "{0:s}:{1:s}-{2:s}".format(*address)
         narrow_peak = peak.split("\t")[5].split()[0]
         #i = targets[0]
-        print(wide_peak)
-        print(narrow_peak)
+        # print(wide_peak)
+        # print(narrow_peak)
         if self.address_ok(wide_peak) and self.address_ok(narrow_peak):
             wide_values=[]
             narrow_values=[]
             for i in self.targets:
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, wide_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
-                wide_values.append(out.decode('UTF-8').split()[0])
+                print(out)
+                #wide_values.append(out.decode('UTF-8').split()[0])
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, narrow_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
                 out, err = proc.communicate()
+                print(out)
                 narrow_values.append(out.decode('UTF-8').split()[0])
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
         if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
