@@ -468,26 +468,27 @@ class FC(SampleFactory, object):
             treat_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_treatment_combined.bedgraph"))
             cont_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_cont_combined.bedgraph"))
             seacr_merge_prefix = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR"))
-            seacr_merged_outfile = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR.")+self.norm+".bed")
+            peakfile = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR.")+self.norm+".bed")
             if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\n"""
+                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
             else:
-                modules = """\nmodule load bedtools\nmodule load R\n"""
-            commandline = """echo '\n[FC] Merging sample bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_sample"], item["AUC_CP_control_sample"], treat_comb)
-            commandline = commandline + """echo '\n[FC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_control"], item["AUC_CP_control_control"], cont_comb)
-            commandline = commandline + """echo '\n[FC] Running SEACR on merged sample data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, treat_comb, cont_comb, self.norm, self.method, seacr_merge_prefix)
-            #commandline = commandline + """echo '\n[FC] Running FC callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["AUC_CP_treat_sample"], item["AUC_CP_treat_control"], self.out, item["AUC_DIFF_treatment"])
-            #commandline = commandline + """echo '\n[FC] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
-            #commandline = commandline + """echo '\n[FC] Running FC callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["AUC_CP_control_sample"], item["AUC_CP_control_control"], self.out, item["AUC_DIFF_control"])
-            #commandline = commandline + """echo '\n[FC] Getting depth of sample... Output:\n'\nstr2=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (cont_p)
-            #commandline = commandline + """echo '\n[FC] Running FC bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 $str1 --d2 $str2 -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, item["AUC_DIFF_treatment"]+"_v_"+item["AUC_DIFF_control"], self.out)
+                modules = """\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
+            commandline = """echo '\n[AUC] Merging sample bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_sample"], item["AUC_CP_control_sample"], treat_comb)
+            commandline = commandline + """echo '\n[AUC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_control"], item["AUC_CP_control_control"], cont_comb)
+            commandline = commandline + """echo '\n[AUC] Running SEACR on merged sample data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, treat_comb, cont_comb, self.norm, self.method, seacr_merge_prefix)
+            commandline = commandline + """echo '\n[AUC] Making Tabix files... \n'\nbgzip -c %s > %s\n""" % (item["AUC_CP_treat_sample"], os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'))
+            commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_treat_sample"], os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'))
+            commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_control_sample"], os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz'))
+            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'))
+            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz'))
+            commandline = commandline + """auc -o %s -p %s %s %s""" % (self.out, peakfile, os.path.join(self.out, item["AUC_CP_treat_sample"]+'.bz'), (os.path.join(self.out, item["AUC_CP_control_sample"]+'.bz')))
             commandline = modules + commandline
             command.append(commandline)
         return command
 
     def AUC_processor_line(self):
         if self.cluster=="PBS":
-            return """select=1:mem=8GB:ncpus=2"""
+            return """select=1:mem=4GB:ncpus=1"""
         if self.cluster=="SLURM":
             return ''
 

@@ -26,6 +26,7 @@ with open("README.md", "r") as fh:
         'henipipe = henipipe.__main__:run_henipipe',
         'samTobed = henipipe.samTobed:run_sam2bed',
         'pyWriter = henipipe.pyWriter:run_pyWriter',
+        'auc = henipipe.auc:run_auc',
     ]},
     )
 
