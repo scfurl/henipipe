@@ -94,9 +94,9 @@ def run_auc():
     parser.add_argument('--keepfiles', '-k', action ='store_true', default=False,  help='Write files to this location')
     parser.add_argument('--noheader', '-nh', action ='store_true', default=False,  help='Do not include a header')
     parser.add_argument('targets', nargs='*')
-    #args = parser.parse_args()
-    call = 'auc -o ./fc/4N2_H3K27me3_4G2_H3K27me3_AUC.bed -p /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3_4G2_H3K27me3_SEACR.stringent.bed /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3.bedgraph.bz /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4G2_H3K27me3.bedgraph.bz'
-    args = parser.parse_args(call.split(" ")[1:])
+    args = parser.parse_args()
+    #call = 'auc -o ./fc/4N2_H3K27me3_4G2_H3K27me3_AUC.bed -p /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3_4G2_H3K27me3_SEACR.stringent.bed /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4N2_H3K27me3.bedgraph.bz /active/furlan_s/Data/CNR/190801_CNRNotch/henipipe_150/fc/4G2_H3K27me3.bedgraph.bz'
+    #args = parser.parse_args(call.split(" ")[1:])
 
     if os.path.isabs(args.output) is False:
         args.output = os.path.abspath(args.output)
