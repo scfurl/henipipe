@@ -87,7 +87,7 @@ class AUC:
             else:
                 #line_out = peak_line(peak, args.targets)
                 if self.peak_count >= start:
-                    line_out = self.peak_line(peak, self.targets)
+                    line_out = self.peak_line(peak)
                     if line_out is not None: file_out.writelines(line_out)
         return
 
