@@ -57,10 +57,10 @@ class AUC:
                     narrow_values.append("NF")
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
         if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
-            print("Narrow peak error found on line {s} of peak file".format(self.peak_count))
+            print("Narrow peak error found on line {0} of peak file".format(self.peak_count))
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(["NF"]*len(self.targets))), narrow_peak])+"\n"
         if not self.address_ok(wide_peak):
-            print("Wide peak error found on line {s} of peak file".format(self.peak_count))
+            print("Wide peak error found on line {0} of peak file".format(self.peak_count))
             return None
 
     def calculate_AUCs(self, start=1, end=1e6):
