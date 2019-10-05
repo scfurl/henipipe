@@ -487,7 +487,7 @@ class AUC(SampleFactory, object):
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_treat_out)
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_cont_out)
             commandline = commandline + """auc -o %s -p %s %s %s\n""" % (out_file, peakfile, cp_treat_out, cp_cont_out)
-            if not self.pipe: commandline = commandline + """rm {0}\n""".format(" ".join(self.file.rm))
+            if self.pipe: commandline = commandline + """rm {0}\n""".format(" ".join(self.file.rm))
             commandline = modules + commandline
             command.append(commandline)
         return command
