@@ -43,7 +43,7 @@ def run_henipipe(args=None):
     parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
     parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
-    parser.add_argument('--no_pipe', '-np', action ='store_true', default=False, help='FOR ALIGN: use this flag to turn off piping (Wil generate all files).')
+    parser.add_argument('--keep_files', '-k', action ='store_true', default=False, help='FOR ALIGN: use this flag to turn off piping (Will generate all files).')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
     #call = 'henipipe MACS2 -r ./runsheet.csv -d -mk -s 1:10'
@@ -110,7 +110,7 @@ def run_henipipe(args=None):
     if args.job=="ALIGN":
         #deal with filtering
         LOGGER.info("Aligning reads...")
-        Alignjob = henipipe.Align(runsheet_data = parsed_runsheet, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, no_pipe=args.no_pipe, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
+        Alignjob = henipipe.Align(runsheet_data = parsed_runsheet, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, no_pipe=args.keep_files, cluster=args.cluster, bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user, norm_method=args.norm_method, filter = [args.filter_low, args.filter_high])
         LOGGER.info("Submitting alignment jobs... Debug mode is %s" % args.debug)
         Alignjob.run_job()
         exit()
@@ -143,7 +143,7 @@ def run_henipipe(args=None):
 
     if args.job=="AUC":
         LOGGER.info("Running AUC")
-        AUCjob = henipipe.AUC(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output, norm=args.SEACR_norm, stringency=args.SEACR_stringency)
+        AUCjob = henipipe.AUC(runsheet_data = parsed_runsheet, debug=args.debug, no_pipe=args.keep_files, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output, norm=args.SEACR_norm, stringency=args.SEACR_stringency)
         AUCjob.run_job()
         exit()
 

@@ -405,7 +405,9 @@ class AUC(SampleFactory, object):
         #self.merged = kwargs.get('merged')
         self.out = kwargs.get('out')
         self.norm = kwargs.get('norm')
+        self.pipe = not kwargs.get('no_pipe')
         self.method = kwargs.get('stringency')
+        self.files_rm = []
         self.runsheet_data = self.AUC_match()
         self.processor_line = self.AUC_processor_line()
         self.command = self.AUC_executable()
@@ -472,6 +474,7 @@ class AUC(SampleFactory, object):
             out_file = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_AUC.bed"))
             cp_treat_out = os.path.join(self.out, (os.path.basename(item["AUC_CP_treat_sample"])+'.bz'))
             cp_cont_out = os.path.join(self.out, (os.path.basename(item["AUC_CP_control_sample"])+'.bz'))
+            self.files_rm.extend((cp_treat_out, cp_cont_out, treat_comb, cont_comb, cp_treat_out+".tbi", , cp_cont_out+".tbi"))
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
             else:
@@ -484,6 +487,7 @@ class AUC(SampleFactory, object):
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_treat_out)
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_cont_out)
             commandline = commandline + """auc -o %s -p %s %s %s\n""" % (out_file, peakfile, cp_treat_out, cp_cont_out)
+            if not self.pipe: commandline = commandline + """rm {0}\n""".format(" ".join(self.file.rm))
             commandline = modules + commandline
             command.append(commandline)
         return command
