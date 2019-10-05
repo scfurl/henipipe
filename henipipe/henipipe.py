@@ -487,7 +487,7 @@ class AUC(SampleFactory, object):
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_treat_out)
             commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_cont_out)
             commandline = commandline + """auc -o %s -p %s %s %s\n""" % (out_file, peakfile, cp_treat_out, cp_cont_out)
-            if self.pipe: commandline = commandline + """rm {0}\n""".format(" ".join(self.files_rm))
+            if self.pipe: commandline = commandline + """echo '\n[AUC] Removing files'\nrm {0}\n""".format(" ".join(self.files_rm))
             commandline = modules + commandline
             command.append(commandline)
         return command
