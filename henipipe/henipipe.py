@@ -407,7 +407,6 @@ class AUC(SampleFactory, object):
         self.norm = kwargs.get('norm')
         self.pipe = not kwargs.get('no_pipe')
         self.method = kwargs.get('stringency')
-        self.files_rm = []
         self.runsheet_data = self.AUC_match()
         self.processor_line = self.AUC_processor_line()
         self.command = self.AUC_executable()
@@ -466,6 +465,7 @@ class AUC(SampleFactory, object):
         commandline=""
         command = []
         for item in self.runsheet_data:
+            self.files_rm = []
             JOBSTRING = self.id_generator(size=10)
             treat_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_treatment_combined.bedgraph"))
             cont_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_cont_combined.bedgraph"))
