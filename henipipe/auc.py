@@ -57,6 +57,7 @@ class AUC:
                     narrow_values.append("NF")
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
         if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
+            wide_values=[]
             print("Narrow peak error found on line {0} of peak file".format(self.peak_count))
             for i in self.targets:
                 proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, wide_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
