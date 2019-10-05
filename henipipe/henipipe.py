@@ -474,7 +474,7 @@ class AUC(SampleFactory, object):
             out_file = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_AUC.bed"))
             cp_treat_out = os.path.join(self.out, (os.path.basename(item["AUC_CP_treat_sample"])+'.bz'))
             cp_cont_out = os.path.join(self.out, (os.path.basename(item["AUC_CP_control_sample"])+'.bz'))
-            self.files_rm.extend((cp_treat_out, cp_cont_out, treat_comb, cont_comb, cp_treat_out+".tbi", , cp_cont_out+".tbi"))
+            self.files_rm.extend((cp_treat_out, cp_cont_out, treat_comb, cont_comb, cp_treat_out+".tbi", cp_cont_out+".tbi"))
             if self.cluster=="SLURM":
                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
             else:
