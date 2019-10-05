@@ -58,6 +58,13 @@ class AUC:
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(narrow_values)), narrow_peak])+"\n"
         if self.address_ok(wide_peak) and not self.address_ok(narrow_peak):
             print("Narrow peak error found on line {0} of peak file".format(self.peak_count))
+            for i in self.targets:
+                proc = Popen("tabix {0:s} {1:s} | awk '{{s+=$4}} END {{print s}}'".format(i, wide_peak), shell = True, stdin = PIPE, stdout=PIPE, stderr = PIPE)
+                out, err = proc.communicate()
+                try:
+                    wide_values.append(out.decode('UTF-8').split()[0])
+                except IndexError:
+                    wide_values.append("NF")
             return "\t".join(["\t".join(address), ("\t".join(wide_values)), ("\t".join(["NF"]*len(self.targets))), narrow_peak])+"\n"
         if not self.address_ok(wide_peak):
             print("Wide peak error found on line {0} of peak file".format(self.peak_count))
