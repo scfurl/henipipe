@@ -87,7 +87,6 @@ def run_henipipe(args=None):
 
 
     if args.job=="MAKERUNSHEET":
-        if args.sample_flag =="": args.sample_flag=None
         LOGGER.info("Parsing fastq folder - "+args.fastq_folder+" ...")
         LOGGER.info("Writing runsheet to - "+os.path.join(args.output, 'runsheet.csv')+" ...")
         henipipe.make_runsheet(folder=args.fastq_folder, output=args.output, sample_flag = args.sample_flag, genome_key = args.genome_key, no_pipe=args.keep_files)
