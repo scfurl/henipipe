@@ -25,7 +25,7 @@ def run_henipipe(args=None):
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
     parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'NORM', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "NORM" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file.')
-    parser.add_argument('--sample_flag', '-sf', type=str, default="Sample", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
+    parser.add_argument('--sample_flag', '-sf', type=str, default="", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--genome_key', '-gk', type=str, default="default", help='For MAKERUNSHEET only: abbreviation to use "installed" genomes in the runsheet (See README.md for more details')
     parser.add_argument('--filter_high', '-fh', type=int, default=None, help='For ALIGN only: upper limit of fragment size to exclude, defaults is no upper limit.  OPTIONAL')
@@ -48,6 +48,7 @@ def run_henipipe(args=None):
     #call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
     #call = 'henipipe MACS2 -r ./runsheet.csv -d -mk -s 1:10'
     #call = 'henipipe GENOMESFILE'
+    #call = 'henipipe MAKERUNSHEET -fq ../fastq'
 
     #args = parser.parse_args(call.split(" ")[1:])
     args = parser.parse_args()
@@ -58,8 +59,6 @@ def run_henipipe(args=None):
         print(GENOMES_JSON)
         exit()
     #log
-    if args.debug == False:
-        LOGGER.info("Logging to %s... examine this file if samples fail." % args.log_prefix)
 
     #deal with user
     if args.user is None:
@@ -88,6 +87,7 @@ def run_henipipe(args=None):
 
 
     if args.job=="MAKERUNSHEET":
+        if args.sample_flag =="": args.sample.flag=None
         LOGGER.info("Parsing fastq folder - "+args.fastq_folder+" ...")
         LOGGER.info("Writing runsheet to - "+os.path.join(args.output, 'runsheet.csv')+" ...")
         henipipe.make_runsheet(folder=args.fastq_folder, output=args.output, sample_flag = args.sample_flag, genome_key = args.genome_key, no_pipe=args.keep_files)
@@ -106,6 +106,9 @@ def run_henipipe(args=None):
     #deal with sample selection
     if args.select is not None:
         parsed_runsheet = [parsed_runsheet[i-1] for i in list(henipipe.parse_range_list(args.select))]
+
+    if args.debug == False:
+        LOGGER.info("Logging to %s... examine this file if samples fail." % args.log_prefix)
 
     if args.job=="ALIGN":
         #deal with filtering
