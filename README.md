@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-version 0.9
+version 1.0
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
@@ -15,6 +15,7 @@ A python wrapper for processing of sequencing data generated using CutnRun or Cu
 2. Computing cluster with PBS or SLURM
 3. Modules installed for python, bowtie2, samtools, bedtools, R
 4. MACS2 is required for MACS2 function
+5. htslib (containing the tabix executable) is required for AUC function
 
 ## Installation
 
@@ -60,18 +61,20 @@ henipipe usage: A wrapper for running henipipe [-h] [--sample_flag SAMPLE_FLAG]
                                       [--norm_method {coverage,read_count,spike_in}]
                                       [--user USER] [--SEACR_norm {non,norm}]
                                       [--SEACR_stringency {stringent,relaxed}]
-                                      [--no_pipe] [--verbose]
-                                      {MAKERUNSHEET,ALIGN,NORM,MERGE,SEACR,MACS2,GENOMESFILE}
+                                      [--keep_files] [--verbose]
+                                      {MAKERUNSHEET,ALIGN,NORM,MERGE,SEACR,MACS2,AUC,GENOMESFILE}
 
 positional arguments:
-  {MAKERUNSHEET,ALIGN,NORM,MERGE,SEACR,MACS2,GENOMESFILE}
+  {MAKERUNSHEET,ALIGN,NORM,MERGE,SEACR,MACS2,AUC,GENOMESFILE}
                         a required string denoting segment of pipeline to run.
                         1) "MAKERUNSHEET" - to parse a folder of fastqs; 2)
                         "ALIGN" - to perform alignment using bowtie and output
                         bed files; 3) "NORM" - to normalize data to reference
                         (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR"
                         - to perform SEACR; 6) "MACS" - to perform MACS2; 7)
-                        "GENOMESFILE" - print location of genomes.json file.
+                        "AUC" - to calculate AUC between normalized bedgraph
+                        using a peak file; 8) "GENOMESFILE" - print location
+                        of genomes.json file.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -127,7 +130,7 @@ optional arguments:
   --SEACR_stringency {stringent,relaxed}, -Ss {stringent,relaxed}
                         FOR SEACR: Default will run as "stringent", other
                         option is "relaxed". OPTIONAL
-  --no_pipe, -np        FOR ALIGN: use this flag to turn off piping (Wil
+  --keep_files, -k      FOR ALIGN: use this flag to turn off piping (Will
                         generate all files).
   --verbose, -v         Run with some additional ouput - not much though...
                         OPTIONAL
@@ -193,7 +196,7 @@ ls
 1. Make a new output directory 'henipipe'.
 2. Go into that directory and make a runsheet pointing to the fastq folder i.e. the folder level above.  (at the command line, henipipe is cool with either relative or absolute pathnames; but as stated earlier, absolute pathnames are required for the runsheet.)
 3.  Optionally you can only select directories of fastq files that contain in their name the string denoted using the -sf flag.
-4. After inspecting and completing the runsheet, run ALIGN, NORM, and SEACR.  
+4. After inspecting and completing the runsheet, run ALIGN, NORM, SEACR, and AUC.  
 5. Sit back have a cocktail.
 
 ```bash
@@ -204,6 +207,8 @@ henipipe MAKERUNSHEET -fq ../fastq -sf MySampleDirectoriesStartWithThisString -o
 henipipe ALIGN -r runsheet.csv
 henipipe NORM -r runsheet.csv
 henipipe SEACR -r runsheet.csv
+mkdir auc
+henipipe AUC -r runsheet.csv -o auc
 ```
 
 
