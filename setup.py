@@ -70,4 +70,8 @@ pipx install --include-deps henipipe
 pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe 
 pipx uninstall henipipe
 
+
+pipx uninstall henipipe
+pipx install --spec git+https://github.com/scfurl/henipipe@devel --include-deps henipipe 
+
 """

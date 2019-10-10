@@ -66,21 +66,20 @@ class SampleFactory:
         popen_commands = {"PBS":'qsub', "SLURM":['sbatch']}
         popen_command = popen_commands.get(self.cluster)
         for script in self.script:
-            if self.cluster=="PBS":
-                if self.debug==False:
-                    # Open a pipe to the command.
-                    proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-                    if (sys.version_info > (3, 0)):
-                        proc.stdin.write(script.encode('utf-8'))
-                        out, err = proc.communicate()
-                    else:
-                        proc.stdin.write(script)
-                        out, err = proc.communicate()
-                # Print your job and the system response to the screen as it's submitted
-                print(script)
-                if self.debug==False:
-                    print(out)
-                    time.sleep(0.1)
+            if self.debug==False:
+                # Open a pipe to the command.
+                proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                if (sys.version_info > (3, 0)):
+                    proc.stdin.write(script.encode('utf-8'))
+                    out, err = proc.communicate()
+                else:
+                    proc.stdin.write(script)
+                    out, err = proc.communicate()
+            # Print your job and the system response to the screen as it's submitted
+            print(script)
+            if self.debug==False:
+                print(out)
+                time.sleep(0.1)
 
 
 class Align(SampleFactory, object):
