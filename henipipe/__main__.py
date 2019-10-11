@@ -39,6 +39,7 @@ def run_henipipe(args=None):
     parser.add_argument('--cluster', '-c', type=str, default='SLURM', choices=['PBS', 'SLURM'], help='Cluster software.  OPTIONAL Currently supported: PBS and SLURM')
     parser.add_argument('--threads', '-t', type=str, default='4', help='FOR ALIGN: number of threads')
     parser.add_argument('--gb_ram', '-gb', type=str, default='4', help='FOR ALIGN: gigabytes of RAM')
+    parser.add_argument('--install', '-i', type=str, default=None, help='FOR GENOMESFILE: location of file to install as a new genomes.json file, existing genomes.json will be erased')
     parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in'], help='For ALIGN and NORM: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
     parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
@@ -55,8 +56,13 @@ def run_henipipe(args=None):
 
     if args.job=="GENOMESFILE":
         _ROOT = os.path.abspath(os.path.dirname(__file__))
-        GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
-        print(GENOMES_JSON)
+        if args.install is None:
+            GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
+            print(GENOMES_JSON)
+        if args.install is not None:
+            from shutil import copyfile
+            args.install = os.path.abspath(args.install)
+            copyfile(args.install, os.path.join(_ROOT, 'data', 'genomes.json'))
         exit()
     #log
 
