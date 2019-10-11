@@ -162,7 +162,8 @@ class Norm(SampleFactory, object):
         if method=="read_count":
             for sample in self.runsheet_data:
                 count = 0
-                for line in open(sample['bed_out']).xreadlines(): count += 1
+                # for line in open(sample['bed_out']).xreadlines(): count += 1
+                for line in open(sample['bed_out']): count += 1
                 sample['scale_factor'] = (1/float(count))*float(10**7)
         if method=="coverage":
             for sample in self.runsheet_data:
@@ -174,9 +175,9 @@ class Norm(SampleFactory, object):
         if method=="spike_in":
             for sample in self.runsheet_data:
                 count = 0
-                for line in open(sample['bed_out']).xreadlines(): count += 1
+                for line in open(sample['bed_out']): count += 1
                 ncount = 0
-                for line in open(sample['spikein_bed_out']).xreadlines(): ncount += 1
+                for line in open(sample['spikein_bed_out']): ncount += 1
                 sample['scale_factor'] = ((float(count)/float(ncount))/100)
         return
 
