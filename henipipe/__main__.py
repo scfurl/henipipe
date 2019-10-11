@@ -106,7 +106,7 @@ def run_henipipe(args=None):
     check_runsheet(args, parsed_runsheet, verbose=args.verbose)
     """
     parsed_runsheet = list(henipipe.parse_runsheet(args.runsheet))
-    print(parsed_runsheet)
+
     henipipe.check_runsheet(args, parsed_runsheet, verbose=args.verbose)
 
     #deal with sample selection
