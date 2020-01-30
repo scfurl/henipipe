@@ -221,7 +221,7 @@ class Scale(SampleFactory, object):
         #self.processor_line = self.norm_processor_line()
         self.norm_values = self.get_norm_values(method = norm_method)
         self.commands = self.norm_executable()
-        self.script = self.environs.generate_job(self.commands, self.job)
+        self.bash_script = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
