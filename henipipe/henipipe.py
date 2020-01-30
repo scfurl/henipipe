@@ -33,39 +33,33 @@ import json
 
 #_ROOT = os.getcwd()
 _ROOT = os.path.abspath(os.path.dirname(__file__))
+#_ROOT = '/Users/sfurla/Box Sync/PI_FurlanS/computation/develop/henipipe/henipipe'
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.1.sh')
+ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
+
 
 
 class SampleFactory:
     def __init__(self, *args, **kwargs):
+        self.environs = environs(cluster = kwargs.get('cluster'), user = kwargs.get('user'), log = kwargs.get('log'), threads = kwargs.get('threads'), gb_ram = kwargs.get('gb_ram'))
+
+        #remove later
         self.user = kwargs.get('user')
         self.cluster = kwargs.get('cluster')
+        self.threads = kwargs.get('threads')
+        self.gb_ram = kwargs.get('gb_ram')
+        self.cluster = kwargs.get('cluster')
+
         self.runsheet_data = kwargs.get('runsheet_data')
         self.debug = kwargs.get('debug')
-        self.log_name = kwargs.get('log')
+        # self.log_name = kwargs.get('log')
     def __call__():
         pass
 
-    def id_generator(self, size=6, chars=string.ascii_uppercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
-
-    def generate_job(self):
-        job_string=[]
-        torun = len(self.runsheet_data)
-        for i in range(torun):
-            log_file = self.id_generator()
-            job_name = self.job + "_" + self.runsheet_data[i]['sample']
-            command = self.command[i]
-            to_appends = {  "PBS" : "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file),
-                            "SLURM" : "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=outtmp\n#SBATCH --error=errtmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)}
-            job_string.append(to_appends.get(self.cluster))
-        return job_string
-
     def run_job(self):
-        popen_commands = {"PBS":'qsub', "SLURM":['sbatch']}
-        popen_command = popen_commands.get(self.cluster)
-        for script in self.script:
+        popen_command = self.environs.popen_command
+        for script in self.bash_scripts:
             if self.debug==False:
                 # Open a pipe to the command.
                 proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
@@ -82,21 +76,96 @@ class SampleFactory:
                 time.sleep(0.1)
 
 
+
+
+class environs:
+    def __init__(self, *args, **kwargs):
+        self.cluster = kwargs.get('cluster')
+        self.user = kwargs.get('user')
+        self.log = kwargs.get('log')
+        self.environs_data = self.load_environs(ENVIRONS_JSON).get(self.cluster)
+        self.popen_command = self.environs_data["popen"]
+        self.threads = kwargs.get('threads')
+        self.ram = kwargs.get('gb_ram')
+
+    def id_generator(self, size=10, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
+    def load_environs(self, environs_file):
+        with open(environs_file, "r") as read_file:
+            data = json.load(read_file)
+        return data
+
+    def get_processor_line(self, *args, **kwargs):
+        if kwargs.get('threads') is None:
+            threads = self.environs_data["resources"][kwargs.get('job')]["threads"]
+        else:
+            threads = kwargs.get('threads')
+        if kwargs.get('gb_ram') is None:
+            ram = self.environs_data["resources"][kwargs.get('job')]["ram"]
+        else:
+            ram = kwargs.get('ram')
+        return [threads, ram]
+
+    def generate_job(self, commands, job):
+        bash_scripts=[]
+        torun = len(commands)
+        threads,ram = self.get_processor_line(threads = self.threads, ram = self.ram, job = job)
+        for i in range(torun):
+            # bash_script = {  "PBS" : "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file),
+                            # "SLURM" : "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=tmp\n#SBATCH --error=tmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)}
+            bash_script = self.assemble_script(   LOG_FILE = self.log, \
+                                    MODULES = self.environs_data["resources"][job]["modules"], \
+                                    TEMP_LOG_FILE = self.id_generator(), \
+                                    JOB_NAME = (job + "_" + commands[i][0]), \
+                                    COMMAND = commands[i][1],
+                                    RAM = ram,
+                                    THREADS = threads,
+                                    USER = self.user)
+            bash_scripts.append(bash_script)
+        return bash_scripts
+
+    def assemble_script(self, *args, **kwargs):
+        script_list=[]
+        order=[]
+        fn_args = kwargs
+        for key, value in self.environs_data["script_lines"].items():
+            script_list.append(value)
+            order.append(key)
+        script_list = [x for _,x in sorted(zip(order,script_list))]
+        lines_unparsed = [x[0] for x in script_list]
+        values_to_insert = [x[1].split("|") for x in script_list]
+        lines_parsed = []
+        global to_test
+        to_test=[lines_unparsed, values_to_insert, fn_args]
+        for i in range(len(lines_unparsed)):
+            if values_to_insert[i][0] is "":
+                lines_parsed.append(lines_unparsed[i])
+            else:
+                string=lines_unparsed[i]
+                for j in range(len(values_to_insert[i])):
+                    string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
+                lines_parsed.append(string)
+        return "\n".join(lines_parsed)
+
+
+
+
 class Align(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(Align, self).__init__(*args, **kwargs)
         self.bowtie_flags = kwargs.get('bowtie_flags')
         self.job = "HENIPIPE_ALIGN"
         self.pipe = not kwargs.get('no_pipe')
-        self.threads = int(kwargs.get('threads'))
-        self.gb_ram = int(kwargs.get('gb_ram'))
         self.filter_string = self.make_filter_string(kwargs.get('filter')[0], kwargs.get('filter')[1])
         self.norm_method = kwargs.get('norm_method')
-        self.processor_line = self.align_processor_line()
-        self.command = self.align_executable()
-        self.script = self.generate_job()
+        self.commands = self.align_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
+
+    def id_generator(self, size=10, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
 
     def make_filter_string(self, low, high):
         if low is None and high is None:
@@ -135,26 +204,24 @@ class Align(SampleFactory, object):
                 commandline = commandline + """\necho 'Sorting Bed for spikein...\n'sort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
             commandline = modules + commandline
-            command.append(commandline)
+            command.append([sample['sample'], commandline])
         return command
 
 
-    def align_processor_line(self):
-        if self.cluster=="PBS":
-            return """select=1:mem=%sGB:ncpus=%s""" %(self.gb_ram*self.threads, self.threads)
-        if self.cluster=="SLURM":
-            return '#SBATCH --cpus-per-task=%s\n#SBATCH --mem-per-cpu=%s000' %(self.threads, self.gb_ram)
 
 
-class Norm(SampleFactory, object):
+
+
+
+class Scale(SampleFactory, object):
     def __init__(self, *args, **kwargs):
-        super(Norm, self).__init__(*args, **kwargs)
-        self.job = "HENIPIPE_NORM"
+        super(Scale, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_SCALE"
         norm_method = kwargs.get('norm_method')
-        self.processor_line = self.norm_processor_line()
+        #self.processor_line = self.norm_processor_line()
         self.norm_values = self.get_norm_values(method = norm_method)
-        self.command = self.norm_executable()
-        self.script = self.generate_job()
+        self.commands = self.norm_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
@@ -181,7 +248,6 @@ class Norm(SampleFactory, object):
                 sample['scale_factor'] = ((float(count)/float(ncount))/100)
         return
 
-
     def norm_executable(self):
         commandline=""
         command = []
@@ -197,11 +263,9 @@ class Norm(SampleFactory, object):
         return command
 
 
-    def norm_processor_line(self):
-        if self.cluster=="PBS":
-            return """select=1:mem=8GB:ncpus=1"""
-        if self.cluster=="SLURM":
-            return ''
+
+
+
 
 class SEACR(SampleFactory, object):
     def __init__(self, *args, **kwargs):
@@ -211,8 +275,8 @@ class SEACR(SampleFactory, object):
         self.norm = kwargs.get('norm')
         self.runsheet_data = self.SEACR_match()
         self.processor_line = self.SEACR_processor_line()
-        self.command = self.SEACR_executable()
-        self.script = self.generate_job()
+        self.commands = self.SEACR_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
@@ -232,7 +296,6 @@ class SEACR(SampleFactory, object):
             sample.update( {'SEACR_control' : control_bed})
         return samples
 
-
     def SEACR_executable(self):
         commandline=""
         command = []
@@ -247,12 +310,14 @@ class SEACR(SampleFactory, object):
             command.append(commandline)
         return command
 
-
     def SEACR_processor_line(self):
         if self.cluster=="PBS":
             return """select=1:mem=8GB:ncpus=2"""
         if self.cluster=="SLURM":
             return ''
+
+
+
 
 
 class Merge(SampleFactory, object):
@@ -262,8 +327,8 @@ class Merge(SampleFactory, object):
         self.out = kwargs.get('out')
         self.runsheet_data = self.Merge_match()
         self.processor_line = self.Merge_processor_line()
-        self.command = self.Merge_executable()
-        self.script = self.generate_job()
+        self.s = self.Merge_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
@@ -305,6 +370,10 @@ class Merge(SampleFactory, object):
             return ''
 
 
+
+
+
+
 class MACS2(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(MACS2, self).__init__(*args, **kwargs)
@@ -314,8 +383,8 @@ class MACS2(SampleFactory, object):
         self.norm = kwargs.get('norm')
         self.runsheet_data = self.MACS2_match()
         self.processor_line = self.MACS2_processor_line()
-        self.command = self.MACS2_executable()
-        self.script = self.generate_job()
+        self.commands = self.MACS2_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
@@ -366,6 +435,8 @@ class MACS2(SampleFactory, object):
 
 
 
+
+
     def MACS2_executable(self):
         commandline=""
         command = []
@@ -393,30 +464,24 @@ class MACS2(SampleFactory, object):
             return ''
 
 
-#FC
-#1.  Additively merge normalized bedgraphs across biologic controls (for both ab and control)
-#2.  Call peaks using SEACR
-#3.  Use SEACR output to define range and calculate AUC for each biologic control and output FC bed
 
 class AUC(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(AUC, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_AUC"
-        #self.merged = kwargs.get('merged')
         self.out = kwargs.get('out')
         self.norm = kwargs.get('norm')
         self.pipe = not kwargs.get('no_pipe')
         self.method = kwargs.get('stringency')
         self.runsheet_data = self.AUC_match()
         self.processor_line = self.AUC_processor_line()
-        self.command = self.AUC_executable()
-        self.script = self.generate_job()
+        self.commands = self.AUC_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
     def AUC_match(self):
         desired_samples = self.runsheet_data
-        #desired_samples = parsed_runsheet
         sample_key = [i.get("sample") for i in desired_samples]
         biomatch_data = [i.get("MACS2_key") for i in desired_samples]
         abmatch_data = [i.get("SEACR_key") for i in desired_samples]
@@ -424,7 +489,6 @@ class AUC(SampleFactory, object):
         run_list = []
         for key in unique_keys:
             #find out if file is bio sample or control or ab sample or control by searching lists of the two keys
-            #print(key)
             biomatch_key = [biomatch_data[i] for i in which(key, sample_key)]
             is_biomatch_control = [bool(re.search(r'._CONTROL$', i)) for i in biomatch_key]
             abmatch_key = [abmatch_data[i] for i in which(key, sample_key)]
@@ -457,9 +521,6 @@ class AUC(SampleFactory, object):
                                     "AUC_CP_control_control": control_abcontrol_bed,
                                     "sample": key})
         return(run_list)
-
-
-
 
     def AUC_executable(self):
         commandline=""
