@@ -118,7 +118,7 @@ class Align(SampleFactory, object):
             JOBSTRING = self.id_generator(size=10)
             sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
             if self.cluster=="SLURM":
-                modules = """\nml bowtie2\nmodule load samtools\nmodule load Python/3.6.7-foss-2016b-fh1\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
+                modules = """\nml bowtie2\nmodule load samtools\nmodule load Python/3.6.7-foss-2016b-fh1\n"""
             else:
                 modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
             norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
