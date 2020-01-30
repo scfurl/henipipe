@@ -28,5 +28,10 @@
         "fasta": "/shared/biodata/ngs/Reference/iGenomes/Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome",
         "genome_sizes": "/shared/ngs/illumina/henikoff/solexa/databases/human/hg38/chr_lens.txt",
         "spikein_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
+    },
+    "FH_mm10": {
+        "fasta": "/shared/biodata/ngs/Reference/iGenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2IndexMasked/mm10.masked",
+        "genome_sizes": "/shared/ngs/illumina/henikoff/solexa/databases/mouse/mm10/chr_lens.txt",
+        "spinkin_fasta": "/shared/ngs/illumina/henikoff/Bowtie2/Ecoli"
     }
 }
