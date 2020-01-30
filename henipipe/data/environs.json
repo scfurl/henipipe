@@ -1,0 +1,46 @@
+{
+    "PBS": {
+        "popen" : "qsub",
+        "script_lines": {
+            "1" : ["#!/bin/bash\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp", ""],
+            "2" : ["PBS -N <--0-->", "JOB_NAME"],
+            "3" : ["#PBS -l select=1:mem=<--0-->GB:ncpus=<--1-->","RAM|THREADS"],
+            "4" : ["#PBS -A <--0-->\ncd $PBS_O_WORKDIR","USER"],
+            "5" : ["{<--0-->} 2>&1 | tee <--1-->", "COMMAND|TEMP_LOG_FILE"],
+            "6" : ["t=date\nsed -e 's/^/[HENIPIPE-$t] JOB: <--0-->:\t\t/' <--1--> >> <--2-->", "JOB_NAME|TEMP_LOG_FILE|LOG_FILE"],
+            "7" : ["rm <--0-->", "TEMP_LOG_FILE"]
+        },
+        "resources" : {
+            "HENIPIPE_ALIGN": {
+                "ram" : "8",
+                "threads" : "100",
+                "modules" : "ml bowtie2\nmodule load samtools\nmodule load Python/3.6.7-foss-2016b-fh1"
+            },
+            "HENIPIPE_SCALE": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : "module load bedtools"
+            },
+            "HENIPIPE_SEACR": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : "module load R\nmodule load bedtools"
+            },
+            "HENIPIPE_MERGE": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : "module load bedtools"
+            },
+            "HENIPIPE_MACS2": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : "module load MACS2"
+            },
+            "HENIPIPE_AUC": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : "module load bedtools\nmodule load R\nmodule load htslib/1.9"
+            }
+        }
+    }
+}
