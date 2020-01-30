@@ -57,6 +57,9 @@ class SampleFactory:
     def __call__():
         pass
 
+    def id_generator(self, size=10, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
     def run_job(self):
         popen_command = self.environs.popen_command
         for script in self.bash_scripts:
@@ -163,9 +166,6 @@ class Align(SampleFactory, object):
         self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
-
-    def id_generator(self, size=10, chars=string.ascii_uppercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
 
     def make_filter_string(self, low, high):
         if low is None and high is None:
