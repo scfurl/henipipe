@@ -152,6 +152,26 @@ class environs:
         return "\n".join(lines_parsed)
 
 
+class Fastqc(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(Fastqc, self).__init__(*args, **kwargs)
+        self.bowtie_flags = kwargs.get('bowtie_flags')
+        self.job = "HENIPIPE_FASTQC"
+        self.commands = self.fastqc_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def fastqc_executable(self):
+        commandline=""
+        command = []
+        for sample in self.runsheet_data:
+            fastq1=re.sub('\t', ',', sample['fastq1'])
+            fastq2=re.sub('\t', ',', sample['fastq2'])
+            JOBSTRING = self.id_generator(size=10)
+            commandline = """fastqc %s %s\n""" % (fastq1, fastq2)
+            command.append([sample['sample'], commandline])
+        return command
 
 
 class Align(SampleFactory, object):
@@ -185,11 +205,6 @@ class Align(SampleFactory, object):
             fastq2=re.sub('\t', ',', sample['fastq2'])
             JOBSTRING = self.id_generator(size=10)
             sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
-            if self.cluster=="SLURM":
-                modules = """\nml bowtie2\nmodule load samtools\nmodule load Python/3.6.7-foss-2016b-fh1\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
-            else:
-                modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
-            norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
             if self.pipe:
                 commandline = """bowtie2 %s -p %s -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sam2bed_string)
                 commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
@@ -203,7 +218,6 @@ class Align(SampleFactory, object):
                 commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s\n""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
                 commandline = commandline + """\necho 'Sorting Bed for spikein...\n'sort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
-            commandline = modules + commandline
             command.append([sample['sample'], commandline])
         return command
 
@@ -221,7 +235,7 @@ class Scale(SampleFactory, object):
         #self.processor_line = self.norm_processor_line()
         self.norm_values = self.get_norm_values(method = norm_method)
         self.commands = self.norm_executable()
-        self.bash_script = self.environs.generate_job(self.commands, self.job)
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
