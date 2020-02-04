@@ -263,17 +263,11 @@ class Scale(SampleFactory, object):
         return
 
     def norm_executable(self):
-        commandline=""
         command = []
         for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
-            if self.cluster=="SLURM":
-                modules = """\nml bedtools\n"""
-            else:
-                modules = """\nmodule load bedtools\n"""
             commandline = """genomeCoverageBed -bg -i %s -g %s -scale %s -trackline | pyWriter - %s\n""" % (sample['bed_out'], sample['genome_sizes'], sample['scale_factor'], sample['bedgraph'])
-            commandline = modules + commandline
-            command.append(commandline)
+            command.append([sample['sample'], commandline])
         return command
 
 
@@ -700,9 +694,9 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
             'MERGE_key': i.get('directory_short'), \
             'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR"), \
             'fasta': genome_data.get('fasta'), 'spikein_fasta': genome_data.get('spikein_fasta'), 'genome_sizes':  genome_data.get('genome_sizes')})
-    if no_pipe:
-        i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
-            'bam': os.path.join(output, i.get('directory_short')+".bam")})
+        if no_pipe:
+            i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
+                'bam': os.path.join(output, i.get('directory_short')+".bam")})
     keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
     if no_pipe:
         keys.append("sam")

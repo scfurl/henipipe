@@ -67,7 +67,7 @@ module load Python/3.6.7-foss-2016b-fh1
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 pipx install --include-deps henipipe
-pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe 
+pipx install --spec git+https://github.com/scfurl/henipipe@cleaner --include-deps henipipe 
 pipx uninstall henipipe
 
 
