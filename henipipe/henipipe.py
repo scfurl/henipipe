@@ -166,8 +166,8 @@ class Fastqc(SampleFactory, object):
         commandline=""
         command = []
         for sample in self.runsheet_data:
-            fastq1=re.sub('\t', ',', sample['fastq1'])
-            fastq2=re.sub('\t', ',', sample['fastq2'])
+            fastq1=re.sub('\t', ' ', sample['fastq1'])
+            fastq2=re.sub('\t', ' ', sample['fastq2'])
             JOBSTRING = self.id_generator(size=10)
             commandline = """fastqc %s %s\n""" % (fastq1, fastq2)
             command.append([sample['sample'], commandline])
