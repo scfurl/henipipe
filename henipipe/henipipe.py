@@ -204,6 +204,7 @@ class Align(SampleFactory, object):
             fastq1=re.sub('\t', ',', sample['fastq1'])
             fastq2=re.sub('\t', ',', sample['fastq2'])
             JOBSTRING = self.id_generator(size=10)
+            norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
             sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
             if self.pipe:
                 commandline = """bowtie2 %s -p %s -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sam2bed_string)
