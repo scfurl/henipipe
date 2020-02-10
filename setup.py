@@ -5,7 +5,11 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
+<<<<<<< HEAD
     version="0.94",
+=======
+    version="1.1",
+>>>>>>> cleaner
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -26,6 +30,7 @@ with open("README.md", "r") as fh:
         'henipipe = henipipe.__main__:run_henipipe',
         'samTobed = henipipe.samTobed:run_sam2bed',
         'pyWriter = henipipe.pyWriter:run_pyWriter',
+        'auc = henipipe.auc:run_auc',
     ]},
     )
 
@@ -44,7 +49,7 @@ rm dist/*
 python3 setup.py sdist bdist_wheel
 python3 -m twine upload dist/*
 scfurl
-
+"pw"<-PW2019
 
 ##Install pipx
 ## python3 -m pip install --user pipx
@@ -57,6 +62,7 @@ python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 pipx install --include-deps --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org' henipipe
 pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org'
+pipx install --spec git+https://github.com/scfurl/henipipe@cleaner --include-deps henipipe --pip-args '--trusted-host pypi.org --trusted-host files.pythonhosted.org'
 
 
 **At the FHCRC do the following...**
@@ -65,7 +71,11 @@ module load Python/3.6.7-foss-2016b-fh1
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 pipx install --include-deps henipipe
-pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe 
+pipx install --spec git+https://github.com/scfurl/henipipe@cleaner --include-deps henipipe 
 pipx uninstall henipipe
+
+
+pipx uninstall henipipe
+pipx install --spec git+https://github.com/scfurl/henipipe@devel --include-deps henipipe 
 
 """

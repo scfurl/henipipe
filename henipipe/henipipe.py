@@ -33,54 +33,145 @@ import json
 
 #_ROOT = os.getcwd()
 _ROOT = os.path.abspath(os.path.dirname(__file__))
+#_ROOT = '/Users/sfurla/Box Sync/PI_FurlanS/computation/develop/henipipe/henipipe'
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.1.sh')
+ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
+
 
 
 class SampleFactory:
     def __init__(self, *args, **kwargs):
+        self.environs = environs(cluster = kwargs.get('cluster'), user = kwargs.get('user'), log = kwargs.get('log'), threads = kwargs.get('threads'), gb_ram = kwargs.get('gb_ram'))
+
+        #remove later
         self.user = kwargs.get('user')
         self.cluster = kwargs.get('cluster')
+        self.threads = kwargs.get('threads')
+        self.gb_ram = kwargs.get('gb_ram')
+        self.cluster = kwargs.get('cluster')
+
         self.runsheet_data = kwargs.get('runsheet_data')
         self.debug = kwargs.get('debug')
-        self.log_name = kwargs.get('log')
+        # self.log_name = kwargs.get('log')
     def __call__():
         pass
 
-    def id_generator(self, size=6, chars=string.ascii_uppercase + string.digits):
+    def id_generator(self, size=10, chars=string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
 
-    def generate_job(self):
-        job_string=[]
-        torun = len(self.runsheet_data)
-        for i in range(torun):
-            log_file = self.id_generator()
-            job_name = self.job + "_" + self.runsheet_data[i]['sample']
-            command = self.command[i]
-            to_appends = {  "PBS" : "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file),
-                            "SLURM" : "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=outtmp\n#SBATCH --error=errtmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)}
-            job_string.append(to_appends.get(self.cluster))
-        return job_string
-
     def run_job(self):
-        popen_commands = {"PBS":'qsub', "SLURM":['sbatch']}
-        popen_command = popen_commands.get(self.cluster)
-        for script in self.script:
-            if self.cluster=="PBS":
-                if self.debug==False:
-                    # Open a pipe to the command.
-                    proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-                    if (sys.version_info > (3, 0)):
-                        proc.stdin.write(script.encode('utf-8'))
-                        out, err = proc.communicate()
-                    else:
-                        proc.stdin.write(script)
-                        out, err = proc.communicate()
-                # Print your job and the system response to the screen as it's submitted
-                print(script)
-                if self.debug==False:
-                    print(out)
-                    time.sleep(0.1)
+        popen_command = self.environs.popen_command
+        for script in self.bash_scripts:
+            if self.debug==False:
+                # Open a pipe to the command.
+                proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                if (sys.version_info > (3, 0)):
+                    proc.stdin.write(script.encode('utf-8'))
+                    out, err = proc.communicate()
+                else:
+                    proc.stdin.write(script)
+                    out, err = proc.communicate()
+            # Print your job and the system response to the screen as it's submitted
+            print(script)
+            if self.debug==False:
+                print(out)
+                time.sleep(0.1)
+
+
+
+
+class environs:
+    def __init__(self, *args, **kwargs):
+        self.cluster = kwargs.get('cluster')
+        self.user = kwargs.get('user')
+        self.log = kwargs.get('log')
+        self.environs_data = self.load_environs(ENVIRONS_JSON).get(self.cluster)
+        self.popen_command = self.environs_data["popen"]
+        self.threads = kwargs.get('threads')
+        self.ram = kwargs.get('gb_ram')
+
+    def id_generator(self, size=10, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
+    def load_environs(self, environs_file):
+        with open(environs_file, "r") as read_file:
+            data = json.load(read_file)
+        return data
+
+    def get_processor_line(self, *args, **kwargs):
+        if kwargs.get('threads') is None:
+            threads = self.environs_data["resources"][kwargs.get('job')]["threads"]
+        else:
+            threads = kwargs.get('threads')
+        if kwargs.get('gb_ram') is None:
+            ram = self.environs_data["resources"][kwargs.get('job')]["ram"]
+        else:
+            ram = kwargs.get('ram')
+        return [threads, ram]
+
+    def generate_job(self, commands, job):
+        bash_scripts=[]
+        torun = len(commands)
+        threads,ram = self.get_processor_line(threads = self.threads, ram = self.ram, job = job)
+        for i in range(torun):
+            # bash_script = {  "PBS" : "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file),
+                            # "SLURM" : "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=tmp\n#SBATCH --error=tmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)}
+            bash_script = self.assemble_script(   LOG_FILE = self.log, \
+                                    MODULES = self.environs_data["resources"][job]["modules"], \
+                                    TEMP_LOG_FILE = self.id_generator(), \
+                                    JOB_NAME = (job + "_" + commands[i][0]), \
+                                    COMMAND = commands[i][1],
+                                    RAM = ram,
+                                    THREADS = threads,
+                                    USER = self.user)
+            bash_scripts.append(bash_script)
+        return bash_scripts
+
+    def assemble_script(self, *args, **kwargs):
+        script_list=[]
+        order=[]
+        fn_args = kwargs
+        for key, value in self.environs_data["script_lines"].items():
+            script_list.append(value)
+            order.append(key)
+        script_list = [x for _,x in sorted(zip(order,script_list))]
+        lines_unparsed = [x[0] for x in script_list]
+        values_to_insert = [x[1].split("|") for x in script_list]
+        lines_parsed = []
+        global to_test
+        to_test=[lines_unparsed, values_to_insert, fn_args]
+        for i in range(len(lines_unparsed)):
+            if values_to_insert[i][0] is "":
+                lines_parsed.append(lines_unparsed[i])
+            else:
+                string=lines_unparsed[i]
+                for j in range(len(values_to_insert[i])):
+                    string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
+                lines_parsed.append(string)
+        return "\n".join(lines_parsed)
+
+
+class Fastqc(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(Fastqc, self).__init__(*args, **kwargs)
+        self.bowtie_flags = kwargs.get('bowtie_flags')
+        self.job = "HENIPIPE_FASTQC"
+        self.commands = self.fastqc_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def fastqc_executable(self):
+        commandline=""
+        command = []
+        for sample in self.runsheet_data:
+            fastq1=re.sub('\t', ' ', sample['fastq1'])
+            fastq2=re.sub('\t', ' ', sample['fastq2'])
+            JOBSTRING = self.id_generator(size=10)
+            commandline = """fastqc %s %s\n""" % (fastq1, fastq2)
+            command.append([sample['sample'], commandline])
+        return command
 
 
 class Align(SampleFactory, object):
@@ -89,13 +180,10 @@ class Align(SampleFactory, object):
         self.bowtie_flags = kwargs.get('bowtie_flags')
         self.job = "HENIPIPE_ALIGN"
         self.pipe = not kwargs.get('no_pipe')
-        self.threads = int(kwargs.get('threads'))
-        self.gb_ram = int(kwargs.get('gb_ram'))
         self.filter_string = self.make_filter_string(kwargs.get('filter')[0], kwargs.get('filter')[1])
         self.norm_method = kwargs.get('norm_method')
-        self.processor_line = self.align_processor_line()
-        self.command = self.align_executable()
-        self.script = self.generate_job()
+        self.commands = self.align_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
@@ -116,12 +204,16 @@ class Align(SampleFactory, object):
             fastq1=re.sub('\t', ',', sample['fastq1'])
             fastq2=re.sub('\t', ',', sample['fastq2'])
             JOBSTRING = self.id_generator(size=10)
+<<<<<<< HEAD
             sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
             if self.cluster=="SLURM":
                 modules = """\nml bowtie2\nmodule load samtools\nmodule load Python/3.6.7-foss-2016b-fh1\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
             else:
                 modules = """\nmodule load python\nmodule load bowtie2\nmodule load samtools\necho '\nRunning Bowtie piped to samTobed...\n[BOWTIE] Output:\n'\n"""
+=======
+>>>>>>> cleaner
             norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
+            sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
             if self.pipe:
                 commandline = """bowtie2 %s -p %s -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sam2bed_string)
                 commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
@@ -135,27 +227,24 @@ class Align(SampleFactory, object):
                 commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s\n""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
                 commandline = commandline + """\necho 'Sorting Bed for spikein...\n'sort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
-            commandline = modules + commandline
-            command.append(commandline)
+            command.append([sample['sample'], commandline])
         return command
 
 
-    def align_processor_line(self):
-        if self.cluster=="PBS":
-            return """select=1:mem=%sGB:ncpus=%s""" %(self.gb_ram*self.threads, self.threads)
-        if self.cluster=="SLURM":
-            return '#SBATCH --cpus-per-task=%s\n#SBATCH --mem-per-cpu=%s000' %(self.threads, self.gb_ram)
 
 
-class Norm(SampleFactory, object):
+
+
+
+class Scale(SampleFactory, object):
     def __init__(self, *args, **kwargs):
-        super(Norm, self).__init__(*args, **kwargs)
-        self.job = "HENIPIPE_NORM"
+        super(Scale, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_SCALE"
         norm_method = kwargs.get('norm_method')
-        self.processor_line = self.norm_processor_line()
+        #self.processor_line = self.norm_processor_line()
         self.norm_values = self.get_norm_values(method = norm_method)
-        self.command = self.norm_executable()
-        self.script = self.generate_job()
+        self.commands = self.norm_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
@@ -163,7 +252,8 @@ class Norm(SampleFactory, object):
         if method=="read_count":
             for sample in self.runsheet_data:
                 count = 0
-                for line in open(sample['bed_out']).xreadlines(): count += 1
+                # for line in open(sample['bed_out']).xreadlines(): count += 1
+                for line in open(sample['bed_out']): count += 1
                 sample['scale_factor'] = (1/float(count))*float(10**7)
         if method=="coverage":
             for sample in self.runsheet_data:
@@ -175,33 +265,24 @@ class Norm(SampleFactory, object):
         if method=="spike_in":
             for sample in self.runsheet_data:
                 count = 0
-                for line in open(sample['bed_out']).xreadlines(): count += 1
+                for line in open(sample['bed_out']): count += 1
                 ncount = 0
-                for line in open(sample['spikein_bed_out']).xreadlines(): ncount += 1
+                for line in open(sample['spikein_bed_out']): ncount += 1
                 sample['scale_factor'] = ((float(count)/float(ncount))/100)
         return
 
-
     def norm_executable(self):
-        commandline=""
         command = []
         for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
-            if self.cluster=="SLURM":
-                modules = """\nml bedtools\n"""
-            else:
-                modules = """\nmodule load bedtools\n"""
             commandline = """genomeCoverageBed -bg -i %s -g %s -scale %s -trackline | pyWriter - %s\n""" % (sample['bed_out'], sample['genome_sizes'], sample['scale_factor'], sample['bedgraph'])
-            commandline = modules + commandline
-            command.append(commandline)
+            command.append([sample['sample'], commandline])
         return command
 
 
-    def norm_processor_line(self):
-        if self.cluster=="PBS":
-            return """select=1:mem=8GB:ncpus=1"""
-        if self.cluster=="SLURM":
-            return ''
+
+
+
 
 class SEACR(SampleFactory, object):
     def __init__(self, *args, **kwargs):
@@ -211,8 +292,8 @@ class SEACR(SampleFactory, object):
         self.norm = kwargs.get('norm')
         self.runsheet_data = self.SEACR_match()
         self.processor_line = self.SEACR_processor_line()
-        self.command = self.SEACR_executable()
-        self.script = self.generate_job()
+        self.commands = self.SEACR_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
@@ -232,7 +313,6 @@ class SEACR(SampleFactory, object):
             sample.update( {'SEACR_control' : control_bed})
         return samples
 
-
     def SEACR_executable(self):
         commandline=""
         command = []
@@ -247,12 +327,14 @@ class SEACR(SampleFactory, object):
             command.append(commandline)
         return command
 
-
     def SEACR_processor_line(self):
         if self.cluster=="PBS":
             return """select=1:mem=8GB:ncpus=2"""
         if self.cluster=="SLURM":
             return ''
+
+
+
 
 
 class Merge(SampleFactory, object):
@@ -262,8 +344,8 @@ class Merge(SampleFactory, object):
         self.out = kwargs.get('out')
         self.runsheet_data = self.Merge_match()
         self.processor_line = self.Merge_processor_line()
-        self.command = self.Merge_executable()
-        self.script = self.generate_job()
+        self.s = self.Merge_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
@@ -305,6 +387,10 @@ class Merge(SampleFactory, object):
             return ''
 
 
+
+
+
+
 class MACS2(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(MACS2, self).__init__(*args, **kwargs)
@@ -314,8 +400,8 @@ class MACS2(SampleFactory, object):
         self.norm = kwargs.get('norm')
         self.runsheet_data = self.MACS2_match()
         self.processor_line = self.MACS2_processor_line()
-        self.command = self.MACS2_executable()
-        self.script = self.generate_job()
+        self.commands = self.MACS2_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
     def __call__():
         pass
 
@@ -366,6 +452,8 @@ class MACS2(SampleFactory, object):
 
 
 
+
+
     def MACS2_executable(self):
         commandline=""
         command = []
@@ -391,6 +479,104 @@ class MACS2(SampleFactory, object):
             return """select=1:mem=8GB:ncpus=2"""
         if self.cluster=="SLURM":
             return ''
+
+
+
+class AUC(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(AUC, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_AUC"
+        self.out = kwargs.get('out')
+        self.norm = kwargs.get('norm')
+        self.pipe = not kwargs.get('no_pipe')
+        self.method = kwargs.get('stringency')
+        self.runsheet_data = self.AUC_match()
+        self.processor_line = self.AUC_processor_line()
+        self.commands = self.AUC_executable()
+        self.script = self.environs.generate_job(self,commands, self.job)
+    def __call__():
+        pass
+
+    def AUC_match(self):
+        desired_samples = self.runsheet_data
+        sample_key = [i.get("sample") for i in desired_samples]
+        biomatch_data = [i.get("MACS2_key") for i in desired_samples]
+        abmatch_data = [i.get("SEACR_key") for i in desired_samples]
+        unique_keys = unique(sample_key)
+        run_list = []
+        for key in unique_keys:
+            #find out if file is bio sample or control or ab sample or control by searching lists of the two keys
+            biomatch_key = [biomatch_data[i] for i in which(key, sample_key)]
+            is_biomatch_control = [bool(re.search(r'._CONTROL$', i)) for i in biomatch_key]
+            abmatch_key = [abmatch_data[i] for i in which(key, sample_key)]
+            is_abmatch_control = [bool(re.search(r'._CONTROL$', i)) for i in abmatch_key]
+            is_biomatch_control = all_the_same(is_biomatch_control)
+            is_abmatch_control = all_the_same(is_abmatch_control)
+            if type(is_abmatch_control) is str:
+                raise ValueError("Some discrepency between merge_key and MACS2_key ")
+            if type(is_biomatch_control) is str:
+                raise ValueError("Some discrepency between merge_key and MACS2_key ")
+            if not is_abmatch_control and not is_biomatch_control:
+                #treatment bed is just key
+                treatment_bed = get_key_from_dict_list(desired_samples, {"sample":key}, 'bedgraph')
+                #for all non-controls we will output a list of relevant files to process using macs2
+                #first find biomatch control
+                biomatch_control_key = biomatch_key[0]+"_CONTROL"
+                #get bed of this control
+                control_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'bedgraph')
+                #get bed of antibody control for treatment
+                abmatch_control_key = abmatch_key[0]+"_CONTROL"
+                treatment_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(abmatch_control_key, abmatch_data)[0]]}, 'bedgraph')
+                #get bed of antibody control for control
+                control_control_key = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
+                control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(control_control_key, abmatch_data)[0]]}, 'bedgraph')
+                run_list.append({   "AUC_DIFF_treatment": key,
+                                    "AUC_CP_treat_sample": treatment_bed,
+                                    "AUC_CP_treat_control": treatment_abcontrol_bed,
+                                    "AUC_DIFF_control": sample_key[which(biomatch_control_key, biomatch_data)[0]],
+                                    "AUC_CP_control_sample": control_bed,
+                                    "AUC_CP_control_control": control_abcontrol_bed,
+                                    "sample": key})
+        return(run_list)
+
+    def AUC_executable(self):
+        commandline=""
+        command = []
+        for item in self.runsheet_data:
+            self.files_rm = []
+            JOBSTRING = self.id_generator(size=10)
+            treat_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_treatment_combined.bedgraph"))
+            cont_comb = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_cont_combined.bedgraph"))
+            seacr_merge_prefix = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR"))
+            peakfile = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_SEACR.")+self.method+".bed")
+            out_file = os.path.join(self.out, (item["AUC_DIFF_treatment"]+"_"+item["AUC_DIFF_control"]+"_AUC.bed"))
+            cp_treat_out = os.path.join(self.out, (os.path.basename(item["AUC_CP_treat_sample"])+'.bz'))
+            cp_cont_out = os.path.join(self.out, (os.path.basename(item["AUC_CP_control_sample"])+'.bz'))
+            self.files_rm.extend((cp_treat_out, cp_cont_out, treat_comb, cont_comb, cp_treat_out+".tbi", cp_cont_out+".tbi"))
+            if self.cluster=="SLURM":
+                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
+            else:
+                modules = """\nmodule load bedtools\nmodule load R\nmodule load htslib/1.9\n"""
+            commandline = """echo '\n[AUC] Merging sample bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_sample"], item["AUC_CP_control_sample"], treat_comb)
+            commandline = commandline + """echo '\n[AUC] Merging control bedgraphs for aggregated peak call...'\nbedtools unionbedg -i %s %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $1"\t"$2"\t"$3"\t"sum; }' > %s\n""" % (item["AUC_CP_treat_control"], item["AUC_CP_control_control"], cont_comb)
+            commandline = commandline + """echo '\n[AUC] Running SEACR on merged sample data... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, treat_comb, cont_comb, self.norm, self.method, seacr_merge_prefix)
+            commandline = commandline + """echo '\n[AUC] Making Tabix files... \n'\nbgzip -c %s > %s\n""" % (item["AUC_CP_treat_sample"], cp_treat_out)
+            commandline = commandline + """bgzip -c %s > %s\n""" % (item["AUC_CP_control_sample"], cp_cont_out)
+            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_treat_out)
+            commandline = commandline + """tabix -S 1 -p bed %s\n""" % (cp_cont_out)
+            commandline = commandline + """auc -o %s -p %s %s %s\n""" % (out_file, peakfile, cp_treat_out, cp_cont_out)
+            if self.pipe: commandline = commandline + """echo '\n[AUC] Removing files'\nrm {0}\n""".format(" ".join(self.files_rm))
+            commandline = modules + commandline
+            command.append(commandline)
+        return command
+
+    def AUC_processor_line(self):
+        if self.cluster=="PBS":
+            return """select=1:mem=4GB:ncpus=1"""
+        if self.cluster=="SLURM":
+            return ''
+
+
 
 def get_key_from_dict_list(list_of_dicts, dict_in, key_out):
     #this function takes a list of dicts, returns the value associated with key_out for the element in the list_of_dicts which has the key:value combo given in dict_in
@@ -517,9 +703,9 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
             'MERGE_key': i.get('directory_short'), \
             'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR"), \
             'fasta': genome_data.get('fasta'), 'spikein_fasta': genome_data.get('spikein_fasta'), 'genome_sizes':  genome_data.get('genome_sizes')})
-    if no_pipe:
-        i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
-            'bam': os.path.join(output, i.get('directory_short')+".bam")})
+        if no_pipe:
+            i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
+                'bam': os.path.join(output, i.get('directory_short')+".bam")})
     keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
     if no_pipe:
         keys.append("sam")
