@@ -207,18 +207,19 @@ class Align(SampleFactory, object):
             norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
             sam2bed_string = """| samTobed - -o %s %s""" % (sample['bed_out']+'tmp', self.filter_string)
             if self.pipe:
-                commandline = """bowtie2 %s -p %s -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sam2bed_string)
+                commandline = """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for main alignment... Output:\n'\nbowtie2 %s -p %s -1 %s -2 %s -x %s %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sam2bed_string)
                 commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
             else:
-                commandline = """bowtie2 %s -p %s -1 %s -2 %s -x %s -S %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sample['sam'])
+                commandline = """echo '\n[BOWTIE] Running Bowtie for main alignment... Output:\n'\nbowtie2 %s -p %s -1 %s -2 %s -x %s -S %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sample['sam'])
                 commandline = commandline + """samtools view -bS %s > %s\n""" % (sample['sample']+".sam", sample['bam'])
-                commandline = commandline + """samtools index %s\n""" % (sample['bam'])
-                commandline = commandline + """\necho 'samToBed...\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
-                commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
+                commandline = commandline + """echo '\n[SAMTOOLS]... Indexing bam file %s\n'\nsamtools index %s\n""" % (sample['bam'],sample['bam'])
+                commandline = commandline + """echo '\n[SAMTOBED] Running samToBed for main alignment... Output:\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
+                commandline = commandline + """\necho '[SORT] Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
+                commandline = commandline + """rm %s \n""" % (sample['sam'])
             if self.norm_method == "spike_in":
-                commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s\n""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
-                commandline = commandline + """\necho 'Sorting Bed for spikein...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
+                commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
+                commandline = commandline + """\necho '[SORT] Sorting Bed for spikein...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
             command.append([sample['sample'], commandline])
         return command
