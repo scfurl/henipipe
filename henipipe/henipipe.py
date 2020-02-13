@@ -285,7 +285,7 @@ class SEACR(SampleFactory, object):
         self.runsheet_data = self.SEACR_match()
         self.processor_line = self.SEACR_processor_line()
         self.commands = self.SEACR_executable()
-        self.script = self.environs.generate_job(self.commands, self.job)
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
