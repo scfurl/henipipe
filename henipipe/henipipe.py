@@ -35,7 +35,7 @@ import json
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 #_ROOT = '/Users/sfurla/Box Sync/PI_FurlanS/computation/develop/henipipe/henipipe'
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
-SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.1.sh')
+SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.3.sh')
 ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
 
 
@@ -217,7 +217,7 @@ class Align(SampleFactory, object):
                 commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
             if self.norm_method == "spike_in":
                 commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s\n""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
-                commandline = commandline + """\necho 'Sorting Bed for spikein...\n'sort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
+                commandline = commandline + """\necho 'Sorting Bed for spikein...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
             command.append([sample['sample'], commandline])
         return command
