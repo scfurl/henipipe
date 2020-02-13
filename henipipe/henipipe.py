@@ -212,7 +212,8 @@ class Align(SampleFactory, object):
                 commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
             else:
                 commandline = """bowtie2 %s -p %s -1 %s -2 %s -x %s -S %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sample['sam'])
-                commandline = commandline + """samtools view -bS %s > %s""" % (sample['sample']+".sam", sample['bam'])
+                commandline = commandline + """samtools view -bS %s > %s\n""" % (sample['sample']+".sam", sample['bam'])
+                commandline = commandline + """samtools index %s\n""" % (sample['bam'])
                 commandline = commandline + """\necho 'samToBed...\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
                 commandline = commandline + """\necho 'Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
             if self.norm_method == "spike_in":
