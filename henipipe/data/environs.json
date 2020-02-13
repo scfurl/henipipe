@@ -73,7 +73,7 @@
         "HENIPIPE_SEACR": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load R\nmodule load bedtools"
+            "modules" : "source /app/Lmod/lmod/lmod/init/bash\nmodule load R\nmodule load bedtools"
         },
         "HENIPIPE_MERGE": {
             "ram" : "8",

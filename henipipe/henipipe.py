@@ -285,7 +285,7 @@ class SEACR(SampleFactory, object):
         self.runsheet_data = self.SEACR_match()
         self.processor_line = self.SEACR_processor_line()
         self.commands = self.SEACR_executable()
-        self.script = self.environs.generate_job(self,commands, self.job)
+        self.script = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
@@ -310,13 +310,8 @@ class SEACR(SampleFactory, object):
         command = []
         for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
-            if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\n"""
-            else:
-                modules = """\nmodule load R\nmodule load bedtools\n"""
             commandline = """echo '\n[SEACR] Running SEACR... Output:\n'\nbash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, sample['SEACR_in'], sample['SEACR_control'], self.norm, self.method, sample['SEACR_out'])
-            commandline = modules + commandline
-            command.append(commandline)
+            command.append([sample['sample'], commandline])
         return command
 
     def SEACR_processor_line(self):
