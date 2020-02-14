@@ -30,6 +30,8 @@ import string
 import random
 from itertools import chain, compress
 import json
+from datetime import datetime
+
 
 #_ROOT = os.getcwd()
 _ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -124,7 +126,8 @@ class environs:
                                     COMMAND = commands[i][1],
                                     RAM = ram,
                                     THREADS = threads,
-                                    USER = self.user)
+                                    USER = self.user,
+                                    TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
             bash_scripts.append(bash_script)
         return bash_scripts
 
@@ -212,15 +215,17 @@ class Align(SampleFactory, object):
                 commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
             else:
                 commandline = """echo '\n[BOWTIE] Running Bowtie for main alignment... Output:\n'\nbowtie2 %s -p %s -1 %s -2 %s -x %s -S %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sample['sam'])
-                commandline = commandline + """samtools view -bS %s > %s\n""" % (sample['sample']+".sam", sample['bam'])
-                commandline = commandline + """echo '\n[SAMTOOLS]... Indexing bam file %s\n'\nsamtools index %s\n""" % (sample['bam'],sample['bam'])
-                commandline = commandline + """echo '\n[SAMTOBED] Running samToBed for main alignment... Output:\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
+                commandline = commandline + """samtools view -bS %s -o %s\nsleep 5s \n""" % (sample['sam'], sample['bam']+'US')
+                commandline = commandline + """echo '\n[SAMTOOLS]... Sorting bam file %s\n'\nsamtools sort -o %s -O bam -T tmp %s\n""" % (sample['bam'], sample['bam'], sample['bam']+'US')
+                commandline = commandline + """sleep 5s \necho '\n[SAMTOOLS]... Indexing bam file %s\n'\nsamtools index %s\n""" % (sample['bam'],sample['bam'])
+                commandline = commandline + """sleep 5s \necho '\n[SAMTOBED] Running samToBed for main alignment... Output:\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
                 commandline = commandline + """\necho '[SORT] Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['sam'])
+                commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
             if self.norm_method == "spike_in":
                 commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
                 commandline = commandline + """\necho '[SORT] Sorting Bed for spikein...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
-                commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
+                commandline = commandline + """rm %s %s \n""" % (sample['spikein_bed_out']+'tmp', sample['bam']+'US')
             command.append([sample['sample'], commandline])
         return command
 
