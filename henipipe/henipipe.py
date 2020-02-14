@@ -216,7 +216,7 @@ class Align(SampleFactory, object):
             else:
                 commandline = """echo '\n[BOWTIE] Running Bowtie for main alignment... Output:\n'\nbowtie2 %s -p %s -1 %s -2 %s -x %s -S %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sample['sam'])
                 commandline = commandline + """sleep 20s \nsamtools view -bS %s -o %s\n""" % (sample['sam'], sample['bam']+'US')
-                commandline = commandline + """sleep 20s \necho '\n[SAMTOOLS]... Sorting bam file %s\n'\nsamtools sort -o %s -O bam -T tmp %s\n""" % (sample['bam'], sample['bam'], sample['bam']+'US')
+                commandline = commandline + """sleep 20s \necho '\n[SAMTOOLS]... Sorting bam file %s\n'\nsamtools sort -o %s -O bam -T %s %s\n""" % (sample['bam'], sample['bam'], sample['bam']+'US', sample['bam']+'US')
                 commandline = commandline + """sleep 20s \necho '\n[SAMTOOLS]... Indexing bam file %s\n'\nsamtools index %s\n""" % (sample['bam'],sample['bam'])
                 commandline = commandline + """sleep 20s \necho '\n[SAMTOBED] Running samToBed for main alignment... Output:\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
                 commandline = commandline + """\necho '[SORT] Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
