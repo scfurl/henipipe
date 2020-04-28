@@ -221,11 +221,11 @@ class Align(SampleFactory, object):
                 commandline = commandline + """sleep 20s \necho '\n[SAMTOBED] Running samToBed for main alignment... Output:\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
                 commandline = commandline + """\necho '[SORT] Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
                 commandline = commandline + """rm %s \n""" % (sample['sam'])
-                commandline = commandline + """rm %s \n""" % (sample['bed_out']+'tmp')
+                commandline = commandline + """rm %s %s \n""" % (sample['bed_out']+'tmp', sample['bam']+'US')
             if self.norm_method == "spike_in":
                 commandline = commandline + """echo '\n[BOWTIE] Running Bowtie piped to samTobed.py for spikein... Output:\n'\nbowtie2 %s -p 4 -1 %s -2 %s -x %s | samTobed - -o %s""" % (norm_bowtie_flags, fastq1, fastq2, sample['spikein_fasta'], sample['spikein_bed_out']+'tmp')
                 commandline = commandline + """\necho '[SORT] Sorting Bed for spikein...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['spikein_bed_out']+'tmp', sample['spikein_bed_out'])
-                commandline = commandline + """rm %s %s \n""" % (sample['spikein_bed_out']+'tmp', sample['bam']+'US')
+                commandline = commandline + """rm %s \n""" % (sample['spikein_bed_out']+'tmp')
             command.append([sample['sample'], commandline])
         return command
 
