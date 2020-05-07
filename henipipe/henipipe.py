@@ -336,15 +336,15 @@ class Merge(SampleFactory, object):
         super(Merge, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_MERGE"
         self.out = kwargs.get('out')
-        self.runsheet_data = self.Merge_match()
+        self.to_process = self.Merge_match()
         self.processor_line = self.Merge_processor_line()
-        self.s = self.Merge_executable()
-        self.script = self.environs.generate_job(self,commands, self.job)
+        self.commands = self.Merge_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
     def Merge_match(self):
-        key_data = [i.get("merge_key") for i in self.runsheet_data]
+        key_data = [i.get("MERGE_key") for i in self.runsheet_data]
         bg_data = [i.get("bedgraph") for i in self.runsheet_data]
         merge_dict = dict.fromkeys(key_data, "NotFound")
         samples = []
@@ -357,20 +357,15 @@ class Merge(SampleFactory, object):
     def Merge_executable(self):
         commandline=""
         command = []
-        for i in self.runsheet_data:
+        for item in self.to_process:
             seperator = ' '
-            nfiles = len(i.get("files_to_merge"))
-            bedgraph_line = seperator.join(i.get("files_to_merge"))
-            bedgraph_out=str(os.path.join(self.out, i.get("sample")))+"_merged.bedgraph"
+            nfiles = len(item.get("files_to_merge"))
+            bedgraph_line = seperator.join(item.get("files_to_merge"))
+            bedgraph_out=str(os.path.join(self.out, item.get("sample")))+"_merged.bedgraph"
             JOBSTRING = self.id_generator(size=10)
-            if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load bedtools\n"""
-            else:
-                modules = """\nmodule load bedtools\n"""
             #commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s'\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum/(NF-4+1); }' > %s\nsleep 10\ncut -d$'\t' -f1-3,%s %s > %s\nrm %s\n""" % (bedgraph_line, bedgraph_line, bedgraph_out+'temp', (nfiles+4), bedgraph_out+'temp', bedgraph_out, bedgraph_out+'temp')
             commandline = """echo '\n[MERGE] Merging bedgraphs:\n%s'\nbedtools unionbedg -i %s | awk '{sum=0; for (col=4; col<=NF; col++) sum += $col; print $0"\t"sum/(NF-4+1); }' > %s\n""" % (bedgraph_line, bedgraph_line, bedgraph_out)
-            commandline = modules + commandline
-            command.append(commandline)
+            command.append([item['sample'], commandline])
         return command
 
 
@@ -754,6 +749,8 @@ def check_runsheet(args, runsheet, verbose=False):
         required_args.extend(['spikein_fasta', 'spikein_bed_out'])
     if args.job == "SEACR":
         required_args.extend(['SEACR_key', 'SEACR_out'])
+    if args.job == "MERGE":
+        required_args.extend(['MERGE_key'])
     has_data = []
     for i in required_args:
         has_data.append(check_runsheet_parameter(runsheet, i, verbose = verbose))
