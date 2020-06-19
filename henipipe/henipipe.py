@@ -267,7 +267,7 @@ class Scale(SampleFactory, object):
                 for line in open(sample['bed_out']): count += 1
                 ncount = 0
                 for line in open(sample['spikein_bed_out']): ncount += 1
-                sample['scale_factor'] = ((float(count)/float(ncount))/100)
+                sample['scale_factor'] = (1/float(ncount))
         return
 
     def norm_executable(self):
