@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="1.5",
+    version="1.62",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -72,6 +72,6 @@ pipx uninstall henipipe
 
 
 pipx uninstall henipipe
-pipx install --spec git+https://github.com/scfurl/henipipe --include-deps henipipe 
+pipx install git+https://github.com/scfurl/henipipe --include-deps
 
 """
