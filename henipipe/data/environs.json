@@ -61,7 +61,8 @@
     "resources" : {
         "HENIPIPE_ALIGN": {
             "ram" : "8",
-            "threads":"2"
+            "threads":"2",
+            "modules" : "ml Bowtie2\nmodule load SAMtools\nmodule load Python"
         },
         "HENIPIPE_SCALE": {
             "ram" : "8",
