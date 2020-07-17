@@ -1,4 +1,4 @@
-    "PBS": {
+    {"PBS": {
         "popen" : "qsub",
         "script_lines": {
             "1" : ["#!/bin/bash\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp", ""],
@@ -61,7 +61,7 @@
     "resources" : {
         "HENIPIPE_ALIGN": {
             "ram" : "8",
-
+            "threads":"2"
         },
         "HENIPIPE_SCALE": {
             "ram" : "8",
@@ -71,7 +71,7 @@
         "HENIPIPE_SEACR": {
             "ram" : "8",
             "threads" : "1",
-
+            "modules" : "module load R\nmodule load BEDTools"
         },
         "HENIPIPE_MERGE": {
             "ram" : "8",
@@ -94,4 +94,5 @@
             "modules" : "module load BEDTools\nmodule load R\nmodule load HTSlib"
         }
     }
-}}
+}
+}
