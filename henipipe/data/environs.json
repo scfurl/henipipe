@@ -63,22 +63,22 @@
         "HENIPIPE_ALIGN": {
             "ram" : "8",
             "threads" : "100",
-            "modules" : "ml bowtie2\nmodule load samtools\nmodule load Python/3.6.7-foss-2016b-fh1"
+            "modules" : "module load Bowtie2\nmodule load SAMtools\nmodule load Python"
         },
         "HENIPIPE_SCALE": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load bedtools"
+            "modules" : "module load BEDTools"
         },
         "HENIPIPE_SEACR": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "source /app/Lmod/lmod/lmod/init/bash\nmodule load R\nmodule load bedtools"
+            "modules" : "module load R\nmodule load BEDTools"
         },
         "HENIPIPE_MERGE": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load bedtools"
+            "modules" : "module load BEDTools"
         },
         "HENIPIPE_MACS2": {
             "ram" : "8",
@@ -93,7 +93,7 @@
         "HENIPIPE_AUC": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load bedtools\nmodule load R\nmodule load htslib/1.9"
+            "modules" : "module load BEDTools\nmodule load R\nmodule load HTSlib"
         }
     }
 }
