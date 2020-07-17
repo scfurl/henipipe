@@ -94,5 +94,4 @@
             "modules" : "module load BEDTools\nmodule load R\nmodule load HTSlib"
         }
     }
-}
-
+}}
