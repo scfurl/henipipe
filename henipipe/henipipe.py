@@ -44,7 +44,7 @@ ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
 
 class SampleFactory:
     def __init__(self, *args, **kwargs):
-        self.environs = environs(cluster = kwargs.get('cluster'), user = kwargs.get('user'), log = kwargs.get('log'), threads = kwargs.get('threads'), gb_ram = kwargs.get('gb_ram'))
+        self.environs = Environs(cluster = kwargs.get('cluster'), user = kwargs.get('user'), log = kwargs.get('log'), threads = kwargs.get('threads'), gb_ram = kwargs.get('gb_ram'))
 
         #remove later
         self.user = kwargs.get('user')
@@ -83,7 +83,7 @@ class SampleFactory:
 
 
 
-class environs:
+class Environs:
     def __init__(self, *args, **kwargs):
         self.cluster = kwargs.get('cluster')
         self.user = kwargs.get('user')
