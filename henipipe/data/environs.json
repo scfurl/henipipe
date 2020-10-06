@@ -1,4 +1,47 @@
-    {"PBS": {
+    {"local": {
+        "popen" : "bash",
+        "script_lines": {
+            "1" : ["#!/bin/bash", ""]
+        },
+        "resources" : {
+            "HENIPIPE_ALIGN": {
+                "ram" : "8",
+                "threads" : "100",
+                "modules" : ""
+            },
+            "HENIPIPE_SCALE": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : ""
+            },
+            "HENIPIPE_SEACR": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : ""
+            },
+            "HENIPIPE_MERGE": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : ""
+            },
+            "HENIPIPE_MACS2": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : ""
+            },
+            "HENIPIPE_FASTQC": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : ""
+            },
+            "HENIPIPE_AUC": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : ""
+            }
+        }
+    },
+     "PBS": {
         "popen" : "qsub",
         "script_lines": {
             "1" : ["#!/bin/bash\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp", ""],

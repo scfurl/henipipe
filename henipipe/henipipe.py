@@ -77,6 +77,7 @@ class SampleFactory:
             # Print your job and the system response to the screen as it's submitted
             print(script)
             if self.debug==False:
+                print(err)
                 print(out)
                 time.sleep(0.1)
 
@@ -142,16 +143,20 @@ class Environs:
         lines_unparsed = [x[0] for x in script_list]
         values_to_insert = [x[1].split("|") for x in script_list]
         lines_parsed = []
-        global to_test
-        to_test=[lines_unparsed, values_to_insert, fn_args]
-        for i in range(len(lines_unparsed)):
-            if values_to_insert[i][0] is "":
-                lines_parsed.append(lines_unparsed[i])
-            else:
-                string=lines_unparsed[i]
-                for j in range(len(values_to_insert[i])):
-                    string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
-                lines_parsed.append(string)
+
+        if self.cluster == 'local':
+            lines_parsed = [kwargs['COMMAND']]
+        else:
+            global to_test
+            to_test=[lines_unparsed, values_to_insert, fn_args]
+            for i in range(len(lines_unparsed)):
+                if values_to_insert[i][0] is "":
+                    lines_parsed.append(lines_unparsed[i])
+                else:
+                    string=lines_unparsed[i]
+                    for j in range(len(values_to_insert[i])):
+                        string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
+                    lines_parsed.append(string)
         return "\n".join(lines_parsed)
 
 
