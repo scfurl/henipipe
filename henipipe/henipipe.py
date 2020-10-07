@@ -64,21 +64,25 @@ class SampleFactory:
 
     def run_job(self):
         popen_command = self.environs.popen_command
-        for script in self.bash_scripts:
-            if self.debug==False:
-                # Open a pipe to the command.
-                proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-                if (sys.version_info > (3, 0)):
-                    proc.stdin.write(script.encode('utf-8'))
-                    out, err = proc.communicate()
-                else:
-                    proc.stdin.write(script)
-                    out, err = proc.communicate()
-            # Print your job and the system response to the screen as it's submitted
-            print(script)
-            if self.debug==False:
-                print(err)
-                print(out)
+        with open('out.log') as out_log, open('err.log') as err_log:
+            for script in self.bash_scripts:
+                if self.debug==False:
+                    # Open a pipe to the command.
+                    proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                    if (sys.version_info > (3, 0)):
+                        proc.stdin.write(script.encode('utf-8'))
+                        out, err = proc.communicate()
+                    else:
+                        proc.stdin.write(script)
+                        out, err = proc.communicate()
+                # Print your job and the system response to the screen as it's submitted
+                print(script)
+                if self.debug==False:
+                    print(err)
+                    print(out)
+                    out_log.write(out)
+                    err_log.write(err)
+                
                 time.sleep(0.1)
 
 
