@@ -44,7 +44,7 @@ ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
 
 class SampleFactory:
     def __init__(self, *args, **kwargs):
-        self.environs = environs(cluster = kwargs.get('cluster'), user = kwargs.get('user'), log = kwargs.get('log'), threads = kwargs.get('threads'), gb_ram = kwargs.get('gb_ram'))
+        self.environs = Environs(cluster = kwargs.get('cluster'), user = kwargs.get('user'), log = kwargs.get('log'), threads = kwargs.get('threads'), gb_ram = kwargs.get('gb_ram'))
 
         #remove later
         self.user = kwargs.get('user')
@@ -64,26 +64,31 @@ class SampleFactory:
 
     def run_job(self):
         popen_command = self.environs.popen_command
-        for script in self.bash_scripts:
-            if self.debug==False:
-                # Open a pipe to the command.
-                proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-                if (sys.version_info > (3, 0)):
-                    proc.stdin.write(script.encode('utf-8'))
-                    out, err = proc.communicate()
-                else:
-                    proc.stdin.write(script)
-                    out, err = proc.communicate()
-            # Print your job and the system response to the screen as it's submitted
-            print(script)
-            if self.debug==False:
-                print(out)
+        with open('out.log') as out_log, open('err.log') as err_log:
+            for script in self.bash_scripts:
+                if self.debug==False:
+                    # Open a pipe to the command.
+                    proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                    if (sys.version_info > (3, 0)):
+                        proc.stdin.write(script.encode('utf-8'))
+                        out, err = proc.communicate()
+                    else:
+                        proc.stdin.write(script)
+                        out, err = proc.communicate()
+                # Print your job and the system response to the screen as it's submitted
+                print(script)
+                if self.debug==False:
+                    print(err)
+                    print(out)
+                    out_log.write(out)
+                    err_log.write(err)
+                
                 time.sleep(0.1)
 
 
 
 
-class environs:
+class Environs:
     def __init__(self, *args, **kwargs):
         self.cluster = kwargs.get('cluster')
         self.user = kwargs.get('user')
@@ -142,16 +147,20 @@ class environs:
         lines_unparsed = [x[0] for x in script_list]
         values_to_insert = [x[1].split("|") for x in script_list]
         lines_parsed = []
-        global to_test
-        to_test=[lines_unparsed, values_to_insert, fn_args]
-        for i in range(len(lines_unparsed)):
-            if values_to_insert[i][0] is "":
-                lines_parsed.append(lines_unparsed[i])
-            else:
-                string=lines_unparsed[i]
-                for j in range(len(values_to_insert[i])):
-                    string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
-                lines_parsed.append(string)
+
+        if self.cluster == 'local':
+            lines_parsed = [kwargs['COMMAND']]
+        else:
+            global to_test
+            to_test=[lines_unparsed, values_to_insert, fn_args]
+            for i in range(len(lines_unparsed)):
+                if values_to_insert[i][0] is "":
+                    lines_parsed.append(lines_unparsed[i])
+                else:
+                    string=lines_unparsed[i]
+                    for j in range(len(values_to_insert[i])):
+                        string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
+                    lines_parsed.append(string)
         return "\n".join(lines_parsed)
 
 
