@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-Version 1.64
+Version 1.65
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
@@ -215,7 +215,11 @@ henipipe AUC -r runsheet.csv -o auc
 ## Try our test data
 
 
-Clone this repo.  There you will find a folder called 'test_data'.  Our test fastq files are in a folder creatively named 'fastq'
+Clone this repo.  There you will find a folder called 'test_data'.  Our test fastq files are in a folder creatively named 'fastq'.  
+
+Note that it is probably easier and faster to simply clone the henipipe repo than to find the data embedded the pipx install.  As such, I would encourage any user who would like to use these test data for troubleshooting purposes to install normally using pipx (as above), then separately clont the repo by invoking 'git clone' as below.  This obviously duplicates the repo, but I have made the test files pretty small (< 70 MB total).  I would then recommend that after all testing is complete, the user then delete the folder created using 'git clone'.
+
+
 ```bash
 
 git clone https://github.com/scfurl/henipipe.git
