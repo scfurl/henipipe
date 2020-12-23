@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-Version 1.0
+Version 1.64
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC)
 
@@ -197,7 +197,7 @@ ls
 2. Go into that directory and make a runsheet pointing to the fastq folder i.e. the folder level above.  (at the command line, henipipe is cool with either relative or absolute pathnames; but as stated earlier, absolute pathnames are required for the runsheet.)
 3.  Optionally you can only select directories of fastq files that contain in their name the string denoted using the -sf flag.
 4. After inspecting and completing the runsheet, run ALIGN, NORM, SEACR, and AUC.  
-5. Sit back have a cocktail.
+
 
 ```bash
 cd ..
@@ -209,6 +209,33 @@ henipipe NORM -r runsheet.csv
 henipipe SEACR -r runsheet.csv
 mkdir auc
 henipipe AUC -r runsheet.csv -o auc
+```
+
+
+## Try our test data
+
+
+Clone this repo.  There you will find a folder called 'test_data'.  Our test fastq files are in a folder creatively named 'fastq'
+```bash
+cd ***Your specific location***/test_data
+
+ml Python # or otherwise load python
+ml R # or otherwise load R
+
+mkdir henipipe
+cd henipipe
+
+henipipe MAKERUNSHEET -fq ./fastq
+#edit the resulting runsheet.csv file in Excel or Numbers - Numbers is better - export as CSV and rename (runsheet_fixed.csv)
+
+#make sure it looks okay
+awk -F ',' '{print $1, $2}' runsheet_fixed.csv
+
+#proceed with henipipe steps
+henipipe ALIGN -t 16 -r runsheet_fixed.csv -n spike_in
+henipipe SCALE -r runsheet_fixed.csv -n spike_in
+henipipe SEACR -r runsheet_fixed.csv
+
 ```
 
 
