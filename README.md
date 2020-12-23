@@ -32,7 +32,7 @@ pipx install --include-deps --pip-args '--trusted-host pypi.org --trusted-host f
 
 **At the FHCRC do the following...**
 ```bash
-module load Python/3.6.7-foss-2016b-fh1
+module load Python/3.7.4-foss-2019b-fh1
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 pipx install --include-deps henipipe
