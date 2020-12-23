@@ -36,7 +36,7 @@ def run_henipipe(args=None):
     parser.add_argument('--select', '-s', type=str, default=None, help='To only run the selected row in the runsheet, OPTIONAL')
     parser.add_argument('--debug', '-d', action='store_true', help='To print commands (For testing flow). OPTIONAL')
     parser.add_argument('--bowtie_flags', '-b', type=str, default='--end-to-end --very-sensitive --no-mixed --no-discordant -q --phred33 -I 10 -X 700', help='For ALIGN: bowtie flags, OPTIONAL')
-    parser.add_argument('--cluster', '-c', type=str, default='SLURM', choices=['PBS', 'SLURM'], help='Cluster software.  OPTIONAL Currently supported: PBS and SLURM')
+    parser.add_argument('--cluster', '-c', type=str, default='SLURM', choices=['PBS', 'SLURM', 'local'], help='Cluster software.  OPTIONAL Currently supported: PBS, SLURM and local')
     parser.add_argument('--threads', '-t', type=str, default=None, help='number of threads')
     parser.add_argument('--gb_ram', '-gb', type=str, default=None, help='gigabytes of RAM per thread')
     parser.add_argument('--install', '-i', type=str, default=None, help='FOR GENOMESFILE: location of file to install as a new genomes.json file, existing genomes.json will be erased')
