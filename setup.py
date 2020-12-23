@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="1.65",
+    version="1.66",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -45,7 +45,7 @@ rm dist/*
 python3 setup.py sdist bdist_wheel
 python3 -m twine upload dist/*
 scfurl
-
+rm -R dist/* build/* henipipe.egg-info/*
 
 ##Install pipx
 ## python3 -m pip install --user pipx
