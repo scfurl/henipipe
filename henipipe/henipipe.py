@@ -80,8 +80,8 @@ class SampleFactory:
                 if self.debug==False:
                     print(err)
                     print(out)
-                    out_log.write(out)
-                    err_log.write(err)
+                    out_log.write(str(out))
+                    err_log.write(str(err))
                 
                 time.sleep(0.1)
 
