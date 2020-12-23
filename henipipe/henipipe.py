@@ -64,7 +64,7 @@ class SampleFactory:
 
     def run_job(self):
         popen_command = self.environs.popen_command
-        with open('out.log') as out_log, open('err.log') as err_log:
+        with open('out.log', mode='w') as out_log, open('err.log', mode='w') as err_log:
             for script in self.bash_scripts:
                 if self.debug==False:
                     # Open a pipe to the command.

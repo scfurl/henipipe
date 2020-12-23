@@ -217,7 +217,9 @@ henipipe AUC -r runsheet.csv -o auc
 
 Clone this repo.  There you will find a folder called 'test_data'.  Our test fastq files are in a folder creatively named 'fastq'
 ```bash
-cd ***Your specific location***/test_data
+
+git clone https://github.com/scfurl/henipipe.git
+cd ***Your specific location***/henipipe/test_data
 
 ml Python # or otherwise load python
 ml R # or otherwise load R
@@ -225,7 +227,7 @@ ml R # or otherwise load R
 mkdir henipipe
 cd henipipe
 
-henipipe MAKERUNSHEET -fq ./fastq
+henipipe MAKERUNSHEET -fq ../fastq
 #edit the resulting runsheet.csv file in Excel or Numbers - Numbers is better - export as CSV and rename (runsheet_fixed.csv)
 
 #make sure it looks okay
