@@ -41,6 +41,11 @@
                 "threads" : "1",
                 "modules" : "module load fastqc"
             },
+            "HENIPIPE_TRIM": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : "module load Trimmomatic"
+            },
             "HENIPIPE_AUC": {
                 "ram" : "8",
                 "threads" : "1",
@@ -89,6 +94,11 @@
             "ram" : "8",
             "threads" : "1",
             "modules" : ""
+        },
+        "HENIPIPE_TRIM": {
+             "ram" : "8",
+            "threads" : "1",
+            "modules" : "module load Trimmomatic"
         },
         "HENIPIPE_AUC": {
             "ram" : "8",

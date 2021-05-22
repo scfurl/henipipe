@@ -24,20 +24,27 @@ def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster')
+    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster;')
     parser.add_argument('--sample_flag', '-sf', type=str, default="", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
+    parser.add_argument('--trim_folder', '-tf', type=str, default = ".", help='REQURIED, For TRIM only: Pathname of output folder; Note that all trimmed fastqs will be placed in the same folder')
+    parser.add_argument('--trim_args', '-ta', type=str, default = "ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36", help='OPTIONAL, For TRIM only: Args to pass to trimmomatic')
+    parser.add_argument('--organized_by', '-by', type=str, choices=['folder', 'file'], default='folder', help='Option to specify how fastq or unbam folder is organized')
     parser.add_argument('--genome_key', '-gk', type=str, default="default", help='For MAKERUNSHEET only: abbreviation to use "installed" genomes in the runsheet (See README.md for more details')
+    parser.add_argument('--split_char', '-sc', type=str, default="_R1_", help='Character by which to split the fastqfile name into samples, OPTIONAL and for MAKERUNSHEET only')
+    parser.add_argument('--R1_char', '-r1c', type=str, default="_R1_", help='Character by which to split the fastqfile name into read1, OPTIONAL and for MAKERUNSHEET only; default = "_R1_"')
+    parser.add_argument('--R2_char', '-r2c', type=str, default="_R2_", help='Character by which to split the fastqfile name into read2, OPTIONAL and for MAKERUNSHEET only; default = "_R2_"')
+    parser.add_argument('--ext', '-e', type=str, default=".fastq.gz", help='suffix of fastq files, OPTIONAL and for MAKERUNSHEET only')
     parser.add_argument('--filter_high', '-fh', type=int, default=None, help='For ALIGN only: upper limit of fragment size to exclude, defaults is no upper limit.  OPTIONAL')
     parser.add_argument('--filter_low', '-fl', type=int, default=None, help='For ALIGN only: lower limit of fragment size to exclude, defaults is no lower limit.  OPTIONAL')
     parser.add_argument('--output', '-o', type=str, default=".", help='For MAKERUNSHEET only: Pathname to write runsheet.csv file (folder must exist already!!), Defaults to current directory')
-    parser.add_argument('--runsheet', '-r', type=str, help='tab-delim file with sample fields as defined in the script. - REQUIRED for all jobs except MAKERUNSHEET')
+    parser.add_argument('--runsheet', '-r', type=str, default="runsheet.csv", help='tab-delim file with sample fields as defined in the script. - REQUIRED for all jobs except MAKERUNSHEET')
     parser.add_argument('--log_prefix', '-l', type=str, default='henipipe.log', help='Prefix specifying log files for henipipe output from henipipe calls. OPTIONAL')
     parser.add_argument('--select', '-s', type=str, default=None, help='To only run the selected row in the runsheet, OPTIONAL')
     parser.add_argument('--debug', '-d', action='store_true', help='To print commands (For testing flow). OPTIONAL')
     parser.add_argument('--bowtie_flags', '-b', type=str, default='--end-to-end --very-sensitive --no-mixed --no-discordant -q --phred33 -I 10 -X 700', help='For ALIGN: bowtie flags, OPTIONAL')
     parser.add_argument('--cluster', '-c', type=str, default='SLURM', choices=['PBS', 'SLURM', 'local'], help='Cluster software.  OPTIONAL Currently supported: PBS, SLURM and local')
-    parser.add_argument('--threads', '-t', type=str, default=None, help='number of threads')
+    parser.add_argument('--threads', '-t', type=str, default="8", help='number of threads; default: 8')
     parser.add_argument('--gb_ram', '-gb', type=str, default=None, help='gigabytes of RAM per thread')
     parser.add_argument('--install', '-i', type=str, default=None, help='FOR GENOMESFILE: location of file to install as a new genomes.json file, existing genomes.json will be erased')
     parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in'], help='For ALIGN and SCALE: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
@@ -99,7 +106,10 @@ def run_henipipe(args=None):
         LOGGER.info("Parsing fastq folder - "+args.fastq_folder+" ...")
         LOGGER.info("Writing runsheet to - "+os.path.join(args.output, 'runsheet.csv')+" ...")
         LOGGER.info("Using genome_key - "+args.genome_key+" ...")
-        henipipe.make_runsheet(folder=args.fastq_folder, output=args.output, sample_flag = args.sample_flag, genome_key = args.genome_key, no_pipe=args.keep_files)
+        #henipipe.make_runsheet(folder=args.fastq_folder, output=args.output, sample_flag = args.sample_flag, genome_key = args.genome_key, no_pipe=args.keep_files)
+        henipipe.make_runsheet(folder=args.fastq_folder, output=args.output, sample_flag = args.sample_flag, genome_key = args.genome_key, \
+            no_pipe=args.keep_files, ext=args.ext,  r1_char=args.R1_char, strsplit= args.split_char, \
+            r2_char=args.R2_char, fname=args.runsheet, organized_by=args.organized_by)
         exit()
 
     #parse and chech runsheet
@@ -124,6 +134,19 @@ def run_henipipe(args=None):
         LOGGER.info("Running fastqc on all fastqs in runsheet")
         Fastqcjob = henipipe.Fastqc(runsheet_data = parsed_runsheet, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, cluster=args.cluster, log=args.log_prefix, user=args.user)
         Fastqcjob.run_job()
+        exit()
+
+    if args.job=="TRIM":
+        if os.path.isabs(args.trim_folder) is False:
+            if args.trim_folder == ".":
+                args.trim_folder = os.getcwd()
+            else :
+                args.trim_folder = os.path.abspath(args.trim_folder)
+        if os.path.exists(args.trim_folder) is False:
+            raise ValueError('Path: '+args.trim_folder+' not found')
+        LOGGER.info("Running trimmotatic on all fastqs in runsheet")
+        Trimjob = henipipe.Trim(runsheet_data = parsed_runsheet, trim_args = args.trim_args, trim_folder  = args.trim_folder, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, cluster=args.cluster, log=args.log_prefix, user=args.user)
+        Trimjob.run_job()
         exit()
 
     if args.job=="ALIGN":

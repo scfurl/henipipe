@@ -20,6 +20,7 @@
 # 11 - 'SEACR_out' file name of SEACR output OPTIONAL
 
 import os
+import pathlib
 from subprocess import Popen, PIPE
 import argparse
 import time
@@ -167,7 +168,6 @@ class Environs:
 class Fastqc(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(Fastqc, self).__init__(*args, **kwargs)
-        self.bowtie_flags = kwargs.get('bowtie_flags')
         self.job = "HENIPIPE_FASTQC"
         self.commands = self.fastqc_executable()
         self.bash_scripts = self.environs.generate_job(self.commands, self.job)
@@ -182,6 +182,37 @@ class Fastqc(SampleFactory, object):
             fastq2=re.sub('\t', ' ', sample['fastq2'])
             JOBSTRING = self.id_generator(size=10)
             commandline = """fastqc %s %s\n""" % (fastq1, fastq2)
+            command.append([sample['sample'], commandline])
+        return command
+
+
+class Trim(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(Trim, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_TRIM"
+        self.trim_args = kwargs.get('trim_args')
+        self.trim_folder = kwargs.get('trim_folder')
+        self.commands = self.trim_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def trim_executable(self):
+        commandline=""
+        command = []
+        for sample in self.runsheet_data:
+            fastq1=sample['fastq1']
+            fastq2=sample['fastq2']
+            #make unpaired folder
+            unpaired_folder = os.path.join(pathlib.Path(self.trim_folder), "unpaired")
+            if os.path.exists(unpaired_folder) is False:
+                os.mkdir(unpaired_folder)
+            pairedoutfastq1=change_dirname(pathlib.Path(sample['fastq1']), self.trim_folder)
+            pairedoutfastq2=change_dirname(pathlib.Path(sample['fastq2']), self.trim_folder)
+            unpairedoutfastq1=change_dirname(pathlib.Path(sample['fastq1']), unpaired_folder)
+            unpairedoutfastq2=change_dirname(pathlib.Path(sample['fastq2']), unpaired_folder)
+            JOBSTRING = self.id_generator(size=10)
+            commandline = """java -jar $EBROOTTRIMMOMATIC/trimmomatic-0.39.jar PE %s %s %s %s %s %s %s\n""" % (fastq1, fastq2, pairedoutfastq1, pairedoutfastq2, unpairedoutfastq1, unpairedoutfastq2, self.trim_args)
             command.append([sample['sample'], commandline])
         return command
 
@@ -637,21 +668,53 @@ def is_in(string, list):
 def reduce_concat(x, sep=""):
     return functools.reduce(lambda x, y: str(x) + sep + str(y), x)
 
-def find_fastq_mate(dir, sample_flag=None, full_name=True):
+
+def find_fastqs_by_sample(dir, strsplit, r1_char, r2_char, ext, full_name=True):
+    fastqs=[]
+    fastq1=fq1=[]
+    fastq2=fq2=[]
+    sample=[]
+    sample_dict=[]
+    #sort into read1 and read2
+    for file in os.listdir(dir):
+        if file.endswith(ext):
+            fastqs.extend([file])
+            if r1_char in file:
+                fastq1.extend([file])
+            if r2_char in file:
+                fastq2.extend([file])
+    #get samples
+    sample=[i.split(strsplit)[0] for i in fastq1]
+    #get uniqe samples
+    sample = list(set(sample))
+    for samp in sample:
+        #R1matches=list(filter(lambda x: samp+r1_char in x, fastq1)) (taken out because of lane portion of string)
+        R1matches=list(filter(lambda x: samp in x, fastq1))
+        R1matches=[os.path.join(dir, i) for i in R1matches]
+        fastq1s="\t".join(R1matches)
+        #R2matches=list(filter(lambda x: samp+r2_char in x, fastq2))  (taken out because of lane portion of string)
+        R2matches=list(filter(lambda x: samp in x, fastq2)) 
+        R2matches=[os.path.join(dir, i) for i in R2matches]
+        fastq2s="\t".join(R2matches)
+        sample_dict.extend([{"sample":samp, "fastq1":fastq1s, "fastq2":fastq2s}])
+    return(sample_dict)
+
+
+def find_fastq_mate(dir, r1_char, r2_char, ext, sample_flag=None, full_name=True):
     fastqs=[]
     fastq1=[]
     fastq2=[]
     for file in os.listdir(dir):
-        if file.endswith(".fastq.gz"):
+        if file.endswith(ext):
             fastqs.extend([file])
-            if "_R1_" in file:
+            if r1_char in file:
                 fastq1.extend([file])
-            if "_R2_" in file:
+            if r2_char in file:
                 fastq2.extend([file])
     fastq1_mate=[]
     for fastq in fastq1:
         #check if present
-        put_R2=re.sub('_R1_', '_R2_', fastq)
+        put_R2=re.sub(r1_char, r2_char, fastq)
         try:
             fastq1_mate.extend([fastq2[fastq2.index(put_R2)]])
         except ValueError:
@@ -686,15 +749,31 @@ def load_genomes(genomes_file):
         genome_data = json.load(read_file)
     return genome_data
 
-def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta=None, spikein_fasta=None, genome_sizes=None, no_pipe = True):
+def make_runsheet(folder, output, sample_flag, genome_key, organized_by, strsplit, ext, r1_char, r2_char, fname, fasta=None, spikein_fasta=None, genome_sizes=None, no_pipe = True):
     genome_data = load_genomes(GENOMES_JSON).get(genome_key)
-    ddir=[x[0] for x in os.walk(folder)]
-    dat=list(map(find_fastq_mate, ddir))
-    good_dat = [i for i in dat if i.get('has_fastq') is True]
-    good_dat = [i for i in good_dat if re.compile(r'.*'+sample_flag).search(i.get('directory_short'))]
+    if output is None:
+        output = os.path.join(os.getcwd())
+    if(organized_by=="folder"):    
+        ddir=[x[0] for x in os.walk(folder)]
+        dat=list(map(find_fastq_mate, ddir))
+        #good_dat = [i for i in dat if i.get('has_fastq') is True]
+        dat=list(map(find_fastq_mate, ddir, [r1_char] * len(ddir), [r2_char] * len(ddir), [ext] * len(ddir)))
+        good_dat = [i for i in good_dat if re.compile(r'.*'+sample_flag).search(i.get('directory_short'))]
+        for i in good_dat:
+            i.update({'sample': i.get('directory_short')})
+        if(len(good_dat))<1:
+            raise ValueError("No fastqs found")
+        else:
+            print("Found "+str(len(good_dat))+" fastq pairs")
+    if(organized_by=="file"):
+        good_dat=find_fastqs_by_sample(folder, strsplit=strsplit, r1_char=r1_char, r2_char=r2_char, ext = ext)
+        if(len(good_dat))<1:
+            raise ValueError("No fastqs found")
+        else:
+            print("Found "+str(len(good_dat))+" fastq pairs")
     for i in good_dat:
-        i.update({'sample': i.get('directory_short'), \
-            'bed_out': os.path.join(output, i.get('directory_short')+".bed"), \
+        i.update({"directory_short":i.get('sample')})
+        i.update({'bed_out': os.path.join(output, i.get('directory_short')+".bed"), \
             'spikein_bed_out': os.path.join(output, i.get('directory_short')+"_spikein.bed"), \
             'bedgraph': os.path.join(output, i.get('directory_short')+".bedgraph"), \
             'SEACR_key': i.get('directory_short'), \
@@ -704,11 +783,11 @@ def make_runsheet(folder, sample_flag, genome_key, output="./henipipeout", fasta
         if no_pipe:
             i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
                 'bam': os.path.join(output, i.get('directory_short')+".bam")})
-    keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
-    if no_pipe:
-        keys.append("sam")
-        keys.append("bam")
-    with open(os.path.join(output, 'runsheet.csv'), 'w') as output_file:
+        keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
+        if no_pipe:
+            keys.append("sam")
+            keys.append("bam")
+    with open(os.path.join(output, fname), 'w') as output_file:
         dict_writer = csv.DictWriter(output_file, fieldnames = keys, extrasaction='ignore')
         dict_writer.writeheader()
         dict_writer.writerows(good_dat)
@@ -804,3 +883,11 @@ def parse_range_list(rl):
         return range(parts[0], parts[-1] + 1)
     ranges = sorted(set(map(parse_range, rl.split(","))), key=lambda x: (x.start, x.stop))
     return chain.from_iterable(collapse_range(ranges))
+
+
+def change_dirname(input, substitute):
+    intpath = str(input).replace(str(os.path.dirname(input)), substitute)
+    outpath = pathlib.Path(intpath)
+    return(outpath)
+
+
