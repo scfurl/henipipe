@@ -24,9 +24,9 @@ def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['MAKERUNSHEET', 'ALIGN', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster;')
+    parser.add_argument('job', type=str, choices=['SC', 'MAKERUNSHEET', 'ALIGN', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster;')
     parser.add_argument('--sample_flag', '-sf', type=str, default="", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
-    parser.add_argument('--fastq_folder', '-fq', type=str, help='For MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
+    parser.add_argument('--fastq_folder', '-fq', type=str, help='For SC and MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--trim_folder', '-tf', type=str, default = ".", help='REQURIED, For TRIM only: Pathname of output folder; Note that all trimmed fastqs will be placed in the same folder')
     parser.add_argument('--trim_args', '-ta', type=str, default = "ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36", help='OPTIONAL, For TRIM only: Args to pass to trimmomatic')
     parser.add_argument('--organized_by', '-by', type=str, choices=['folder', 'file'], default='folder', help='Option to specify how fastq or unbam folder is organized')
@@ -37,7 +37,7 @@ def run_henipipe(args=None):
     parser.add_argument('--ext', '-e', type=str, default=".fastq.gz", help='suffix of fastq files, OPTIONAL and for MAKERUNSHEET only')
     parser.add_argument('--filter_high', '-fh', type=int, default=None, help='For ALIGN only: upper limit of fragment size to exclude, defaults is no upper limit.  OPTIONAL')
     parser.add_argument('--filter_low', '-fl', type=int, default=None, help='For ALIGN only: lower limit of fragment size to exclude, defaults is no lower limit.  OPTIONAL')
-    parser.add_argument('--output', '-o', type=str, default=".", help='For MAKERUNSHEET only: Pathname to write runsheet.csv file (folder must exist already!!), Defaults to current directory')
+    parser.add_argument('--output', '-o', type=str, default=".", help='Pathname to output folder (note this folder must exist already!!), Defaults to current directory')
     parser.add_argument('--runsheet', '-r', type=str, default="runsheet.csv", help='tab-delim file with sample fields as defined in the script. - REQUIRED for all jobs except MAKERUNSHEET')
     parser.add_argument('--log_prefix', '-l', type=str, default='henipipe.log', help='Prefix specifying log files for henipipe output from henipipe calls. OPTIONAL')
     parser.add_argument('--select', '-s', type=str, default=None, help='To only run the selected row in the runsheet, OPTIONAL')
@@ -50,6 +50,7 @@ def run_henipipe(args=None):
     parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in'], help='For ALIGN and SCALE: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
     parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
+    parser.add_argument('--SEACR_fdr', '-Sf', type=str, default='0.05',  help='For SEACR: Used to set FDR threshold when control is not used. OPTIONAL')
     parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
     parser.add_argument('--keep_files', '-k', action ='store_true', default=False, help='FOR ALIGN: use this flag to turn off piping (Will generate all files).')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
@@ -64,6 +65,48 @@ def run_henipipe(args=None):
     """
     args = parser.parse_args()
 
+    #deal with user
+    if args.user is None:
+        args.user = getpass.getuser()
+
+
+    if args.job=="SC":
+        if os.path.isabs(args.fastq_folder) is False:
+            if args.fastq_folder == ".":
+                args.fastq_folder = os.getcwd()
+            else :
+                args.fastq_folder = os.path.abspath(args.fastq_folder)
+        if os.path.exists(args.fastq_folder) is False:
+            raise ValueError('Path: '+args.fastq_folder+' not found')
+        if os.path.isabs(args.output) is False:
+            if args.output == ".":
+                args.output = os.getcwd()
+            else :
+                args.output = os.path.abspath(args.output)
+        if os.path.exists(args.output) is False:
+            raise ValueError('Path: '+args.output+' not found')
+        LOGGER.info("Running Single Cell processing...")
+        if args.select is not None:
+            select = [i for i in list(henipipe.parse_range_list(args.select))]
+        else:
+            select = None
+        SCjob = henipipe.SCAlign(folder=args.fastq_folder, output=args.output,
+            threads = args.threads, ram = args.gb_ram, debug=args.debug, sample_flag = args.sample_flag,
+            genome_key = args.genome_key, no_pipe=args.keep_files, cluster=args.cluster,
+            bowtie_flags=args.bowtie_flags, log=args.log_prefix, user=args.user,
+            ext=args.ext,  r1_char=args.R1_char, strsplit= args.split_char,
+            r2_char=args.R2_char, fname=args.runsheet, organized_by=args.organized_by,
+            filter = [args.filter_low, args.filter_high], select = select)
+        dependency = SCjob.run_dependency_job()
+        SCjob = henipipe.SCMerge(runsheet_data = SCjob.runsheet_data, output=args.output, debug=args.debug,
+            dependency = dependency, cluster=SCjob.environs.cluster, log=SCjob.environs.log, user=SCjob.environs.user,
+            genome_key = args.genome_key, norm=args.SEACR_norm, stringency=args.SEACR_stringency, fdr_thresh = args.SEACR_fdr)
+        SCjob.run_dependency_job()
+        exit()
+
+    #log
+
+
     if args.job=="GENOMESFILE":
         _ROOT = os.path.abspath(os.path.dirname(__file__))
         if args.install is None:
@@ -76,9 +119,6 @@ def run_henipipe(args=None):
         exit()
     #log
 
-    #deal with user
-    if args.user is None:
-        args.user = getpass.getuser()
 
     #deal with paths
     if args.job=="MAKERUNSHEET":
