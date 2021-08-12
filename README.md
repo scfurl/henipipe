@@ -291,19 +291,22 @@ henipipe SEACR -r runsheet_fixed.csv
 
 ## Doing a SC henipipe run (New in >= Version 2.0)
 
-Say your fastqs exist in a 'fastq' in the folder 'data'.  
+Say your fastqs exist in a 'fastq' in the folder 'data'.
 ```bash
-cd /data/fastq
+ls /data/fastq
 ```
 
-For the current version of henipipe, these fastq files must be named such that each pair of fastqs (R1 and R2) is uniquely named with the cell barcode in the name of the file.  For example:
+For the current version of henipipe, these fastq files **must** be named such that each pair of fastqs (R1 and R2) has a unique name that contains the cell barcode in the name of the file.  This typically is what is output for iCell8 Takara runs...  For example:
 
+```bash
 A2_1_TCTTATTACCTGCGGG_S221_R1_001.fastq.gz
 A2_1_TCTTATTACCTGCGGG_S221_R2_001.fastq.gz
+```
+
 
 **To run henipipes sc, do the following...**
-1. Make a new output directory, say 'henipipe_sc'.
-2. Run the following: specifying the location of the fastqs (here 'fastq') and the desired location of the desired output (here 'henipipe_sc').  Don't forget to add a genome key!
+1. From within the 'data' directory (in the above example where the fastq files are located in data/fastq); Make a new output directory, say 'henipipe_sc'.
+2. Run henipipe specifying the following: the location of the fastqs (here 'fastq') with the '-fq' flag and the desired location of the desired output (here 'henipipe_sc') with the '-o' flag.  Don't forget to add a genome key with the '-gk' flag!
 
 ```bash
 mkdir henipipe_sc
