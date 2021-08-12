@@ -2,13 +2,21 @@
     {"PBS": {
         "popen" : "qsub",
         "script_lines": {
-            "1" : ["#!/bin/bash\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp", ""],
-            "2" : ["#PBS -N <--0-->", "JOB_NAME"],
-            "3" : ["#PBS -l select=1:mem=<--0-->GB:ncpus=<--1-->","RAM|THREADS"],
-            "4" : ["#PBS -A <--0-->\ncd $PBS_O_WORKDIR","USER"],
+            "1" : ["#!/bin/bash\n#PBS --output=out\n#PBS --error=err", ""],
+            "2" : ["#PBS --job-name=<--0-->", "JOB_NAME"],
+            "3" : ["#PBS --ntasks=1\n#PBS --cpus-per-task=<--0-->","THREADS"],
+            "4" : ["#PBS --mem-per-cpu=<--0-->000","RAM"],
             "5" : ["{\n<--0-->\n<--1-->} 2>&1 | tee <--2-->", "MODULES|COMMAND|TEMP_LOG_FILE"],
             "6" : ["t=date\nsed -e 's/^/[HENIPIPE-$t] JOB: <--0-->:\t\t/' <--1--> >> <--2-->", "JOB_NAME|TEMP_LOG_FILE|LOG_FILE"],
             "7" : ["rm <--0-->", "TEMP_LOG_FILE"]
+        },
+        "array_script_lines": {
+            "1" : ["#!/bin/bash\n#PBS --output=outarr\n#PBS --error=errarr", ""],
+            "2" : ["#PBS --array=1-<--0-->","ARRAY_COUNT"],
+            "3" : ["#PBS --job-name=<--0-->", "JOB_NAME"],
+            "4" : ["#PBS --ntasks=1\n#PBS --cpus-per-task=<--0-->","THREADS"],
+            "5" : ["#PBS --mem-per-cpu=<--0-->000","RAM"],
+            "7" : ["\n<--0-->\n<--1-->", "MODULES|COMMAND"]
         },
         "resources" : {
             "HENIPIPE_ALIGN": {
@@ -16,10 +24,20 @@
                 "threads" : "100",
                 "modules" : "module load Bowtie2\nmodule load SAMtools\nmodule load Python"
             },
+            "HENIPIPE_SCALIGN": {
+                "ram" : "8",
+                "threads" : "100",
+                "modules" : "module load Bowtie2\nmodule load SAMtools\nmodule load Python"
+            },
+            "HENIPIPE_SCMERGE": {
+                "ram" : "2",
+                "threads" : "1",
+                "modules" : "module load bedtools"
+            },
             "HENIPIPE_SCALE": {
                 "ram" : "8",
                 "threads" : "1",
-                "modules" : "module load BEDTools"
+                "modules" : "module load bedtools"
             },
             "HENIPIPE_SEACR": {
                 "ram" : "8",
@@ -56,39 +74,57 @@
     "SLURM": {
     "popen" : ["sbatch"],
     "script_lines": {
-        "1" : ["#!/bin/bash\n#SBATCH --output=outtmp\n#SBATCH --error=errtmp", ""],
+        "1" : ["#!/bin/bash\n#SBATCH --output=out\n#SBATCH --error=err", ""],
         "2" : ["#SBATCH --job-name=<--0-->", "JOB_NAME"],
-        "3" : ["#SBATCH --ntasks=1\nSBATCH --cpus-per-task=<--0-->","THREADS"],
+        "3" : ["#SBATCH --ntasks=1\n#SBATCH --cpus-per-task=<--0-->","THREADS"],
         "4" : ["#SBATCH --mem-per-cpu=<--0-->000","RAM"],
         "5" : ["{\n<--0-->\n<--1-->} 2>&1 | tee <--2-->", "MODULES|COMMAND|TEMP_LOG_FILE"],
         "6" : ["t=date\nsed -e 's/^/[HENIPIPE-$t] JOB: <--0-->:\t\t/' <--1--> >> <--2-->", "JOB_NAME|TEMP_LOG_FILE|LOG_FILE"],
         "7" : ["rm <--0-->", "TEMP_LOG_FILE"]
     },
+    "array_script_lines": {
+        "1" : ["#!/bin/bash\n#SBATCH --output=outarr\n#SBATCH --error=errarr", ""],
+        "2" : ["#SBATCH --array=1-<--0-->","ARRAY_COUNT"],
+        "3" : ["#SBATCH --job-name=<--0-->", "JOB_NAME"],
+        "4" : ["#SBATCH --ntasks=1\n#SBATCH --cpus-per-task=<--0-->","THREADS"],
+        "5" : ["#SBATCH --mem-per-cpu=<--0-->000","RAM"],
+        "7" : ["\n<--0-->\n<--1-->", "MODULES|COMMAND"]
+    },
     "resources" : {
         "HENIPIPE_ALIGN": {
             "ram" : "8",
             "threads":"2",
-            "modules" : "ml Bowtie2\nmodule load SAMtools\nmodule load Python"
+            "modules" : "ml Bowtie2/2.3.5.1-GCC-8.3.0\nml SAMtools/1.10-GCC-8.3.0\nmodule load Python/3.7.4-GCCcore-8.3.0"
         },
+        "HENIPIPE_SCALIGN": {
+            "ram" : "2",
+            "threads" : "1",
+            "modules" : "module load Bowtie2/2.3.5.1-GCC-8.3.0\nml SAMtools/1.10-GCC-8.3.0\nmodule load Python/3.7.4-GCCcore-8.3.0"
+            },
+        "HENIPIPE_SCMERGE": {
+            "ram" : "2",
+            "threads" : "1",
+            "modules" : "module load HTSlib/1.10.2-GCC-8.3.0\nmodule load BEDTools/2.29.2-GCC-8.3.0\nmodule load Kent_tools/20201201-linux.x86_64\nmodule load R\n"
+            },
         "HENIPIPE_SCALE": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load BEDTools"
+            "modules" : "module load BEDTools/2.29.2-GCC-8.3.0"
         },
         "HENIPIPE_SEACR": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load R\nmodule load BEDTools"
+            "modules" : "module load R\nBEDTools/2.29.2-GCC-8.3.0"
         },
         "HENIPIPE_MERGE": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load BEDTools"
+            "modules" : "module load BEDTools/2.29.2-GCC-8.3.0"
         },
         "HENIPIPE_MACS2": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load MACS2"
+            "modules" : " Python/3.7.4-GCCcore-8.3.0\nmodule load MACS2"
         },
         "HENIPIPE_FASTQC": {
             "ram" : "8",
@@ -103,7 +139,7 @@
         "HENIPIPE_AUC": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load BEDTools\nmodule load R\nmodule load HTSlib"
+            "modules" : "module load BEDTools/2.29.2-GCC-8.3.0\nmodule load R\nmodule load HTSlib/1.10.2-GCC-8.3.0"
         }
     }
 }
