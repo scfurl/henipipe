@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="1.7",
+    version="2.0",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -40,10 +40,10 @@ with open("README.md", "r") as fh:
 
 
 #FOR REAL
-cd ~/OneDrive\ -\ Fred\ Hutchinson\ Cancer\ Research\ Center/computation/develop/henipipe/
+cd ~/computation/develop/henipipe/
 rm dist/*
-python3 setup.py sdist bdist_wheel
-python3 -m twine upload dist/*
+python setup.py sdist bdist_wheel
+python -m twine upload dist/*
 scfurl
 rm -R dist/* build/* henipipe.egg-info/*
 

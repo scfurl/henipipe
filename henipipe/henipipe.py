@@ -53,9 +53,9 @@ class SampleFactory:
         self.threads = kwargs.get('threads')
         self.gb_ram = kwargs.get('gb_ram')
         self.cluster = kwargs.get('cluster')
-
         self.runsheet_data = kwargs.get('runsheet_data')
         self.debug = kwargs.get('debug')
+        self.dependency = kwargs.get('dependency')
         # self.log_name = kwargs.get('log')
     def __call__():
         pass
@@ -79,12 +79,35 @@ class SampleFactory:
                 # Print your job and the system response to the screen as it's submitted
                 print(script)
                 if self.debug==False:
-                    print(err)
-                    print(out)
+                    #print(err)
+                    print(str(out))
                     out_log.write(str(out))
                     err_log.write(str(err))
-                
                 time.sleep(0.1)
+
+    def run_dependency_job(self):
+        popen_command = self.environs.popen_command
+        for script in self.bash_scripts:
+            if self.debug==False:
+                # Open a pipe to the command.
+                proc = Popen(popen_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                if (sys.version_info > (3, 0)):
+                    proc.stdin.write(script.encode('utf-8'))
+                    out, err = proc.communicate()
+                else:
+                    proc.stdin.write(script)
+                    out, err = proc.communicate()
+            # Print your job and the system response to the screen as it's submitted
+            print(script)
+            if self.debug==False:
+                #print(err)
+                print(out.decode("utf-8"))
+                #out_log.write(str(out))
+                #err_log.write(str(err))
+                waiting = re.sub("Submitted batch job ", "", out.decode("utf-8")).strip()
+                return(waiting)
+            time.sleep(0.1)
+            return("No jobs submitted")
 
 
 
@@ -98,6 +121,8 @@ class Environs:
         self.popen_command = self.environs_data["popen"]
         self.threads = kwargs.get('threads')
         self.ram = kwargs.get('gb_ram')
+        self.array_job=False
+        self.dependency_job=None
 
     def id_generator(self, size=10, chars=string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
@@ -121,34 +146,52 @@ class Environs:
     def generate_job(self, commands, job):
         bash_scripts=[]
         torun = len(commands)
+        #print("Array count = "+str(self.array_count))
         threads,ram = self.get_processor_line(threads = self.threads, ram = self.ram, job = job)
-        for i in range(torun):
+        if self.array_job:
+            bash_script = self.assemble_script(LOG_FILE = self.log,
+                                    MODULES = self.environs_data["resources"][job]["modules"],
+                                    TEMP_LOG_FILE = self.id_generator(),
+                                    JOB_NAME = (job + "_ARRAY"),
+                                    COMMAND = commands[0][1],
+                                    ARRAY_COUNT = str(self.array_count),
+                                    RAM = ram,
+                                    NUM_JOBS = torun,
+                                    THREADS = threads,
+                                    USER = self.user)
+                                    # TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
+            bash_scripts.append(bash_script)
+        else:
+            for i in range(torun):
             # bash_script = {  "PBS" : "#!/bin/bash\n#PBS -N %s\n#PBS -l %s\n#PBS -j oe\n#PBS -o $PBS_O_WORKDIR/logtmp\n#PBS -A %s\ncd $PBS_O_WORKDIR\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, self.user, command, log_file, job_name, log_file, self.log_name, log_file),
                             # "SLURM" : "#!/bin/bash\n#SBATCH --job-name=%s\n#SBATCH --output=tmp\n#SBATCH --error=tmp\n#SBATCH --ntasks=1\n%s\n{%s} 2>&1 | tee %s\nsed -e 's/^/[HENIPIPE] JOB: %s:\t\t/' %s >> %s\nrm %s\n" % (job_name, self.processor_line, command, log_file, job_name, log_file, self.log_name, log_file)}
-            bash_script = self.assemble_script(   LOG_FILE = self.log, \
-                                    MODULES = self.environs_data["resources"][job]["modules"], \
-                                    TEMP_LOG_FILE = self.id_generator(), \
-                                    JOB_NAME = (job + "_" + commands[i][0]), \
-                                    COMMAND = commands[i][1],
-                                    RAM = ram,
-                                    THREADS = threads,
-                                    USER = self.user,
-                                    TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
-            bash_scripts.append(bash_script)
+                bash_script = self.assemble_script(LOG_FILE = self.log,
+                                        MODULES = self.environs_data["resources"][job]["modules"],
+                                        TEMP_LOG_FILE = self.id_generator(),
+                                        JOB_NAME = (job + "_" + commands[i][0]),
+                                        COMMAND = commands[i][1],
+                                        RAM = ram,
+                                        THREADS = threads,
+                                        USER = self.user)
+                                        # TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
+                bash_scripts.append(bash_script)
         return bash_scripts
 
     def assemble_script(self, *args, **kwargs):
         script_list=[]
         order=[]
         fn_args = kwargs
-        for key, value in self.environs_data["script_lines"].items():
+        if self.array_job:
+            which_header = "array_script_lines"
+        else:
+            which_header = "script_lines"
+        for key, value in self.environs_data[which_header].items():
             script_list.append(value)
             order.append(key)
         script_list = [x for _,x in sorted(zip(order,script_list))]
         lines_unparsed = [x[0] for x in script_list]
         values_to_insert = [x[1].split("|") for x in script_list]
         lines_parsed = []
-
         if self.cluster == 'local':
             lines_parsed = [kwargs['COMMAND']]
         else:
@@ -162,6 +205,9 @@ class Environs:
                     for j in range(len(values_to_insert[i])):
                         string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
                     lines_parsed.append(string)
+        if self.dependency_job is not None:
+            line = "#SBATCH --depend=afterok:%s" % (self.dependency_job)
+            lines_parsed.insert(1, line)
         return "\n".join(lines_parsed)
 
 
@@ -216,6 +262,119 @@ class Trim(SampleFactory, object):
             command.append([sample['sample'], commandline])
         return command
 
+class SCAlign(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(SCAlign, self).__init__(*args, **kwargs)
+        self.bowtie_flags = kwargs.get('bowtie_flags')
+        self.job = "HENIPIPE_SCALIGN"
+        self.pipe = not kwargs.get('no_pipe')
+        self.filter_string = self.make_filter_string(kwargs.get('filter')[0], kwargs.get('filter')[1])
+        self.genome_data = load_genomes(GENOMES_JSON).get(kwargs.get('genome_key'))
+        self.fasta = self.genome_data.get('fasta')
+        os.makedirs(os.path.join(kwargs.get('output'), "bed_tmp"), exist_ok=True)
+        self.runsheet_data = make_scrunsheet(folder=kwargs.get('folder'), output=kwargs.get('output'), \
+            sample_flag = kwargs.get('sample_flag'), genome_key = kwargs.get('genome_key'), \
+            organized_by="file", strsplit= kwargs.get('strsplit'), ext=kwargs.get('ext'),  r1_char=kwargs.get('r1_char'), \
+            r2_char=kwargs.get('r2_char'), fname=kwargs.get('fname'), no_pipe=kwargs.get('no_pipe'), select = kwargs.get('select'))
+        self.environs.array_count = len(self.runsheet_data)
+        self.commands = self.scalign_executable()
+        self.environs.array_job = True
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def make_filter_string(self, low, high):
+        if low is None and high is None:
+            return("")
+        if low is not None and high is None:
+            return("-fl %s" % low)
+        if low is None and high is not None:
+            return("-fh %s" % high)
+        if low is not None and high is not None:
+            return("-fl %s -fh %s" % (low, highsCYB))
+
+    def scalign_executable(self):
+        commandline=""
+        command = []
+        JOBSTRING = self.id_generator(size=10)
+        norm_bowtie_flags='--end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant -q --phred33 -I 10 -X 700'
+        sam2bed_string = """| samTobed - -o %s %s""" % ('${bed_out}', self.filter_string)
+        if self.pipe:
+            #commandline = commandline + "sed -i 's/\r//g' array_data.tsv\n"
+            commandline = commandline + """export fq1=$(head -n $SLURM_ARRAY_TASK_ID array_data.tsv | tail -n 1 | cut -d ',' -f 1 -)\n"""
+            commandline = commandline + """export fq2=$(head -n $SLURM_ARRAY_TASK_ID array_data.tsv | tail -n 1 | cut -d ',' -f 2 -)\n"""
+            commandline = commandline + """export bed_out=$(head -n $SLURM_ARRAY_TASK_ID array_data.tsv | tail -n 1 | cut -d ',' -f 3 -)\n"""
+            commandline = commandline + """bowtie2 %s -p %s -1 ${fq1} -2 ${fq2} -x %s %s\n""" % (self.bowtie_flags, self.threads, self.fasta, sam2bed_string)
+            #commandline = commandline + """rm %s \n""" % ('${bed_out}_tmp')
+            #commandline = commandline + """rm err.log errtmp out.log outtmp \n"""
+        # else:
+        #     commandline = """echo '\n[BOWTIE] Running Bowtie for main alignment... Output:\n'\nbowtie2 %s -p %s -1 %s -2 %s -x %s -S %s\n""" % (self.bowtie_flags, self.threads, fastq1, fastq2, sample['fasta'], sample['sam'])
+        #     commandline = commandline + """sleep 20s \nsamtools view -bS %s -o %s\n""" % (sample['sam'], sample['bam']+'US')
+        #     commandline = commandline + """sleep 20s \necho '\n[SAMTOOLS]... Sorting bam file %s\n'\nsamtools sort -o %s -O bam -T %s %s\n""" % (sample['bam'], sample['bam'], sample['bam']+'US', sample['bam']+'US')
+        #     commandline = commandline + """sleep 20s \necho '\n[SAMTOOLS]... Indexing bam file %s\n'\nsamtools index %s\n""" % (sample['bam'],sample['bam'])
+        #     commandline = commandline + """sleep 20s \necho '\n[SAMTOBED] Running samToBed for main alignment... Output:\n'\nsamTobed %s -o %s %s""" % (sample['sam'], sample['bed_out']+'tmp', self.filter_string)
+        #     commandline = commandline + """\necho '[SORT] Sorting Bed...\n'\nsort -k1,1 -k2n,2n %s > %s\n""" % (sample['bed_out']+'tmp', sample['bed_out'])
+        #     commandline = commandline + """rm %s \n""" % (sample['sam'])
+        #     commandline = commandline + """rm %s %s \n""" % (sample['bed_out']+'tmp', sample['bam']+'US')
+        command.append(["array_job", commandline])
+        return command
+
+
+class SCMerge(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(SCMerge, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_SCMERGE"
+        self.output = kwargs.get('output')
+        self.method = kwargs.get('stringency')
+        self.norm = kwargs.get('norm')
+        self.fdr_thresh = kwargs.get('fdr_thresh')
+        self.environs.array_job = False
+        self.environs.dependency_job = kwargs.get('dependency')
+        self.runsheet_data = kwargs.get('runsheet_data')
+        self.genome_data = load_genomes(GENOMES_JSON).get(kwargs.get('genome_key'))
+        [i.update({"bc" : striptobarcode(i.get("bed_out"))}) for i in self.runsheet_data]
+        self.commands = self.scmerge_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def make_filter_string(self, low, high):
+        if low is None and high is None:
+            return("")
+        if low is not None and high is None:
+            return("-fl %s" % low)
+        if low is None and high is not None:
+            return("-fh %s" % high)
+        if low is not None and high is not None:
+            return("-fl %s -fh %s" % (low, highsCYB))
+
+    def scmerge_executable(self):
+        command = []
+        commandline = ""
+        JOBSTRING = self.id_generator(size=10)
+        first_ = self.runsheet_data[0]
+        others_ = self.runsheet_data[1:]
+        outfile = os.path.join(self.output,"fragments.tsv")
+        outbedg = os.path.join(self.output,"fragments.bg")
+        outbw = os.path.join(self.output,"fragments.bw")
+        outseacr = os.path.join(self.output,"fragments_seacr_peaks")
+        chromsizes = self.genome_data.get('genome_sizes')
+        commandline = commandline + """mv outarr samToBed.log\nmv errarr bowtie2.log\n"""
+        commandline = commandline + """cat %s | awk -v var=%s '{print $1"\t"$2"\t"$3"\t"var}' > merged.bed\n""" % (first_.get("bed_out"), first_.get("bc"))
+        #commandline = commandline + """export beds=$(array_data.tsv | tail -n 1 | cut -d ',' -f 1 -)\n"""
+        for other in others_:
+            commandline = commandline + """cat %s | awk -v var=%s '{print $1"\t"$2"\t"$3"\t"var}' >> merged.bed\n""" % (other.get("bed_out"), other.get("bc"))
+        commandline = commandline + """sort -k1,1 -k2n,2n merged.bed | uniq -c  | awk '{print $2"\t"$3"\t"$4"\t"$5"\t"$1}' > %s\n""" % (outfile)
+        commandline = commandline + """rm merged.bed\nrm -R %s\n""" % (os.path.join(self.output, "bed_tmp"))
+        commandline = commandline + """bedtools genomecov -bg -i %s -g %s > %s\n""" % (outfile, chromsizes, outbedg)
+        commandline = commandline + """bgzip %s\n""" % (outfile)
+        commandline = commandline + """tabix -p bed %s\n""" % (outfile+".gz")
+        commandline = commandline + """bedGraphToBigWig %s %s %s\n""" % (outbedg, chromsizes, outbw)
+        commandline = commandline + """bash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, outbedg, self.fdr_thresh, self.norm, "stringent", outseacr)
+        commandline = commandline + """bash %s %s %s %s %s %s\n""" % (SEACR_SCRIPT, outbedg, self.fdr_thresh, self.norm, "relaxed", outseacr)
+        #commandline = commandline + """rm %s\n""" % (outbedg)
+        command.append(['Dependency_job', commandline])
+        return command
 
 class Align(SampleFactory, object):
     def __init__(self, *args, **kwargs):
@@ -749,6 +908,54 @@ def load_genomes(genomes_file):
         genome_data = json.load(read_file)
     return genome_data
 
+
+def make_scrunsheet(folder, output, sample_flag, genome_key, organized_by, strsplit, ext, r1_char, r2_char, fname, fasta=None, spikein_fasta=None, genome_sizes=None, no_pipe = True, select = None):
+    outfile = "array_data.tsv"
+    genome_data = load_genomes(GENOMES_JSON).get(genome_key)
+    # if(organized_by=="folder"):    
+    #     ddir=[x[0] for x in os.walk(folder)]
+    #     dat=list(map(find_fastq_mate, ddir))
+    #     #good_dat = [i for i in dat if i.get('has_fastq') is True]
+    #     dat=list(map(find_fastq_mate, ddir, [r1_char] * len(ddir), [r2_char] * len(ddir), [ext] * len(ddir)))
+    #     good_dat = [i for i in good_dat if re.compile(r'.*'+sample_flag).search(i.get('directory_short'))]
+    #     for i in good_dat:
+    #         i.update({'sample': i.get('directory_short')})
+    #     if(len(good_dat))<1:
+    #         raise ValueError("No fastqs found")
+    #     else:
+    #         print("Found "+str(len(good_dat))+" fastq pairs")
+    if(organized_by=="file"):
+        good_dat=find_fastqs_by_sample(folder, strsplit=strsplit, r1_char=r1_char, r2_char=r2_char, ext = ext)
+        if(len(good_dat))<1:
+            raise ValueError("No fastqs found")
+        else:
+            print("Found "+str(len(good_dat))+" fastq pairs")
+    for i in good_dat:
+        #i.update({"directory_short":i.get('sample')})
+        i.update({'bed_out': os.path.join(output, "bed_tmp", i.get('sample')+".bed")})
+            #'spikein_bed_out': os.path.join(output, i.get('directory_short')+"_spikein.bed"), \
+            #'bedgraph': os.path.join(output, i.get('directory_short')+".bedgraph"), \
+            #'fasta': genome_data.get('fasta'), 'genome_sizes':  genome_data.get('genome_sizes')})
+        # if no_pipe:
+        #     i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
+        #         'bam': os.path.join(output, i.get('directory_short')+".bam")})
+        keys = ["fastq1", "fastq2", "bed_out"]
+        # if no_pipe:
+        #     keys.append("sam")
+        #     keys.append("bam")
+    #print(select)
+    if(select is None):
+        select=[x for x in range(0, len(good_dat))]
+    #print([good_dat for i in sample_flag])
+    final_dat = [good_dat[i] for i in select]
+    with open(outfile, 'w') as output_file:
+        dict_writer = csv.DictWriter(output_file, fieldnames = keys, extrasaction='ignore', lineterminator='\n')
+        #dict_writer.writeheader()
+        dict_writer.writerows(final_dat)
+    return(final_dat)
+
+
+
 def make_runsheet(folder, output, sample_flag, genome_key, organized_by, strsplit, ext, r1_char, r2_char, fname, fasta=None, spikein_fasta=None, genome_sizes=None, no_pipe = True):
     genome_data = load_genomes(GENOMES_JSON).get(genome_key)
     if output is None:
@@ -890,4 +1097,10 @@ def change_dirname(input, substitute):
     outpath = pathlib.Path(intpath)
     return(outpath)
 
-
+def striptobarcode(input, path=True, ext=".bed"):
+    if path:
+        out = os.path.basename(input)
+    else:
+        out = input
+    out = re.sub(ext, "", out)
+    return(out)
