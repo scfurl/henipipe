@@ -291,12 +291,12 @@ henipipe SEACR -r runsheet_fixed.csv
 
 ## Doing a SC henipipe run (New in >= Version 2.0)
 
-Say your fastqs exist in a 'fastq' in the folder 'data'.
+Say your fastqs exist in a 'fastq' in a folder 'data'.
 ```bash
 ls /data/fastq
 ```
 
-For the current version of henipipe, these fastq files **must** be named such that each pair of fastqs (R1 and R2) has a unique name that contains the cell barcode in the name of the file.  This typically is what is output for iCell8 Takara runs...  For example:
+For the current version of henipipe, these fastq files *must* be named such that each pair of fastqs (R1 and R2) has a unique name that contains the cell barcode in the name of the file.  This typically is the output for demuxed iCell8 Takara runs...  For example:
 
 ```bash
 A2_1_TCTTATTACCTGCGGG_S221_R1_001.fastq.gz
@@ -306,13 +306,16 @@ A2_1_TCTTATTACCTGCGGG_S221_R2_001.fastq.gz
 
 **To run henipipes sc, do the following...**
 1. From within the 'data' directory (in the above example where the fastq files are located in data/fastq); Make a new output directory, say 'henipipe_sc'.
-2. Run henipipe specifying the following: the location of the fastqs (here 'fastq') with the '-fq' flag and the desired location of the desired output (here 'henipipe_sc') with the '-o' flag.  Don't forget to add a genome key with the '-gk' flag!
+2. Run henipipe specifying the following: the location of the fastqs (here 'fastq') with the '-fq' flag and the location of the desired output (here 'henipipe_sc') with the '-o' flag.  Don't forget to add a genome key with the '-gk' flag!
 
 ```bash
 mkdir henipipe_sc
 henipipe SC -fq fastq -o henipipe_sc -gk FH_mm10_unmasked
 ```
 
+### Henipipe SC options and disclaimers
+
+Henipipe SC was written to accomodate iCell8 output.  As such, it should be able to parse the fastq folder and find paired fastq files.  That being said, it has not been exhaustively debugged.  Let us know if you have an issue using by submitting an issue through github.  Henipipe SC peak files will be generated using SEACR 1.3 (1.4 coming soon), but only by specifying an FDR value (See SEACR for more information).  The FDR is set using the '--SEACR_fdr' flag with a default of 0.05.  Future versions of henipipe will allow for use of this setting for bulk data but currently henipipe SEACR functionality in bulk still requires a control input file.
 
 ## Acknowledgements
 
