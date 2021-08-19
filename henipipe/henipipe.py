@@ -962,9 +962,10 @@ def make_runsheet(folder, output, sample_flag, genome_key, organized_by, strspli
         output = os.path.join(os.getcwd())
     if(organized_by=="folder"):    
         ddir=[x[0] for x in os.walk(folder)]
-        dat=list(map(find_fastq_mate, ddir))
+        #dat=list(map(find_fastq_mate, ddir))
         #good_dat = [i for i in dat if i.get('has_fastq') is True]
         dat=list(map(find_fastq_mate, ddir, [r1_char] * len(ddir), [r2_char] * len(ddir), [ext] * len(ddir)))
+        good_dat = [i for i in dat if i.get('has_fastq') is True]
         good_dat = [i for i in good_dat if re.compile(r'.*'+sample_flag).search(i.get('directory_short'))]
         for i in good_dat:
             i.update({'sample': i.get('directory_short')})

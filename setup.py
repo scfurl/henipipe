@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="2.01",
+    version="2.1.1",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -47,6 +47,7 @@ python -m twine upload dist/*
 scfurl
 rm -R dist/* build/* henipipe.egg-info/*
 
+
 ##Install pipx
 ## python3 -m pip install --user pipx
 ## python3 -m pipx ensurepath
@@ -80,14 +81,11 @@ ml Python
 pipx uninstall henipipe
 pipx install henipipe
 git clone https://github.com/scfurl/henipipe.git
-cd henipipe/test_data
-
-
+cd ~/henipipe/test_data
 mkdir henipipe
 cd henipipe
-
 henipipe MAKERUNSHEET -fq ../fastq
-awk -F ',' '{print $1, $2}' runsheet_fixed.csv
+awk -F ',' '{print $1, $2}' runsheet.csv
 
 #proceed with henipipe steps
 henipipe ALIGN -t 16 -r runsheet_fixed.csv -n spike_in
