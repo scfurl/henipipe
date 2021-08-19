@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-Version 2.0
+Version 2.1.1
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC).  Now with a single-cell option ('SC') for processing CutnTag data generated using the iCell8 platform (Takara).
 

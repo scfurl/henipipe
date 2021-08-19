@@ -42,6 +42,7 @@ with open("README.md", "r") as fh:
 #FOR REAL
 cd ~/computation/develop/henipipe/
 rm dist/*
+y
 python setup.py sdist bdist_wheel
 python -m twine upload dist/*
 scfurl
