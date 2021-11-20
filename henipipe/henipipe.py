@@ -467,6 +467,9 @@ class Scale(SampleFactory, object):
                 ncount = 0
                 for line in open(sample['spikein_bed_out']): ncount += 1
                 sample['scale_factor'] = (1/float(ncount))
+        if method=="none":
+            for sample in self.runsheet_data:
+                sample['scale_factor'] = 1
         return
 
     def norm_executable(self):
@@ -478,6 +481,23 @@ class Scale(SampleFactory, object):
         return command
 
 
+class Bigwig(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(Bigwig, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_BIGWIG"
+        self.commands = self.bw_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def bw_executable(self):
+        command = []
+        for sample in self.runsheet_data:
+            JOBSTRING = self.id_generator(size=10)
+            commandline = """echo '\n[BIGWIG] Making Bigwig  %s from %s'""" % (sample['bigwig'], sample['bedgraph'])
+            commandline = commandline + """\nbedGraphToBigWig %s %s %s\n""" % (sample['bedgraph'], sample['genome_sizes'], sample['bigwig'])
+            command.append([sample['sample'], commandline])
+        return command
 
 
 
@@ -984,6 +1004,7 @@ def make_runsheet(folder, output, sample_flag, genome_key, organized_by, strspli
         i.update({'bed_out': os.path.join(output, i.get('directory_short')+".bed"), \
             'spikein_bed_out': os.path.join(output, i.get('directory_short')+"_spikein.bed"), \
             'bedgraph': os.path.join(output, i.get('directory_short')+".bedgraph"), \
+            'bigwig': os.path.join(output, i.get('directory_short')+".bigwig"), \
             'SEACR_key': i.get('directory_short'), \
             'MERGE_key': i.get('directory_short'), \
             'SEACR_out': os.path.join(output, i.get('directory_short')+"_SEACR"), \
@@ -991,7 +1012,7 @@ def make_runsheet(folder, output, sample_flag, genome_key, organized_by, strspli
         if no_pipe:
             i.update({'sam': os.path.join(output, i.get('directory_short')+".sam"), \
                 'bam': os.path.join(output, i.get('directory_short')+".bam")})
-        keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "SEACR_out"]
+        keys = ["sample", "SEACR_key", "MERGE_key", "fasta", "spikein_fasta", "genome_sizes", "fastq1", "fastq2", "bed_out", "spikein_bed_out", "bedgraph", "bigwig", "SEACR_out"]
         if no_pipe:
             keys.append("sam")
             keys.append("bam")
@@ -1040,7 +1061,7 @@ def check_runsheet_parameter(runsheet, parameter, verbose=False):
     return 1
 
 def check_runsheet(args, runsheet, verbose=False):
-    required_args = ['sample', 'fastq1', 'fastq2', 'bed_out', 'bedgraph', 'genome_sizes']
+    required_args = ['sample', 'fastq1', 'fastq2', 'bed_out', 'bedgraph', 'genome_sizes', 'bigwig']
     if args.norm_method == "spike_in":
         required_args.extend(['spikein_fasta', 'spikein_bed_out'])
     if args.job == "SEACR":

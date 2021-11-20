@@ -5,9 +5,13 @@
 # henipipe
 ==========
 
-Version 2.1.1
+Version 2.2.0
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC).  Now with a single-cell option ('SC') for processing CutnTag data generated using the iCell8 platform (Takara).
+
+## New in version 2.2
+
+Henipipe now will now make Bigwig files from bedgraphs
 
 ## New in version 2.0
 
@@ -250,7 +254,8 @@ mkdir henipipe
 cd henipipe
 henipipe MAKERUNSHEET -fq ../fastq -sf MySampleDirectoriesStartWithThisString -o .
 henipipe ALIGN -r runsheet.csv
-henipipe NORM -r runsheet.csv
+henipipe SCALE -r runsheet.csv
+henipipe BIGWIG -r runsheet.csv
 henipipe SEACR -r runsheet.csv
 mkdir auc
 henipipe AUC -r runsheet.csv -o auc

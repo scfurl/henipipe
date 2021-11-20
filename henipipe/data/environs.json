@@ -39,6 +39,11 @@
                 "threads" : "1",
                 "modules" : "module load bedtools"
             },
+            "HENIPIPE_BIGWIG": {
+            "ram" : "8",
+            "threads" : "1",
+            "modules" : "module load Kent_tools/20201201-linux.x86_64"
+            },
             "HENIPIPE_SEACR": {
                 "ram" : "8",
                 "threads" : "1",
@@ -110,6 +115,11 @@
             "ram" : "8",
             "threads" : "1",
             "modules" : "module load BEDTools/2.29.2-GCC-8.3.0"
+        },
+        "HENIPIPE_BIGWIG": {
+            "ram" : "8",
+            "threads" : "1",
+            "modules" : "module load Kent_tools/20201201-linux.x86_64"
         },
         "HENIPIPE_SEACR": {
             "ram" : "8",

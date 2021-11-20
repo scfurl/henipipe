@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="2.1.1",
+    version="2.2.0",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -89,7 +89,7 @@ henipipe MAKERUNSHEET -fq ../fastq
 awk -F ',' '{print $1, $2}' runsheet.csv
 
 #proceed with henipipe steps
-henipipe ALIGN -t 16 -r runsheet_fixed.csv -n spike_in
+henipipe ALIGN -t 16 -r runsheet.csv -n spike_in
 henipipe SCALE -r runsheet_fixed.csv -n spike_in
 henipipe SEACR -r runsheet_fixed.csv
 

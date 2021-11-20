@@ -24,7 +24,7 @@ def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['SC', 'MAKERUNSHEET', 'ALIGN', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster;')
+    parser.add_argument('job', type=str, choices=['SC', 'MAKERUNSHEET', 'ALIGN', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM', 'BIGWIG'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster; 11) make Bigwigs from bedgraphs;')
     parser.add_argument('--sample_flag', '-sf', type=str, default="", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For SC and MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--trim_folder', '-tf', type=str, default = ".", help='REQURIED, For TRIM only: Pathname of output folder; Note that all trimmed fastqs will be placed in the same folder')
@@ -47,7 +47,7 @@ def run_henipipe(args=None):
     parser.add_argument('--threads', '-t', type=str, default="8", help='number of threads; default: 8')
     parser.add_argument('--gb_ram', '-gb', type=str, default=None, help='gigabytes of RAM per thread')
     parser.add_argument('--install', '-i', type=str, default=None, help='FOR GENOMESFILE: location of file to install as a new genomes.json file, existing genomes.json will be erased')
-    parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in'], help='For ALIGN and SCALE: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
+    parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in', 'none'], help='For ALIGN and SCALE: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
     parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
     parser.add_argument('--SEACR_fdr', '-Sf', type=str, default='0.05',  help='For SEACR: Used to set FDR threshold when control is not used. OPTIONAL')
@@ -209,6 +209,13 @@ def run_henipipe(args=None):
         Scalejob = henipipe.Scale(runsheet_data = parsed_runsheet, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
         LOGGER.info("Submitting bedgraph jobs... Debug mode is %s" % args.debug)
         Scalejob.run_job()
+        exit()
+
+    if args.job=="BIGWIG":
+        LOGGER.info("Making Bigwigs:")
+        Bigwigjob = henipipe.Bigwig(runsheet_data = parsed_runsheet, debug=args.debug, cluster=args.cluster, log=args.log_prefix, norm_method=args.norm_method, user=args.user)
+        LOGGER.info("Submitting bigwig jobs... Debug mode is %s" % args.debug)
+        Bigwigjob.run_job()
         exit()
 
     if args.job=="MERGE":
