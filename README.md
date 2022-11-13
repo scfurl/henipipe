@@ -2,11 +2,15 @@
 <!-- [![Build Status](https://travis-ci.org/mdshw5/simplesam.svg?branch=master)](https://travis-ci.org/mdshw5/simplesam) -->
 [![Documentation Status](https://readthedocs.org/projects/henipipe/badge/?version=latest)](https://henipipe.readthedocs.io/en/latest/?badge=latest)
 
+
+<p align="center"><img src="henipipe.png" alt="" width="400"></a></p>
+<hr>
+
+
 # henipipe
 ==========
 
-<p align="center"><img src="henipipe.png" alt="" width="100"></a></p>
-<hr>
+
 
 
 Version 2.2.0
