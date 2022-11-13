@@ -5,7 +5,7 @@
 # henipipe
 ==========
 
-<p align="center"><img src="blob/henipipe.png" alt="" width="100"></a></p>
+<p align="center"><img src="henipipe.png" alt="" width="100"></a></p>
 <hr>
 
 
