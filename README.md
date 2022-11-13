@@ -3,7 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/henipipe/badge/?version=latest)](https://henipipe.readthedocs.io/en/latest/?badge=latest)
 
 
-<p align="center"><img src="henipipe.png" alt="" width="400"></a></p>
+<p align="center"><img src="henipipe.png" alt="" width="250"></a></p>
 <hr>
 
 
