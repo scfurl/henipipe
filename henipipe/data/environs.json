@@ -99,22 +99,22 @@
         "HENIPIPE_ALIGN": {
             "ram" : "8",
             "threads":"2",
-            "modules" : "ml Bowtie2/2.3.5.1-GCC-8.3.0\nml SAMtools/1.10-GCC-8.3.0\nmodule load Python/3.7.4-GCCcore-8.3.0"
+            "modules" : "ml Bowtie2/2.4.4-GCC-11.2.0\nml SAMtools/1.16.1-GCC-11.2.0\nml Python/3.9.6-GCCcore-11.2.0"
         },
         "HENIPIPE_SCALIGN": {
             "ram" : "2",
             "threads" : "1",
-            "modules" : "module load Bowtie2/2.3.5.1-GCC-8.3.0\nml SAMtools/1.10-GCC-8.3.0\nmodule load Python/3.7.4-GCCcore-8.3.0"
+            "modules" : "module load Bowtie2/2.4.4-GCC-11.2.0\nml SAMtools/1.16.1-GCC-11.2.0\nml Python/3.9.6-GCCcore-11.2.0"
             },
         "HENIPIPE_SCMERGE": {
             "ram" : "2",
             "threads" : "1",
-            "modules" : "module load HTSlib/1.10.2-GCC-8.3.0\nmodule load BEDTools/2.29.2-GCC-8.3.0\nmodule load Kent_tools/20201201-linux.x86_64\nmodule load R\n"
+            "modules" : "ml HTSlib/1.14-GCC-11.2.0\nmodule load BEDTools/2.30.0-GCC-11.2.0\nmodule load Kent_tools/20201201-linux.x86_64\nmodule load R\n"
             },
         "HENIPIPE_SCALE": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load BEDTools/2.29.2-GCC-8.3.0"
+            "modules" : "module load BEDTools/2.30.0-GCC-11.2.0"
         },
         "HENIPIPE_BIGWIG": {
             "ram" : "8",
@@ -124,17 +124,17 @@
         "HENIPIPE_SEACR": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load R\nBEDTools/2.29.2-GCC-8.3.0"
+            "modules" : "module load R\nmodule load BEDTools/2.30.0-GCC-11.2.0"
         },
         "HENIPIPE_MERGE": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load BEDTools/2.29.2-GCC-8.3.0"
+            "modules" : "module load BEDTools/2.30.0-GCC-11.2.0"
         },
         "HENIPIPE_MACS2": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : " Python/3.7.4-GCCcore-8.3.0\nmodule load MACS2"
+            "modules" : "module load Python/3.9.6-GCCcore-11.2.0"
         },
         "HENIPIPE_FASTQC": {
             "ram" : "8",
@@ -149,7 +149,7 @@
         "HENIPIPE_AUC": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load BEDTools/2.29.2-GCC-8.3.0\nmodule load R\nmodule load HTSlib/1.10.2-GCC-8.3.0"
+            "modules" : "ml HTSlib/1.14-GCC-11.2.0\nmodule load BEDTools/2.30.0-GCC-11.2.0\nmodule load R"
         }
     }
 }
