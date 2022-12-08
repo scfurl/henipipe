@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
     setuptools.setup(
     name="henipipe",
-    version="2.2.0",
+    version="2.2.1",
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
@@ -43,6 +43,8 @@ with open("README.md", "r") as fh:
 cd ~/computation/develop/henipipe/
 rm dist/*
 y
+git commit -a -m "update environs for cluster GCC 11.2"
+git push
 python setup.py sdist bdist_wheel
 python -m twine upload dist/*
 scfurl
