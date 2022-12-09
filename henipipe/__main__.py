@@ -24,7 +24,7 @@ def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['SC', 'MAKERUNSHEET', 'ALIGN', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM', 'BIGWIG'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster; 11) make Bigwigs from bedgraphs;')
+    parser.add_argument('job', type=str, choices=['SC', 'MAKERUNSHEET', 'ALIGN', 'DEDUP', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM', 'BIGWIG', 'BLACKLIST'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster; 11) make Bigwigs from bedgraphs;')
     parser.add_argument('--sample_flag', '-sf', type=str, default="", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For SC and MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--trim_folder', '-tf', type=str, default = ".", help='REQURIED, For TRIM only: Pathname of output folder; Note that all trimmed fastqs will be placed in the same folder')
@@ -49,10 +49,13 @@ def run_henipipe(args=None):
     parser.add_argument('--install', '-i', type=str, default=None, help='FOR GENOMESFILE: location of file to install as a new genomes.json file, existing genomes.json will be erased')
     parser.add_argument('--norm_method', '-n', type=str, default='coverage', choices=['coverage', 'read_count', 'spike_in', 'none'], help='For ALIGN and SCALE: Normalization method, by "read_count", "coverage", or "spike_in".  If method is "spike_in", HeniPipe will align to the spike_in reference genome provided in runsheet. OPTIONAL')
     parser.add_argument('--user', '-u', type=str, default=None, help='user for submitting jobs - defaults to username.  OPTIONAL')
+    parser.add_argument('--MACS2_params', '-M2p', type=str, default='-f BED --nomodel -g hs -p 1e-5 --keep-dup all', help='For MACS2: Arguments for MACS2 commandline NOTE: macs2 must be accessible in $PATH')
     parser.add_argument('--SEACR_norm', '-Sn', type=str, default='non', choices=['non', 'norm'], help='For SEACR: Normalization method; default is "non"-normalized, select "norm" to normalize using SEACR. OPTIONAL')
     parser.add_argument('--SEACR_fdr', '-Sf', type=str, default='0.05',  help='For SEACR: Used to set FDR threshold when control is not used. OPTIONAL')
     parser.add_argument('--SEACR_stringency', '-Ss', type=str, default='stringent', choices=['stringent', 'relaxed'], help='FOR SEACR: Default will run as "stringent", other option is "relaxed". OPTIONAL')
     parser.add_argument('--keep_files', '-k', action ='store_true', default=False, help='FOR ALIGN: use this flag to turn off piping (Will generate all files).')
+    parser.add_argument('--dedup_strength', '-Ds', type=str,  choices=['high', 'medium', 'low'], default="high", help='FOR DEDUP: select degree of deduping; high = collapse by genome location; medium = collapse by genome location and read orientation; low = collapse by genome location, read orientation, and strand')
+    parser.add_argument('--blacklist', '-bl', type=str,  help='FOR BLACKLIST: requires blacklist bed file')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
     """
     call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
@@ -231,9 +234,25 @@ def run_henipipe(args=None):
         SEACRjob.run_job()
         exit()
 
+    if args.job=="DEDUP":
+        LOGGER.info("Running DEDUP")
+        DEDUPjob = henipipe.DEDUP(runsheet_data = parsed_runsheet, dedup_strength = args.dedup_strength, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
+        DEDUPjob.run_job()
+        exit()
+
+    if args.job=="BLACKLIST":
+        LOGGER.info("Running BLACKLIST")
+        if args.blacklist is None:
+            raise ValueError('No blacklist file given')
+        if os.path.isabs(args.blacklist) is False:
+            raise ValueError('No blacklist file found at {loc}'.format(loc = args.blacklist))
+        DEDUPjob = henipipe.BLACKLIST(runsheet_data = parsed_runsheet, blacklist = args.blacklist, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
+        DEDUPjob.run_job()
+        exit()
+
     if args.job=="MACS2":
         LOGGER.info("Running MACS2")
-        MACS2job = henipipe.MACS2(runsheet_data = parsed_runsheet, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
+        MACS2job = henipipe.MACS2(runsheet_data = parsed_runsheet, macs2params = args.MACS2_params, threads = args.threads, gb_ram = args.gb_ram, debug=args.debug, cluster=args.cluster, user=args.user, log=args.log_prefix, out=args.output)
         MACS2job.run_job()
         exit()
 

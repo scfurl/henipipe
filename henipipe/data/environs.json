@@ -59,6 +59,16 @@
                 "threads" : "1",
                 "modules" : "module load MACS2"
             },
+            "HENIPIPE_DEDUP": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : ""
+            },
+            "HENIPIPE_BLACKLIST": {
+                "ram" : "8",
+                "threads" : "1",
+                "modules" : "module load BEDTools/2.30.0-GCC-11.2.0"
+            },
             "HENIPIPE_FASTQC": {
                 "ram" : "8",
                 "threads" : "1",
@@ -135,6 +145,16 @@
             "ram" : "8",
             "threads" : "1",
             "modules" : "module load Python/3.9.6-GCCcore-11.2.0"
+        },
+        "HENIPIPE_DEDUP": {
+            "ram" : "8",
+            "threads" : "1",
+            "modules" : ""
+        },
+        "HENIPIPE_BLACKLIST": {
+            "ram" : "8",
+            "threads" : "1",
+            "modules" : "module load BEDTools/2.30.0-GCC-11.2.0"
         },
         "HENIPIPE_FASTQC": {
             "ram" : "8",

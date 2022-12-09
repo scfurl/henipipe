@@ -198,7 +198,7 @@ class Environs:
             global to_test
             to_test=[lines_unparsed, values_to_insert, fn_args]
             for i in range(len(lines_unparsed)):
-                if values_to_insert[i][0] is "":
+                if values_to_insert[i][0] == "":
                     lines_parsed.append(lines_unparsed[i])
                 else:
                     string=lines_unparsed[i]
@@ -458,7 +458,7 @@ class Scale(SampleFactory, object):
                 count = 0
                 with open(sample['bed_out']) as infile:
                     for line in infile:
-                        count += int(line.split("\t")[4])
+                        count += int(line.split("\t")[3])
                 sample['scale_factor'] = (1/float(count))*float(10**10)
         if method=="spike_in":
             for sample in self.runsheet_data:
@@ -595,6 +595,52 @@ class Merge(SampleFactory, object):
             return ''
 
 
+class BLACKLIST(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(BLACKLIST, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_BLACKLIST"
+        self.blacklist = kwargs.get('blacklist')
+        self.commands = self.BLACKLIST_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def BLACKLIST_executable(self):
+        commandline=""
+        command = []
+        for sample in self.runsheet_data:
+            JOBSTRING = self.id_generator(size=10)
+            commandline ="""echo '\n[BLACKLIST] Removing overlapping fragments with blacklist...'\nbedtools intersect -a {input} -b {blacklist} -v > {output}\n""".format(input = sample['bed_out'], blacklist = self.blacklist, output = sample['bed_out']+"tmp")
+            commandline = commandline + """mv %s %s\n""" % (sample['bed_out']+"tmp", sample['bed_out'])
+            command.append([sample['sample'], commandline])
+            # print(commandline)
+        return command
+
+class DEDUP(SampleFactory, object):
+    def __init__(self, *args, **kwargs):
+        super(DEDUP, self).__init__(*args, **kwargs)
+        self.job = "HENIPIPE_DEDUP"
+        self.dedup_strength = kwargs.get('dedup_strength')
+        self.commands = self.DEDUP_executable()
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
+    def __call__():
+        pass
+
+    def DEDUP_executable(self):
+        commandline=""
+        command = []
+        for sample in self.runsheet_data:
+            JOBSTRING = self.id_generator(size=10)
+            if self.dedup_strength == "high":
+                commandline ="""echo '\n[DEDUP] Removing presumed PCR duplicates from bed file using high strength...'\nawk 'BEGIN{{FS=OFS="\t"}} {{print $1, $2, $3, $4, "0", "0", "0", "0"}}' {input} | awk 'BEGIN{{FS=OFS="\t"}} {{arr[$0]++}} END{{for(i in arr){{print i,"+",arr[i]}}}}' - | sort -k1,1 -k2n,2n - > {output}\n""".format(input = sample['bed_out'], output = sample['bed_out']+"tmp")
+            if self.dedup_strength == "medium":
+                commandline ="""echo '\n[DEDUP] Removing presumed PCR duplicates from bed file using medium strength...'\nawk 'BEGIN{{FS=OFS="\t"}} {{print $1, $2, $3, $4, $5, $6, $7, $8}}' {input} | awk 'BEGIN{{FS=OFS="\t"}} {{arr[$0]++}} END{{for(i in arr){{print i,"+",arr[i]}}}}' - | sort -k1,1 -k2n,2n - > {output}\n""".format(input = sample['bed_out'], output = sample['bed_out']+"tmp")
+            if self.dedup_strength == "low":
+                commandline ="""echo '\n[DEDUP] Removing presumed PCR duplicates from bed file using low strength...'\nawk 'BEGIN{{FS=OFS="\t"}} {{print $1, $2, $3, $4, $5, $6, $7, $8, $9}}' {input} | awk 'BEGIN{{FS=OFS="\t"}} {{arr[$0]++}} END{{for(i in arr){{print i,arr[i]}}}}' - | sort -k1,1 -k2n,2n - > {output}\n""".format(input = sample['bed_out'], output = sample['bed_out']+"tmp")
+            commandline = commandline + """mv %s %s\n""" % (sample['bed_out']+"tmp", sample['bed_out'])
+            command.append([sample['sample'], commandline])
+            # print(commandline)
+        return command
 
 
 
@@ -603,83 +649,50 @@ class MACS2(SampleFactory, object):
     def __init__(self, *args, **kwargs):
         super(MACS2, self).__init__(*args, **kwargs)
         self.job = "HENIPIPE_MACS2"
-        #self.merged = kwargs.get('merged')
         self.out = kwargs.get('out')
-        self.norm = kwargs.get('norm')
+        self.m2p = kwargs.get('macs2params')
+        # self.mp2 = "-g hs –p 1e-5 –f BED –keep-dup all"
         self.runsheet_data = self.MACS2_match()
         self.processor_line = self.MACS2_processor_line()
         self.commands = self.MACS2_executable()
-        self.script = self.environs.generate_job(self,commands, self.job)
+        # [print(i) for i in self.commands]
+        self.bash_scripts = self.environs.generate_job(self.commands, self.job)
     def __call__():
         pass
 
     def MACS2_match(self):
-        desired_samples = self.runsheet_data
-        #desired_samples = parsed_runsheet
-        sample_key = [i.get("sample") for i in desired_samples]
-        biomatch_data = [i.get("MACS2_key") for i in desired_samples]
-        abmatch_data = [i.get("SEACR_key") for i in desired_samples]
-        unique_keys = unique(sample_key)
-        run_list = []
-        for key in unique_keys:
-            #find out if file is bio sample or control or ab sample or control by searching lists of the two keys
-            #print(key)
-            biomatch_key = [biomatch_data[i] for i in which(key, sample_key)]
-            is_biomatch_control = [bool(re.search(r'._CONTROL$', i)) for i in biomatch_key]
-            abmatch_key = [abmatch_data[i] for i in which(key, sample_key)]
-            is_abmatch_control = [bool(re.search(r'._CONTROL$', i)) for i in abmatch_key]
-            is_biomatch_control = all_the_same(is_biomatch_control)
-            is_abmatch_control = all_the_same(is_abmatch_control)
-            if type(is_abmatch_control) is str:
-                raise ValueError("Some discrepency between merge_key and MACS2_key ")
-            if type(is_biomatch_control) is str:
-                raise ValueError("Some discrepency between merge_key and MACS2_key ")
-            if not is_abmatch_control and not is_biomatch_control:
-                #treatment bed is just key
-                treatment_bed = get_key_from_dict_list(desired_samples, {"sample":key}, 'bed_out')
-                #for all non-controls we will output a list of relevant files to process using macs2
-                #first find biomatch control
-                biomatch_control_key = biomatch_key[0]+"_CONTROL"
-                #get bed of this control
-                control_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'bed_out')
-                #get bed of antibody control for treatment
-                abmatch_control_key = abmatch_key[0]+"_CONTROL"
-                treatment_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(abmatch_control_key, abmatch_data)[0]]}, 'bed_out')
-                #get bed of antibody control for control
-                control_control_key = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
-                control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(control_control_key, abmatch_data)[0]]}, 'bed_out')
-                run_list.append({   "MACS2DIFF_treatment": key,
-                                    "MACS2CP_treat_sample": treatment_bed,
-                                    "MACS2CP_treat_control": treatment_abcontrol_bed,
-                                    "MACS2DIFF_control": sample_key[which(biomatch_control_key, biomatch_data)[0]],
-                                    "MACS2CP_control_sample": control_bed,
-                                    "MACS2CP_control_control": control_abcontrol_bed,
-                                    "sample": key})
-        return(run_list)
-
-
-
-
+        mk = [i.get('MACS2_key') for i in self.runsheet_data]
+        controls_b = [bool(re.search(r'._CONTROL$', i)) for i in mk]
+        controls = list(compress(self.runsheet_data, controls_b))
+        samples_b = [not i for i in controls_b]
+        samples = list(compress(self.runsheet_data, samples_b))
+        for sample in samples:
+            control_name = sample.get('MACS2_key')+"_CONTROL"
+            try:
+                control_bed = next(item for item in controls if item["MACS2_key"] == control_name).get('bed_out')
+            except StopIteration:
+                raise ValueError("Could not find matching files, make sure it is in the runsheet and/or your aren't selecting it out with the select flag")
+            # sample.update( {'MACS2_in' : os.path.basename(sample.get('bed_out'))})
+            # sample.update( {'MACS2_control' : os.path.basename(control_bed)})
+            sample.update( {'MACS2_in' : sample.get('bed_out')+"_tmp"})
+            sample.update( {'MACS2_control' : control_bed+"_tmp"})
+            sample.update( {'awk_in' : sample.get('bed_out')})
+            sample.update( {'awk_control' : control_bed})
+            sample.update( {'MACS2_name' : os.path.basename(sample.get('SEACR_out').replace("_SEACR", "_MACS2"))})
+        return samples
 
 
     def MACS2_executable(self):
         commandline=""
         command = []
-        for item in self.runsheet_data:
+        for sample in self.runsheet_data:
             JOBSTRING = self.id_generator(size=10)
-            treat_p = os.path.join(self.out, item["MACS2DIFF_treatment"])
-            cont_p = os.path.join(self.out, item["MACS2DIFF_control"])
-            if self.cluster=="SLURM":
-                modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
-            else:
-                modules = """\n"""
-            commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_treatment"])
-            commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
-            commandline = commandline + """echo '\n[MACS2] Running MACS2 callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_control_sample"], item["MACS2CP_control_control"], self.out, item["MACS2DIFF_control"])
-            commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr2=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (cont_p)
-            commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 $str1 --d2 $str2 -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"], self.out)
-            commandline = modules + commandline
-            command.append(commandline)
+            commandline ="""echo '\n[MACS2] Creating temporary bedfiles compatible with MACS2...'\nawk 'BEGIN {OFS="\t"}; { print $1, $2, $3, "n", "0", $9}' %s > %s\n""" % (sample['awk_in'], sample['MACS2_in'])
+            commandline =commandline +"""awk 'BEGIN {OFS="\t"}; { print $1, $2, $3, "n", "0", $9}' %s > %s\n""" % (sample['awk_control'], sample['MACS2_control']+JOBSTRING)
+            commandline = commandline + """echo '\n[MACS2] Running MACS2...'\nmacs2 callpeak -t %s -c %s %s --outdir %s -n %s\n""" % (sample['MACS2_in'], sample['MACS2_control']+JOBSTRING, self.m2p, self.out, sample['MACS2_name'])
+            commandline = commandline + """echo '\n[MACS2] Removing temporary bedfiles...'\nrm %s %s\n""" % (sample['MACS2_in'], sample['MACS2_control']+JOBSTRING)
+            command.append([sample['sample'], commandline])
+            # print(commandline)
         return command
 
     def MACS2_processor_line(self):
@@ -687,6 +700,91 @@ class MACS2(SampleFactory, object):
             return """select=1:mem=8GB:ncpus=2"""
         if self.cluster=="SLURM":
             return ''
+
+
+# class MACS2DIFF(SampleFactory, object):
+#     def __init__(self, *args, **kwargs):
+#         super(MACS2, self).__init__(*args, **kwargs)
+#         self.job = "HENIPIPE_MACS2DIFF"
+#         #self.merged = kwargs.get('merged')
+#         self.out = kwargs.get('out')
+#         self.norm = kwargs.get('norm')
+#         self.runsheet_data = self.MACS2_match()
+#         self.processor_line = self.MACS2_processor_line()
+#         self.commands = self.MACS2_executable()
+#         self.script = self.environs.generate_job(self,commands, self.job)
+#     def __call__():
+#         pass
+
+#     def MACS2_match(self):
+#         desired_samples = self.runsheet_data
+#         #desired_samples = parsed_runsheet
+#         sample_key = [i.get("sample") for i in desired_samples]
+#         biomatch_data = [i.get("MACS2_key") for i in desired_samples]
+#         abmatch_data = [i.get("SEACR_key") for i in desired_samples]
+#         unique_keys = unique(sample_key)
+#         run_list = []
+#         for key in unique_keys:
+#             #find out if file is bio sample or control or ab sample or control by searching lists of the two keys
+#             #print(key)
+#             biomatch_key = [biomatch_data[i] for i in which(key, sample_key)]
+#             is_biomatch_control = [bool(re.search(r'._CONTROL$', i)) for i in biomatch_key]
+#             abmatch_key = [abmatch_data[i] for i in which(key, sample_key)]
+#             is_abmatch_control = [bool(re.search(r'._CONTROL$', i)) for i in abmatch_key]
+#             is_biomatch_control = all_the_same(is_biomatch_control)
+#             is_abmatch_control = all_the_same(is_abmatch_control)
+#             if type(is_abmatch_control) is str:
+#                 raise ValueError("Some discrepency between merge_key and MACS2_key ")
+#             if type(is_biomatch_control) is str:
+#                 raise ValueError("Some discrepency between merge_key and MACS2_key ")
+#             if not is_abmatch_control and not is_biomatch_control:
+#                 #treatment bed is just key
+#                 treatment_bed = get_key_from_dict_list(desired_samples, {"sample":key}, 'bed_out')
+#                 #for all non-controls we will output a list of relevant files to process using macs2
+#                 #first find biomatch control
+#                 biomatch_control_key = biomatch_key[0]+"_CONTROL"
+#                 #get bed of this control
+#                 control_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'bed_out')
+#                 #get bed of antibody control for treatment
+#                 abmatch_control_key = abmatch_key[0]+"_CONTROL"
+#                 treatment_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(abmatch_control_key, abmatch_data)[0]]}, 'bed_out')
+#                 #get bed of antibody control for control
+#                 control_control_key = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(biomatch_control_key, biomatch_data)[0]]}, 'SEACR_key')+"_CONTROL"
+#                 control_abcontrol_bed = get_key_from_dict_list(desired_samples, {"sample":sample_key[which(control_control_key, abmatch_data)[0]]}, 'bed_out')
+#                 run_list.append({   "MACS2DIFF_treatment": key,
+#                                     "MACS2CP_treat_sample": treatment_bed,
+#                                     "MACS2CP_treat_control": treatment_abcontrol_bed,
+#                                     "MACS2DIFF_control": sample_key[which(biomatch_control_key, biomatch_data)[0]],
+#                                     "MACS2CP_control_sample": control_bed,
+#                                     "MACS2CP_control_control": control_abcontrol_bed,
+#                                     "sample": key})
+#         return(run_list)
+
+#     def MACS2_executable(self):
+#         commandline=""
+#         command = []
+#         for item in self.runsheet_data:
+#             JOBSTRING = self.id_generator(size=10)
+#             treat_p = os.path.join(self.out, item["MACS2DIFF_treatment"])
+#             cont_p = os.path.join(self.out, item["MACS2DIFF_control"])
+#             if self.cluster=="SLURM":
+#                 modules = """\nsource /app/Lmod/lmod/lmod/init/bash\nmodule load MACS2"""
+#             else:
+#                 modules = """\n"""
+#             commandline = """echo '\n[MACS2] Running MACS2 callpeak on sample... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_treat_sample"], item["MACS2CP_treat_control"], self.out, item["MACS2DIFF_treatment"])
+#             commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr1=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (treat_p)
+#             commandline = commandline + """echo '\n[MACS2] Running MACS2 callpeak on control... Output:\n'\nmacs2 callpeak -B -t %s -c %s -f BEDPE -g hs --nomodel --extsize 147 --outdir %s -n %s\n""" % (item["MACS2CP_control_sample"], item["MACS2CP_control_control"], self.out, item["MACS2DIFF_control"])
+#             commandline = commandline + """echo '\n[MACS2] Getting depth of sample... Output:\n'\nstr2=$(egrep "fragments after filtering in control" %s_peaks.xls | cut -d ":" -f2)\n""" % (cont_p)
+#             commandline = commandline + """echo '\n[MACS2] Running MACS2 bdgdiff... Output:\n'\nmacs2 bdgdiff --t1 %s_treat_pileup.bdg --c1 %s_control_lambda.bdg --t2 %s_treat_pileup.bdg --c2 %s_control_lambda.bdg --d1 $str1 --d2 $str2 -g 60 -l 147 --o-prefix %s --outdir %s\n""" % (treat_p, treat_p, cont_p, cont_p, item["MACS2DIFF_treatment"]+"_v_"+item["MACS2DIFF_control"], self.out)
+#             commandline = modules + commandline
+#             command.append(commandline)
+#         return command
+
+#     def MACS2_processor_line(self):
+#         if self.cluster=="PBS":
+#             return """select=1:mem=8GB:ncpus=2"""
+#         if self.cluster=="SLURM":
+#             return ''
 
 
 
@@ -1054,7 +1152,7 @@ def check_runsheet_parameter(runsheet, parameter, verbose=False):
         if i.get(parameter) is None:
             if verbose: print("no data for paramter "+parameter)
             return 0
-        if i.get(parameter) is "":
+        if i.get(parameter) == "":
             if verbose: print("header present, but no or incomplete data for "+parameter)
             return 0
     if verbose: print("runsheet_okay_for_parameter_"+parameter)

@@ -13,9 +13,16 @@
 
 
 
-Version 2.2.0
+Version 2.3.0
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC).  Now with a single-cell option ('SC') for processing CutnTag data generated using the iCell8 platform (Takara).
+
+## New in version 2.3
+
+1. Henipipe adds a new function, DEDUP.  DEDUP will remove presumed PCR duplicates from the bed file but leave a record of how many were detected.  The DEDUP funciton is meant to be used after ALIGN and before other downstream functions.  It will replace the bed file with a collapsed bedfile with a new column that counts the number of presumed duplicates found.  Note that read pairs will be collapsed regardless of strand and all strand data will be changed to positive.  
+2. Henipipe adds a new function, BLACKLIST.  BLACKLIST will remove bed entries that overlap with a user-specified blacklist file designated with the '-bl' flag.
+2. Changes to MACS2 function were made in this version to allow custom parameters to be passed to MACS2 peak calling using the -M2p flag.
+3. Fixed a bug in SCALE function
 
 ## New in version 2.2
 
