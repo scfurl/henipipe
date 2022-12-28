@@ -72,12 +72,16 @@ def run_henipipe(args=None):
     """
     args = parser.parse_args()
 
+    print("\n\n\n\nHenipipe version "+version+"\n\n\n\n")
+
+
     #deal with user
     if args.job is None:
         args.user = getpass.getuser()
 
     if args.job=="VERSION":
         print("Henipipe version "+version)
+        exit()
 
     if args.job=="SC":
         if os.path.isabs(args.fastq_folder) is False:
