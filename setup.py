@@ -1,11 +1,12 @@
 import setuptools
+from henipipe import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
     setuptools.setup(
     name="henipipe",
-    version="2.3.0",
+    version= __version__,
     author="Scott Furlan",
     author_email="scottfurlan@gmail.com",
     description="A python wrapper for fast and parallel processing of sequencing data using CutnRun or CutnTag",
