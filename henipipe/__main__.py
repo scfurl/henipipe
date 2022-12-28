@@ -8,7 +8,7 @@ from . import pyWriter
 from . import henipipe
 
 import pkg_resources  # part of setuptools
-version = pkg_resources.require("MyProject")[0].version
+version = pkg_resources.require("henipipe")[0].version
 
 
 POLL_TIME = 5
