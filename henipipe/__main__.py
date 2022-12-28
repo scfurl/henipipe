@@ -7,7 +7,9 @@ from . import samTobed
 from . import pyWriter
 from . import henipipe
 
-version = __version__
+import pkg_resources  # part of setuptools
+version = pkg_resources.require("MyProject")[0].version
+
 
 POLL_TIME = 5
 LOG_PREFIX = '[HENIPIPE]: '
