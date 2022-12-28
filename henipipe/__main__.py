@@ -61,7 +61,7 @@ def run_henipipe(args=None):
     parser.add_argument('--dedup_strength', '-Ds', type=str,  choices=['high', 'medium', 'low'], default="high", help='FOR DEDUP: select degree of deduping; high = collapse by genome location; medium = collapse by genome location and read orientation; low = collapse by genome location, read orientation, and strand')
     parser.add_argument('--blacklist', '-bl', type=str,  help='FOR BLACKLIST: requires blacklist bed file')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
-    parser.add_argument('--version', '-z', default=False, help='Return version')
+    parser.add_argument('--version', '-z', default=False, action='store_true', help='Return version')
     """
     call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
     call = 'henipipe MACS2 -r ./runsheet.csv -d -mk -s 1:10'
@@ -77,7 +77,7 @@ def run_henipipe(args=None):
     if args.user is None:
         args.user = getpass.getuser()
 
-    if args.version is None:
+    if args.version is True:
         print("Henipipe version "+version)
 
     if args.job=="SC":
