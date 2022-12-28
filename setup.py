@@ -44,7 +44,7 @@ with open("README.md", "r") as fh:
 cd ~/computation/develop/henipipe/
 rm dist/*
 y
-git commit -a -m "version 2.4.6"
+git commit -a -m "version 2.4.7"
 git push
 python setup.py sdist bdist_wheel
 python -m twine upload dist/*
