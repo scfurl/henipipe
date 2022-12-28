@@ -28,7 +28,7 @@ def run_henipipe(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser('A wrapper for running henipipe')
-    parser.add_argument('job', type=str, choices=['SC', 'MAKERUNSHEET', 'ALIGN', 'DEDUP', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM', 'BIGWIG', 'BLACKLIST'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster; 11) make Bigwigs from bedgraphs;')
+    parser.add_argument('job', type=str, choices=['SC', 'MAKERUNSHEET', 'ALIGN', 'DEDUP', 'SCALE', 'MERGE', 'SEACR', 'MACS2', 'AUC', 'GENOMESFILE', 'FASTQC', 'TRIM', 'BIGWIG', 'BLACKLIST', 'VERSION'], help='a required string denoting segment of pipeline to run.  1) "MAKERUNSHEET" - to parse a folder of fastqs; 2) "ALIGN" - to perform alignment using bowtie and output bed files; 3) "SCALE" - to normalize data to reference (spike in); 4) "MERGE" - to merge bedgraphs 5) "SEACR" - to perform SEACR; 6) "MACS" - to perform MACS2; 7) "AUC" - to calculate AUC between normalized bedgraph using a peak file; 8) "GENOMESFILE" - print location of genomes.json file; 9) "FASTQC" - run fastqc on cluster; 10) run trimmotatic on cluster; 11) make Bigwigs from bedgraphs;')
     parser.add_argument('--sample_flag', '-sf', type=str, default="", help='FOR MAKERUNSHEET only string to identify samples of interest in a fastq folder')
     parser.add_argument('--fastq_folder', '-fq', type=str, help='For SC and MAKERUNSHEET only: Pathname of fastq folder (files must be organized in folders named by sample)')
     parser.add_argument('--trim_folder', '-tf', type=str, default = ".", help='REQURIED, For TRIM only: Pathname of output folder; Note that all trimmed fastqs will be placed in the same folder')
@@ -61,7 +61,6 @@ def run_henipipe(args=None):
     parser.add_argument('--dedup_strength', '-Ds', type=str,  choices=['high', 'medium', 'low'], default="high", help='FOR DEDUP: select degree of deduping; high = collapse by genome location; medium = collapse by genome location and read orientation; low = collapse by genome location, read orientation, and strand')
     parser.add_argument('--blacklist', '-bl', type=str,  help='FOR BLACKLIST: requires blacklist bed file')
     parser.add_argument('--verbose', '-v', default=False, action='store_true', help='Run with some additional ouput - not much though... OPTIONAL')
-    parser.add_argument('--version', '-z', default=False, action='store_true', help='Return version')
     """
     call = 'henipipe MAKERUNSHEET -fq ../fastq -sf mini -gk heni_hg38 -o .'
     call = 'henipipe MACS2 -r ./runsheet.csv -d -mk -s 1:10'
@@ -74,10 +73,10 @@ def run_henipipe(args=None):
     args = parser.parse_args()
 
     #deal with user
-    if args.user is None:
+    if args.job is None:
         args.user = getpass.getuser()
 
-    if args.version is True:
+    if args.job=="VERSION":
         print("Henipipe version "+version)
 
     if args.job=="SC":
