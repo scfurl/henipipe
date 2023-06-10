@@ -44,7 +44,7 @@ with open("README.md", "r") as fh:
 cd ~/computation/develop/henipipe/
 rm dist/*
 y
-git commit -a -m "version 2.4.11"
+git commit -a -m "version 2.4.12"
 git push
 python setup.py sdist bdist_wheel
 python -m twine upload dist/*
@@ -80,8 +80,8 @@ pipx uninstall henipipe
 pipx install git+https://github.com/scfurl/henipipe --include-deps
 
 
-## running test data
-ml Python
+## running test data at FH
+ml Python/3.9.6-GCCcore-11.2.0
 pipx uninstall henipipe
 pipx install henipipe
 git clone https://github.com/scfurl/henipipe.git

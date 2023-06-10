@@ -41,6 +41,8 @@ GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.3.sh')
 ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
 GLOBALENV_PROJECT = os.environ["PROJECT"]
+if GLOBALENV_PROJECT is None:
+    GLOBALENV_PROJECT="NoneCaptured"
 
 
 class SampleFactory:
