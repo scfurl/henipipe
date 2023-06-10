@@ -344,7 +344,7 @@ Henipipe SC was written to accomodate iCell8 output.  As such, it should be able
 
 ### Using a project code
 
-Henipipe is not engineered to accept project IDs.  However for PBS job submission systems, our environs.json file will capture the global environmental variable PROJECT to run jobs with a specific project code.
+Henipipe is not engineered to accept project codes.  However for PBS job submission systems, henipipe file will capture a global environmental variable called PROJECT and run jobs with that specific project code.
 
 For example (note this code is made up)
 
