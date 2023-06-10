@@ -3,7 +3,7 @@
         "popen" : "qsub",
         "script_lines": {
             "1" : ["#PBS -S /bin/bash\n#PBS -o out\n#PBS -e err", ""],
-            "2" : ["#PBS -N <--0-->\n#PBS -q paidq\n#PBS -P <--0-->", "JOB_NAME|PROJECT"],
+            "2" : ["#PBS -N <--0-->\n#PBS -q paidq\n#PBS -P <--1-->", "JOB_NAME|PROJECT"],
             "3" : ["#PBS -l nodes=1:ppn=<--0-->","THREADS"],
             "4" : ["#PBS -l mem=<--0-->gb","RAM"],
             "5" : ["{\n<--0-->\n<--1-->} 2>&1 | tee <--2-->", "MODULES|COMMAND|TEMP_LOG_FILE"],
@@ -13,7 +13,7 @@
         "array_script_lines": {
             "1" : ["#PBS -S /bin/bash\n#PBS -o out\n#PBS -e err", ""],
             "2" : ["#PBS -J 1-<--0-->:1","ARRAY_COUNT"],
-            "3" : ["#PBS -N <--0-->\n#PBS -q paidq\n#PBS -P <--0-->", "JOB_NAME|PROJECT"],
+            "3" : ["#PBS -N <--0-->\n#PBS -q paidq\n#PBS -P <--1-->", "JOB_NAME|PROJECT"],
             "4" : ["#PBS -l nodes=1:ppn=<--0-->","THREADS"],
             "5" : ["#PBS -l mem=<--0-->gb","RAM"],
             "6" : ["\n<--0-->\n<--1-->", "MODULES|COMMAND"]
