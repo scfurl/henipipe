@@ -92,8 +92,8 @@ henipipe MAKERUNSHEET -fq ../fastq
 awk -F ',' '{print $1, $2}' runsheet.csv
 
 #proceed with henipipe steps
-henipipe ALIGN -t 4 -r runsheet.csv -n spike_in
-henipipe SCALE -r runsheet_fixed.csv -n spike_in
+henipipe ALIGN -t 4 -r runsheet.csv
+henipipe SCALE -r runsheet_fixed.csv
 henipipe SEACR -r runsheet_fixed.csv
 
 

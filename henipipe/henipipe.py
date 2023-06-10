@@ -44,6 +44,9 @@ GLOBALENV_PROJECT = os.getenv("PROJECT")
 if GLOBALENV_PROJECT is None:
     GLOBALENV_PROJECT="NoneCaptured"
 
+now = datetime.now()
+CURRENT_TIME = now.strftime("%d/%m/%Y %H:%M:%S")
+
 
 class SampleFactory:
     def __init__(self, *args, **kwargs):
@@ -161,7 +164,8 @@ class Environs:
                                     NUM_JOBS = torun,
                                     THREADS = threads,
                                     USER = self.user,
-                                    PROJECT = GLOBALENV_PROJECT)
+                                    PROJECT = GLOBALENV_PROJECT,
+                                    TIME = CURRENT_TIME)
                                     # TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
             bash_scripts.append(bash_script)
         else:
@@ -176,7 +180,8 @@ class Environs:
                                         RAM = ram,
                                         THREADS = threads,
                                         USER = self.user,
-                                        PROJECT = GLOBALENV_PROJECT)
+                                        PROJECT = GLOBALENV_PROJECT,
+                                        TIME = CURRENT_TIME)
                                         # TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
                 bash_scripts.append(bash_script)
         return bash_scripts
