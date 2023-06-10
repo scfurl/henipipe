@@ -20,7 +20,7 @@ A python wrapper for processing of sequencing data generated using CutnRun or Cu
 ## New in version 2.4.x
 
 1. Added a --version function
-2. In version 2.4.9 - environs.json was properly configured for PBS; see below for using a project ID with PBS
+2. In version 2.4.9 - environs.json was properly configured for PBS and see below for how to run henipipe with a project code (PBS only)
 
 ## New in version 2.3
 
