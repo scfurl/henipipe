@@ -2,7 +2,7 @@
     {"PBS": {
         "popen" : "qsub",
         "script_lines": {
-            "1" : ["#PBS -S /bin/bash\n#PBS -o <--0-->\n#PBS -e err", "TEMP_LOG_FILE"],
+            "1" : ["#PBS -S /bin/bash\n#PBS -o log_<--0-->_<--1-->\n#PBS -e err", "JOB_NAME|TEMP_LOG_FILE"],
             "2" : ["#PBS -N <--0-->\n#PBS -q paidq\n#PBS -P <--1-->", "JOB_NAME|PROJECT"],
             "3" : ["#PBS -l nodes=1:ppn=<--0-->","THREADS"],
             "4" : ["#PBS -l mem=<--0-->gb","RAM"],
