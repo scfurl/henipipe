@@ -40,7 +40,7 @@ _ROOT = os.path.abspath(os.path.dirname(__file__))
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.3.sh')
 ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
-
+GLOBALENV_PROJECT = os.environ["PROJECT"]
 
 
 class SampleFactory:
@@ -158,7 +158,8 @@ class Environs:
                                     RAM = ram,
                                     NUM_JOBS = torun,
                                     THREADS = threads,
-                                    USER = self.user)
+                                    USER = self.user,
+                                    PROJECT = GLOBALENV_PROJECT)
                                     # TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
             bash_scripts.append(bash_script)
         else:
@@ -172,7 +173,8 @@ class Environs:
                                         COMMAND = commands[i][1],
                                         RAM = ram,
                                         THREADS = threads,
-                                        USER = self.user)
+                                        USER = self.user,
+                                        PROJECT = GLOBALENV_PROJECT)
                                         # TIME = str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")))
                 bash_scripts.append(bash_script)
         return bash_scripts
@@ -206,8 +208,12 @@ class Environs:
                         string = re.sub("<--{0}-->".format(j), fn_args.get(values_to_insert[i][j]), string)
                     lines_parsed.append(string)
         if self.dependency_job is not None:
-            line = "#SBATCH --depend=afterok:%s" % (self.dependency_job)
-            lines_parsed.insert(1, line)
+            if self.cluster == "SLURM":
+                line = "#SBATCH --depend=afterok:%s" % (self.dependency_job)
+                lines_parsed.insert(1, line)
+            if self.cluster == "PBS":
+                line = "#PBS -W depend=afterany:%s" % (self.dependency_job)
+                lines_parsed.insert(1, line)
         return "\n".join(lines_parsed)
 
 
