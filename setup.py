@@ -97,4 +97,11 @@ henipipe SCALE -r runsheet_fixed.csv -n spike_in
 henipipe SEACR -r runsheet_fixed.csv
 
 
+## running dest data at SCRI
+cd /home/sfurla/develop/henipipe/test_data
+mkdir henipipe
+cd henipipe
+henipipe MAKERUNSHEET -fq ../fastq -c PBS -gk furlan_hg38
+henipipe ALIGN -t 4 -r runsheet.csv -c PBS
+
 """
