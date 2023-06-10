@@ -40,7 +40,7 @@ _ROOT = os.path.abspath(os.path.dirname(__file__))
 GENOMES_JSON = os.path.join(_ROOT, 'data', 'genomes.json')
 SEACR_SCRIPT = os.path.join(_ROOT, 'scripts', 'SEACR_1.3.sh')
 ENVIRONS_JSON = os.path.join(_ROOT, 'data', 'environs.json')
-GLOBALENV_PROJECT = os.getenv["PROJECT"]
+GLOBALENV_PROJECT = os.getenv("PROJECT")
 if GLOBALENV_PROJECT is None:
     GLOBALENV_PROJECT="NoneCaptured"
 
