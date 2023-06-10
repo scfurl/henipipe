@@ -2,21 +2,21 @@
     {"PBS": {
         "popen" : "qsub",
         "script_lines": {
-            "1" : ["#!/bin/bash\n#PBS --output=out\n#PBS --error=err", ""],
-            "2" : ["#PBS --job-name=<--0-->", "JOB_NAME"],
-            "3" : ["#PBS --ntasks=1\n#PBS --cpus-per-task=<--0-->","THREADS"],
-            "4" : ["#PBS --mem-per-cpu=<--0-->000","RAM"],
+            "1" : ["#PBS -S /bin/bash\n#PBS -o out\n#PBS -e err", ""],
+            "2" : ["#PBS -n <--0-->\n#PBS -q paidq\n#PBS -P $PROJECT", "JOB_NAME"],
+            "3" : ["#PBS -l nodes=1:ppn=<--0-->","THREADS"],
+            "4" : ["#PBS -l mem=<--0-->gb","RAM"],
             "5" : ["{\n<--0-->\n<--1-->} 2>&1 | tee <--2-->", "MODULES|COMMAND|TEMP_LOG_FILE"],
             "6" : ["t=date\nsed -e 's/^/[HENIPIPE-$t] JOB: <--0-->:\t\t/' <--1--> >> <--2-->", "JOB_NAME|TEMP_LOG_FILE|LOG_FILE"],
             "7" : ["rm <--0-->", "TEMP_LOG_FILE"]
         },
         "array_script_lines": {
-            "1" : ["#!/bin/bash\n#PBS --output=outarr\n#PBS --error=errarr", ""],
-            "2" : ["#PBS --array=1-<--0-->","ARRAY_COUNT"],
-            "3" : ["#PBS --job-name=<--0-->", "JOB_NAME"],
-            "4" : ["#PBS --ntasks=1\n#PBS --cpus-per-task=<--0-->","THREADS"],
-            "5" : ["#PBS --mem-per-cpu=<--0-->000","RAM"],
-            "7" : ["\n<--0-->\n<--1-->", "MODULES|COMMAND"]
+            "1" : ["#PBS -S /bin/bash\n#PBS -o out\n#PBS -e err", ""],
+            "2" : ["#PBS -J 1-<--0-->:1","ARRAY_COUNT"],
+            "3" : ["#PBS -n <--0-->\n#PBS -q paidq\n#PBS -P $PROJECT", "JOB_NAME"],
+            "4" : ["#PBS -l nodes=1:ppn=<--0-->","THREADS"],
+            "5" : ["#PBS -l mem=<--0-->gb","RAM"],
+            "6" : ["\n<--0-->\n<--1-->", "MODULES|COMMAND"]
         },
         "resources" : {
             "HENIPIPE_ALIGN": {
@@ -42,7 +42,7 @@
             "HENIPIPE_BIGWIG": {
             "ram" : "8",
             "threads" : "1",
-            "modules" : "module load Kent_tools/20201201-linux.x86_64"
+            "modules" : "module load ucsc_kent_utils/3.6.4"
             },
             "HENIPIPE_SEACR": {
                 "ram" : "8",

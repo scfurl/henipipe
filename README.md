@@ -13,13 +13,14 @@
 
 
 
-Version 2.4.0
+Version 2.4.8
 
 A python wrapper for processing of sequencing data generated using CutnRun or CutnTag (developed by the Henikoff lab FHCRC).  Now with a single-cell option ('SC') for processing CutnTag data generated using the iCell8 platform (Takara).
 
 ## New in version 2.4
 
 1. Added a --version function
+2. In version 2.4.8 - environs.json was properly configured for PBS; see below for using a project ID with PBS
 
 ## New in version 2.3
 
@@ -340,6 +341,20 @@ henipipe SC -fq fastq -o henipipe_sc -gk FH_mm10_unmasked
 ### Henipipe SC options and disclaimers
 
 Henipipe SC was written to accomodate iCell8 output.  As such, it should be able to parse the fastq folder and find paired fastq files.  That being said, it has not been exhaustively debugged.  Let us know if you have an issue using by submitting an issue through github.  Henipipe SC peak files will be generated using SEACR 1.3 (1.4 coming soon), but only by specifying an FDR value (See SEACR for more information).  The FDR is set using the '--SEACR_fdr' flag with a default of 0.05.  Future versions of henipipe will allow for use of this setting for bulk data but currently henipipe SEACR functionality in bulk still requires a control input file.
+
+### Using a project code
+
+Henipipe is not engineered to accept project IDs.  However for PBS job submission systems, our environs.json file will capture the global environmental variable PROJECT to run jobs with a specific project code.
+
+For example (note this code is made up)
+
+```sh
+export PROJECT=e05c3b6h-5a82-4943-uj87-2659cea32a54
+henipipe ALIGN -t 16 -r runsheet.csv -c PBS
+
+```
+
+
 
 ## Acknowledgements
 
