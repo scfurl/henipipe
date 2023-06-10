@@ -45,7 +45,7 @@ if GLOBALENV_PROJECT is None:
     GLOBALENV_PROJECT="NoneCaptured"
 
 now = datetime.now()
-CURRENT_TIME = now.strftime("%d/%m/%Y %H:%M:%S")
+CURRENT_TIME = now.strftime("%m/%d/%Y %H:%M:%S")
 
 
 class SampleFactory:

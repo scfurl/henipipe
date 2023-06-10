@@ -94,7 +94,8 @@
         "3" : ["#SBATCH --ntasks=1\n#SBATCH --cpus-per-task=<--0-->","THREADS"],
         "4" : ["#SBATCH --mem-per-cpu=<--0-->000","RAM"],
         "5" : ["{\n<--0-->\n<--1-->} 2>&1 | tee <--2-->", "MODULES|COMMAND|TEMP_LOG_FILE"],
-        "6" : ["sed -e 's/^/[HENIPIPE-<--0-->] JOB: <--1-->:\t\t/' <--2--> >> <--3-->", "TIME|JOB_NAME|TEMP_LOG_FILE|LOG_FILE"],
+        "6" : ["sed -e 's/^/[HENIPIPE-$t] JOB: <--0-->:\t\t/' <--1--> >> <--2-->", "JOB_NAME|TEMP_LOG_FILE|LOG_FILE"],
+        // "6" : ["sed -e 's/^/[HENIPIPE-<--0-->] JOB: <--1-->:\t\t/' <--2--> >> <--3-->", "TIME|JOB_NAME|TEMP_LOG_FILE|LOG_FILE"],
         "7" : ["rm <--0-->", "TEMP_LOG_FILE"]
     },
     "array_script_lines": {
